@@ -1,0 +1,14 @@
+/* Main CSS for Piattaforma Gestione Ricette di Cucina */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+h1 {
+    color: #333;
+}
