@@ -1,23 +1,118 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piattaforma Gestione Ricette di Cucina</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/main.css">
-</head>
-<body>
-    <div class="container">
-        <h1 class="mt-5">Piattaforma Gestione Ricette di Cucina</h1>
-        <p class="lead">Benvenuto nella piattaforma per la gestione delle ricette di cucina.</p>
-    </div>
+  <head>
+    <!-- Dichiarazione del set di caratteri: UTF-8 supporta correttamente lettere accentate e simboli -->
+    <meta charset="UTF-8" />
+    <!-- Viewport responsivo: dice al browser mobile di adattare la pagina alla larghezza dello schermo -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Titolo che comparirà nella scheda del browser -->
+    <title>CyberCuisine – Piattaforma Ricette</title>
 
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="../js/main.js"></script>
-</body>
+    <!-- Ottimizzazione: preconnessione ai server di Google Fonts per ridurre la latenza nel caricamento dei font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Import dei font “Orbitron” (più futuristico) e “Space Grotesk” (più leggibile) da Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Import di Bootstrap 5 (CSS) via CDN: fornisce griglia, componenti e utilità di stile pronti all’uso -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+
+    <!-- Foglio di stile custom del progetto: qui personalizzi i colori, i font e l’estetica “cyberpunk” -->
+    <link rel="stylesheet" href="../css/main.css" />
+  </head>
+  <body>
+    <!-- HEADER DELL’APPLICAZIONE: contiene la navbar principale -->
+    <!-- cc-header è una classe “namespaced” (CyberCuisine) per dare uno stile personalizzato all’header -->
+    <header class="cc-header shadow-sm">
+      <!-- Navbar di Bootstrap: navbar-expand-lg = si espande “full width” da large in su; navbar-dark = testo chiaro su sfondo scuro -->
+      <!-- container = allinea il contenuto al centro con una larghezza massima -->
+      <nav class="navbar navbar-expand-lg navbar-dark container">
+        <!-- Brand/logo della piattaforma: cliccandolo vai sempre alla “home” logica della SPA -->
+        <!-- href="#/home" perché la navigazione è gestita via hash routing (SPA) -->
+        <a class="navbar-brand fw-bold" href="#/home">CyberCuisine</a>
+
+        <!-- Bottone “hamburger” che compare su schermi piccoli per comprimere/espandere il menu -->
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#ccNavbar"
+          aria-controls="ccNavbar"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <!-- Icona standard dell’hamburger di Bootstrap -->
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Contenuto collassabile della navbar: su mobile viene nascosto/mostrato dal bottone sopra -->
+        <div class="collapse navbar-collapse" id="ccNavbar">
+          <!-- Lista dei link di navigazione -->
+          <!-- ms-auto = “margin-start auto”: spinge la lista a destra nella navbar -->
+          <!-- id="ccNavLinks" ti serve in JS per gestire la classe “active” in base alla route corrente -->
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="ccNavLinks">
+            <!-- Ogni li.nav-item contiene un link di navigazione verso una “vista” della SPA -->
+            <li class="nav-item">
+              <!-- nav-link con href ad hash #/home: il router intercetta il cambio di hash e carica la vista Home -->
+              <a class="nav-link" href="#/home">Home</a>
+            </li>
+            <li class="nav-item">
+              <!-- Vista di ricerca ricette -->
+              <a class="nav-link" href="#/search">Ricerca</a>
+            </li>
+            <li class="nav-item">
+              <!-- Vista del ricettario personale (richiede utente loggato per funzionare appieno) -->
+              <a class="nav-link" href="#/cookbook">Ricettario</a>
+            </li>
+            <li class="nav-item">
+              <!-- Vista delle recensioni inserite dall’utente -->
+              <a class="nav-link" href="#/reviews">Recensioni</a>
+            </li>
+            <li class="nav-item">
+              <!-- Vista del profilo utente (dati registrazione, modifica, eliminazione profilo) -->
+              <a class="nav-link" href="#/profile">Profilo</a>
+            </li>
+            <li class="nav-item">
+              <!-- Link dedicato all’autenticazione -->
+              <!-- id="ccAuthLink" permette a JS di trasformare dinamicamente il testo (Login ↔ Logout) e il comportamento, in base allo stato utente -->
+              <a class="nav-link" id="ccAuthLink" href="#/login">Login</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <!-- CONTENITORE PRINCIPALE DELLA SPA -->
+    <!-- id="app" è il “root container” dove il router JS inietterà le varie viste HTML (home, search, ecc.) -->
+    <!-- container + py-4 sono classi Bootstrap: centrano il contenuto e aggiungono padding verticale -->
+    <main id="app" class="container py-4"></main>
+
+    <!-- FOOTER FISSO IN FONDO ALLA PAGINA -->
+    <!-- cc-footer ti consente di stabilire uno stile coerente (colori, bordi, ecc.) per il footer nel tuo CSS -->
+    <footer class="cc-footer text-center py-3">
+      <!-- <small> per testo secondario / meno prominente -->
+      <small>CyberCuisine · Progetto di Programmazione Web e Mobile · Uni</small>
+    </footer>
+
+    <!-- Bootstrap JS bundle: include Popper + JS dei componenti (collapse, modals, ecc.) -->
+    <!-- Necessario per far funzionare il toggle della navbar e altri componenti interattivi -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Script principale dell’applicazione, in modalità ES module -->
+    <!-- type="module" permette di usare import/export e scope modulare moderno -->
+    <!-- Il percorso relativo ../js/main.js parte da src/html/ e risale alla cartella js -->
+    <script type="module" src="../js/main.js"></script>
+  </body>
 </html>

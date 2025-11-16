@@ -1,0 +1,20 @@
+<!-- SEZIONE INTRODUTTIVA DELLA PAGINA RECENSIONI:
+     presenta titolo + breve descrizione della funzionalità -->
+<section class="mb-4">
+  <!-- Titolo principale della pagina -->
+  <h1 class="h3">Le tue recensioni</h1>
+
+  <!-- Sottotitolo descrittivo in stile muted (colore attenuato)
+       Spiega che l’utente può rivedere/modificare recensioni già inserite -->
+  <p class="text-muted">
+    Rivedi le valutazioni lasciate sui piatti che hai sperimentato e torna ai dettagli per
+    aggiornarle.
+  </p>
+</section>
+
+<!-- CONTENITORE DINAMICO DELLE RECENSIONI DELL’UTENTE:
+     - id="reviewsList" è fondamentale: JS in initReviewsView()
+       riempie questa sezione con tutte le card generate da renderReviewCard().
+     - Ogni elemento verrà disposto in una griglia Bootstrap .row g-4
+       per separare ordinatamente le card e mantenere layout responsive. -->
+<section id="reviewsList" class="row g-4"></section>

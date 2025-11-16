@@ -1,14 +1,191 @@
-/* Main CSS for Piattaforma Gestione Ricette di Cucina */
+/* Variabili CSS globali per la palette cyberpunk di CyberCuisine */
+:root {
+  /* Colore di sfondo principale (quasi nero con un tocco violaceo) */
+  --cc-bg-dark: #0c0b1a;
+  /* Colore di pannello/card */
+  --cc-panel: #151531;
+  /* Colore primario (violetto acceso) per pulsanti e accenti principali */
+  --cc-primary: #b312ff;
+  /* Variante “hover” del colore primario, leggermente più chiara */
+  --cc-primary-hover: #d94bff;
+  /* Colore accent (verde acqua / teal fluorescente) */
+  --cc-accent: #00f0ff;
+  /* Colore principale del testo */
+  --cc-text: #f5f5ff;
+  /* Colore per testi secondari / disabilitati */
+  --cc-muted: #8a8aa9;
+  /* Colore standard per bordi sottili */
+  --cc-border: #2d2d4b;
+}
 
+/* Box model coerente: includiamo padding e border nel calcolo della dimensione */
+* {
+  box-sizing: border-box;
+}
+
+/* Stile di base del body: font, sfondo scuro, testo chiaro, altezza minima viewport */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
+  font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--cc-bg-dark);
+  color: var(--cc-text);
+  min-height: 100vh;
 }
 
-.container {
-    max-width: 1200px;
+/* Titoli e brand della navbar con font più “tech” (Orbitron) */
+h1,
+h2,
+h3,
+.navbar-brand {
+  font-family: "Orbitron", "Space Grotesk", sans-serif;
 }
 
-h1 {
-    color: #333;
+/* Colore link di default: usa l’accent verde acqua */
+a {
+  color: var(--cc-accent);
+}
+
+/* Header personalizzato CyberCuisine, con sfondo in gradient e bordo inferiore */
+.cc-header {
+  background: linear-gradient(90deg, rgba(17, 17, 46, 0.95), rgba(27, 10, 38, 0.95));
+  border-bottom: 1px solid var(--cc-border);
+}
+
+/* Link della navbar in modalità dark:
+   - testo con colore attenuato di base
+   - transizione dolce su hover/active */
+.navbar-dark .navbar-nav .nav-link {
+  color: var(--cc-muted);
+  transition: color 0.2s ease, border-bottom 0.2s ease;
+}
+
+/* Stato attivo/hover dei link: diventano accent (verde acqua) */
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link:hover {
+  color: var(--cc-accent);
+}
+
+/* Footer personalizzato: bordo superiore, sfondo leggermente trasparente, testo attenuato */
+.cc-footer {
+  border-top: 1px solid var(--cc-border);
+  background-color: rgba(12, 11, 26, 0.8);
+  color: var(--cc-muted);
+}
+
+/* Stile base di tutte le card Bootstrap: pannello scuro, bordo definito, testo chiaro */
+.card {
+  background-color: var(--cc-panel);
+  border: 1px solid var(--cc-border);
+  color: var(--cc-text);
+}
+
+/* Effetto “alone” luminoso attorno a card speciali (card-glow) */
+.card-glow {
+  box-shadow: 0 0 25px rgba(179, 18, 255, 0.1);
+}
+
+/* Override del bottone primario di Bootstrap con il colore violetto CyberCuisine */
+.btn-primary {
+  background: var(--cc-primary);
+  border-color: var(--cc-primary);
+  color: #0a0414; /* testo scuro per contrastare lo sfondo chiaro/fluorescente */
+}
+
+/* Stato hover/focus del bottone primario */
+.btn-primary:hover,
+.btn-primary:focus {
+  background: var(--cc-primary-hover);
+  border-color: var(--cc-primary-hover);
+}
+
+/* Bottone outline personalizzato in tinta accent (verde acqua) */
+.btn-outline-accent {
+  color: var(--cc-accent);
+  border-color: var(--cc-accent);
+}
+
+/* Hover/focus per il bottone outline accent:
+   - riempiamo di accent
+   - testo scuro per leggibilità */
+.btn-outline-accent:hover,
+.btn-outline-accent:focus {
+  background-color: var(--cc-accent);
+  color: #051719;
+}
+
+/* Utility per sfondo accent pieno, con testo scuro */
+.bg-accent {
+  background-color: var(--cc-accent) !important;
+  color: #051719;
+}
+
+/* Utility per testo in colore accent (verde acqua) */
+.text-accent {
+  color: var(--cc-accent) !important;
+}
+
+/* Hero section:
+   - bordi arrotondati
+   - radial gradient con alone violetto e coda teal */
+.hero {
+  border-radius: 1rem;
+  background: radial-gradient(circle at top, rgba(179, 18, 255, 0.2), rgba(0, 240, 255, 0.08));
+}
+
+/* List-group di Bootstrap: uniforma i bordi con la palette personalizzata */
+.list-group-item {
+  border-color: var(--cc-border);
+}
+
+/* Input generici (testo, textarea, select):
+   - sfondo semitrasparente
+   - bordo personalizzato
+   - testo chiaro
+   - !important per sovrascrivere stili Bootstrap */
+input,
+textarea,
+select {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: var(--cc-border) !important;
+  color: var(--cc-text) !important;
+}
+
+/* Placeholder degli input con colore più tenue */
+input::placeholder,
+textarea::placeholder {
+  color: rgba(245, 245, 255, 0.6);
+}
+
+/* Stato focus: bordo accent + alone esterno leggermente teal (effetto glow) */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--cc-accent) !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 240, 255, 0.2) !important;
+}
+
+/* Override globale di .text-muted di Bootstrap con il nostro colore attenuato */
+.text-muted {
+  color: var(--cc-muted) !important;
+}
+
+/* Utility per preservare i \n nel testo (usato per istruzioni delle ricette) */
+.text-pre-line {
+  white-space: pre-line;
+}
+
+/* Utility per far sì che immagini riempiano il contenitore mantenendo il ratio */
+.object-fit-cover {
+  object-fit: cover;
+}
+
+/* Toggler della navbar: bordo con colore accent */
+.navbar-toggler {
+  border-color: var(--cc-accent);
+}
+
+/* Icona dell’hamburger:
+   - filtro per trasformarla visivamente in tinta verde acqua,
+     partendo dall’icona predefinita di Bootstrap */
+.navbar-toggler-icon {
+  filter: invert(82%) sepia(34%) saturate(4481%) hue-rotate(117deg) brightness(101%) contrast(99%);
 }

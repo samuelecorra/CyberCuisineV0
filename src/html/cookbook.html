@@ -1,0 +1,22 @@
+<!-- HEADER DELLA PAGINA RICETTARIO:
+     struttura flessibile che allinea titolo e badge sullo stesso asse -->
+<section class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <!-- Titolo principale della pagina "Ricettario" -->
+    <h1 class="h3 mb-0">Il tuo ricettario</h1>
+
+    <!-- Sottotitolo descrittivo in grigio chiaro
+         Spiega allo studente/utente la funzione del ricettario -->
+    <p class="text-muted mb-0">Gestisci le ricette salvate e annota impressioni private.</p>
+  </div>
+
+  <!-- Badge dinamico che mostra il numero totale di ricette presenti nel ricettario.
+       Viene aggiornato in initCookbookView() → badge.textContent = "X ricette" -->
+  <span class="badge bg-accent" id="cookbookCount">0 ricette</span>
+</section>
+
+<!-- LISTA DINAMICA DEL RICETTARIO:
+     - È un contenitore a griglia bootstrap (.row g-4)
+     - initCookbookView() genera tutte le card con map().join() 
+     - Ogni card contiene immagine, titolo, area, note private e pulsanti -->
+<section id="cookbookList" class="row g-4"></section>

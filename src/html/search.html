@@ -1,0 +1,79 @@
+<!-- Sezione principale che contiene il box per scegliere il tipo di ricerca -->
+<section class="mb-4">
+  <div class="card card-glow">
+    <div class="card-body">
+      <!-- Titolo della pagina di ricerca -->
+      <h1 class="h3 mb-3">Ricerca ricette</h1>
+
+      <!-- Sottotitolo descrittivo: spiega cosa sta per fare l’utente -->
+      <p class="text-muted">
+        Scegli la modalità di ricerca preferita e lascia che TheMealDB trovi i piatti giusti per il
+        tuo esperimento culinario.
+      </p>
+
+      <!-- Contenitore con i 3 metodi di ricerca -->
+      <!-- id="searchControls" serve allo script per attaccare listener ai vari pulsanti -->
+      <div class="row g-3" id="searchControls">
+        <!-- Ricerca per nome della ricetta -->
+        <div class="col-md-4">
+          <!-- Etichetta del campo input -->
+          <label for="searchByName" class="form-label">Per nome</label>
+
+          <!-- input-group = stile Bootstrap per input con bottone attaccato -->
+          <div class="input-group">
+            <input type="text" class="form-control" id="searchByName" placeholder="Es. Arrabiata" />
+            <!-- Il pulsante contiene data-search="name" usato da initSearchView() -->
+            <button class="btn btn-primary" data-search="name">Cerca</button>
+          </div>
+        </div>
+
+        <!-- Ricerca per ingrediente -->
+        <div class="col-md-4">
+          <label for="searchByIngredient" class="form-label">Per ingrediente</label>
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control"
+              id="searchByIngredient"
+              placeholder="Es. Chicken"
+            />
+            <!-- Questo pulsante triggera una ricerca ingredient → fetchMealsByIngredient() -->
+            <button class="btn btn-primary" data-search="ingredient">Cerca</button>
+          </div>
+        </div>
+
+        <!-- Ricerca per lettera iniziale della ricetta -->
+        <div class="col-md-4">
+          <label for="searchByLetter" class="form-label">Per lettera iniziale</label>
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control"
+              id="searchByLetter"
+              maxlength="1"
+              placeholder="Es. a"
+            />
+            <!-- Ricerca veloce tramite search.php?f=letter -->
+            <button class="btn btn-primary" data-search="letter">Cerca</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sezione dei risultati della ricerca -->
+<section>
+  <!-- Header della sezione risultati -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="h5 mb-0">Risultati</h2>
+
+    <!-- Badge dinamico che mostra il numero di ricette trovate -->
+    <!-- Viene aggiornato da renderSearchResults() -->
+    <span class="badge bg-accent" id="searchCount">0 ricette</span>
+  </div>
+
+  <!-- Contenitore delle card risultato -->
+  <!-- Popolato al volo da renderSearchResults(results) -->
+  <div class="row g-4" id="searchResults"></div>
+</section>

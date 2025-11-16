@@ -1,0 +1,45 @@
+<!-- Contenitore principale centrato: la row Bootstrap usa justify-content-center
+     per centrare la card del login nella pagina -->
+<section class="row justify-content-center">
+  <!-- Larghezza massima: su schermi medi occuperà metà pagina -->
+  <div class="col-md-6">
+    <!-- Card con effetto neon (card-glow definita nel CSS personalizzato) -->
+    <div class="card card-glow">
+      <div class="card-body">
+        <!-- Titolo della pagina di login -->
+        <h1 class="h3 mb-3">Accesso utente</h1>
+
+        <!-- Alert dinamico per errori di login (mostrato da initLoginView()) -->
+        <div class="alert alert-danger d-none" id="loginAlert"></div>
+
+        <!-- Form di login:
+             - id="loginForm" permette allo script di intercettare il submit
+             - novalidate disabilita la validazione HTML default,
+               perché la validazione viene gestita in JavaScript -->
+        <form id="loginForm" novalidate>
+          <!-- Campo per username o email: l'utente può usare entrambi
+               per accedere, come previsto nel controller JavaScript -->
+          <div class="mb-3">
+            <label for="loginIdentifier" class="form-label">Username o email</label>
+            <input type="text" class="form-control" id="loginIdentifier" required />
+          </div>
+
+          <!-- Campo password: required, valore verificato in JS -->
+          <div class="mb-3">
+            <label for="loginPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="loginPassword" required />
+          </div>
+
+          <!-- Pulsante submit: la callback in initLoginView() gestisce l’autenticazione -->
+          <button type="submit" class="btn btn-primary w-100">Entra in CyberCuisine</button>
+        </form>
+
+        <!-- Link per passare alla registrazione
+             (il router intercetta "#/register" e carica la view dedicata) -->
+        <p class="mt-3 mb-0 text-center">
+          Nuovo/a su CyberCuisine? <a href="#/register">Registrati ora</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

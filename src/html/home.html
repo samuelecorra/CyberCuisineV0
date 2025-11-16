@@ -1,0 +1,65 @@
+<!-- Sezione hero principale: intro della piattaforma con messaggio centrale -->
+<section class="hero text-center py-5">
+  <div class="container">
+    <!-- Sottotitolo in alto, tutto maiuscolo, con colore accent e bold -->
+    <p class="text-uppercase text-accent fw-bold mb-2">Benvenutə nella piattaforma PGRC</p>
+
+    <!-- Titolo principale della pagina home -->
+    <h1 class="display-4 fw-bold">Ricette cyberpunk per ispirare il tuo ricettario</h1>
+
+    <!-- Descrizione breve: spiega cosa fa CyberCuisine a livello funzionale -->
+    <p class="lead mt-3">
+      CyberCuisine integra le API di TheMealDB per offrirti ricerche rapide, recensioni strutturate
+      e un ricettario personale sempre sincronizzato.
+    </p>
+
+    <!-- Call-to-action principali:
+         - pulsante primario: porta alla ricerca
+         - pulsante secondario (outline accent): porta al ricettario personale -->
+    <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+      <!-- Naviga alla vista di ricerca (SPA: route #/search) -->
+      <a class="btn btn-primary btn-lg" href="#/search">Inizia la ricerca</a>
+      <!-- Naviga al ricettario: richiede utente loggato, quindi il router controllerà l’accesso -->
+      <a class="btn btn-outline-accent btn-lg" href="#/cookbook">Vai al ricettario</a>
+    </div>
+  </div>
+</section>
+
+<!-- Seconda sezione: 3 colonne che riassumono i pilastri funzionali della piattaforma -->
+<section class="row gy-4 mt-0">
+  <!-- Colonna 1: blocco informativo sulla ricerca -->
+  <div class="col-md-4">
+    <div class="card card-glow h-100">
+      <div class="card-body">
+        <h2 class="h5">Ricerca intelligente</h2>
+        <p class="mb-0">
+          Filtra per nome, ingrediente o iniziale e scopri migliaia di piatti internazionali.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colonna 2: blocco informativo sul ricettario personale -->
+  <div class="col-md-4">
+    <div class="card card-glow h-100">
+      <div class="card-body">
+        <h2 class="h5">Ricettario privato</h2>
+        <p class="mb-0">
+          Salva le ricette preferite, aggiungi note personalizzate e tieni traccia delle tue prove.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colonna 3: blocco informativo sulle recensioni strutturate -->
+  <div class="col-md-4">
+    <div class="card card-glow h-100">
+      <div class="card-body">
+        <h2 class="h5">Recensioni strutturate</h2>
+        <p class="mb-0">
+          Valuta difficoltà e gusto, registra la data di preparazione e condividi feedback.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

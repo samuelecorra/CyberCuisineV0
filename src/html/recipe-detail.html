@@ -1,0 +1,13 @@
+<!-- Contenitore della vista "Recipe Detail".
+     - L'id="recipeDetail" è fondamentale perché initRecipeDetailView(mealId)
+       sostituisce dinamicamente INNERHTML di questa sezione.
+     - La classe .row g-4 crea una griglia Bootstrap con margine uniforme.
+     - Dentro questa sezione JS inserirà:
+         • la card grande con immagine, ingredienti e istruzioni
+         • la colonna laterale con:
+              - aggiunta/rimozione dal ricettario
+              - nota personale
+              - recensioni e form delle recensioni
+     - Questa struttura permette alla route "#/recipe/<id>" di comportarsi
+       come una vera pagina dedicata senza creare un file HTML completo. -->
+<section id="recipeDetail" class="row g-4"></section>
