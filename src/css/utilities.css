@@ -1,0 +1,12 @@
+/* Classi di utilità riusabili */
+.text-muted {
+  color: var(--cc-muted) !important;
+}
+
+.text-pre-line {
+  white-space: pre-line;
+}
+
+.object-fit-cover {
+  object-fit: cover;
+}

@@ -1,0 +1,19 @@
+/* Variabili CSS globali per la palette cyberpunk di CyberCuisine */
+:root {
+  /* Colore di sfondo principale (quasi nero con un tocco violaceo) */
+  --cc-bg-dark: #0c0b1a;
+  /* Colore di pannello/card */
+  --cc-panel: #151531;
+  /* Colore primario (violetto acceso) per pulsanti e accenti principali */
+  --cc-primary: #b312ff;
+  /* Variante “hover” del colore primario, leggermente più chiara */
+  --cc-primary-hover: #d94bff;
+  /* Colore accent (verde acqua / teal fluorescente) */
+  --cc-accent: #00f0ff;
+  /* Colore principale del testo */
+  --cc-text: #f5f5ff;
+  /* Colore per testi secondari / disabilitati */
+  --cc-muted: #8a8aa9;
+  /* Colore standard per bordi sottili */
+  --cc-border: #2d2d4b;
+}

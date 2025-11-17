@@ -1,0 +1,55 @@
+/* Layout e strutture principali: header, navbar, footer, sezioni speciali */
+
+.cc-header {
+  background: linear-gradient(90deg, rgba(17, 17, 46, 0.95), rgba(27, 10, 38, 0.95));
+  border-bottom: 1px solid var(--cc-border);
+  min-height: 64px;
+}
+
+.navbar {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+@media (min-width: 992px) {
+  .cc-header {
+    height: 100px;
+  }
+
+  .cc-header .navbar {
+    height: 100%;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  color: var(--cc-muted);
+  transition: color 0.2s ease, border-bottom 0.2s ease;
+}
+
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link:hover {
+  color: var(--cc-accent);
+}
+
+.cc-footer {
+  border-top: 1px solid var(--cc-border);
+  background-color: rgba(12, 11, 26, 0.8);
+  color: var(--cc-muted);
+}
+
+.hero {
+  border-radius: 1rem;
+  background: radial-gradient(circle at top, rgba(179, 18, 255, 0.2), rgba(0, 240, 255, 0.08));
+}
+
+.navbar-toggler {
+  border-color: var(--cc-accent);
+}
+
+.navbar-toggler-icon {
+  filter: invert(82%) sepia(34%) saturate(4481%) hue-rotate(117deg) brightness(101%) contrast(99%);
+}

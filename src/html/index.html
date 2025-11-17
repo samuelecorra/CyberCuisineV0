@@ -25,8 +25,13 @@
       crossorigin="anonymous"
     />
 
-    <!-- Foglio di stile custom del progetto: qui personalizzi i colori, i font e l’estetica “cyberpunk” -->
-    <link rel="stylesheet" href="../css/main.css" />
+    <!-- Fogli di stile custom modulati: mantengono la stessa estetica cyberpunk ma suddivisi per responsabilità -->
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/layout.css" />
+    <link rel="stylesheet" href="../css/components.css" />
+    <link rel="stylesheet" href="../css/forms.css" />
+    <link rel="stylesheet" href="../css/utilities.css" />
   </head>
   <body>
     <!-- HEADER DELL’APPLICAZIONE: contiene la navbar principale -->
@@ -34,10 +39,13 @@
     <header class="cc-header shadow-sm">
       <!-- Navbar di Bootstrap: navbar-expand-lg = si espande “full width” da large in su; navbar-dark = testo chiaro su sfondo scuro -->
       <!-- container = allinea il contenuto al centro con una larghezza massima -->
-      <nav class="navbar navbar-expand-lg navbar-dark container">
+      <nav class="navbar navbar-expand-lg navbar-dark container px-3">
         <!-- Brand/logo della piattaforma: cliccandolo vai sempre alla “home” logica della SPA -->
         <!-- href="#/home" perché la navigazione è gestita via hash routing (SPA) -->
-        <a class="navbar-brand fw-bold" href="#/home">CyberCuisine</a>
+        <!-- Il logo completo qui mostrato contiene un’immagine di un’aragosta cyberpunk affiancata dal nome -->
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2 cc-brand" href="#/home">
+          <img src="../assets/img/cc-logo.png" alt="CyberCuisine" class="brand-text" />
+        </a>
 
         <!-- Bottone “hamburger” che compare su schermi piccoli per comprimere/espandere il menu -->
         <button
@@ -82,8 +90,8 @@
             </li>
             <li class="nav-item">
               <!-- Link dedicato all’autenticazione -->
-              <!-- id="ccAuthLink" permette a JS di trasformare dinamicamente il testo (Login ↔ Logout) e il comportamento, in base allo stato utente -->
-              <a class="nav-link" id="ccAuthLink" href="#/login">Login</a>
+              <!-- id="ccAuthLink" permette a JS di trasformare dinamicamente il testo (Registrati/Accedi ↔ Logout) e il comportamento, in base allo stato utente -->
+              <a class="nav-link" id="ccAuthLink" href="#/register">Registrati / Accedi</a>
             </li>
           </ul>
         </div>

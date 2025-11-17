@@ -416,9 +416,10 @@ function updateNavAuthState() {
     authLink.href = "#/home";
     authLink.dataset.action = "logout";
   } else {
-    // Nessun utente loggato → mostriamo "Login"
-    authLink.textContent = "Login";
-    authLink.href = "#/login";
+    // Nessun utente loggato → mostriamo "Registrati / Accedi" e indirizziamo in base alla presenza di utenti salvati
+    const hasUsers = getUsers().length > 0;
+    authLink.textContent = "Registrati / Accedi";
+    authLink.href = hasUsers ? "#/login" : "#/register";
     delete authLink.dataset.action;
   }
 }

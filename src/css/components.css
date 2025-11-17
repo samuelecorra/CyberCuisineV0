@@ -1,0 +1,72 @@
+/* Componenti riutilizzabili: card, bottoni, badge, ecc. */
+.card {
+  background-color: var(--cc-panel);
+  border: 1px solid var(--cc-border);
+  color: var(--cc-text);
+}
+
+.card-glow {
+  box-shadow: 0 0 25px rgba(179, 18, 255, 0.1);
+}
+
+.btn-primary {
+  background: var(--cc-primary);
+  border-color: var(--cc-primary);
+  color: #0a0414;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: var(--cc-primary-hover);
+  border-color: var(--cc-primary-hover);
+}
+
+.btn-outline-accent {
+  color: var(--cc-accent);
+  border-color: var(--cc-accent);
+}
+
+.btn-outline-accent:hover,
+.btn-outline-accent:focus {
+  background-color: var(--cc-accent);
+  color: #051719;
+}
+
+.bg-accent {
+  background-color: var(--cc-accent) !important;
+  color: #051719;
+}
+
+.text-accent {
+  color: var(--cc-accent) !important;
+}
+
+.list-group-item {
+  border-color: var(--cc-border);
+}
+
+.cc-brand {
+  transition: transform 0.15s ease-out;
+}
+
+.cc-brand:hover {
+  transform: scale(1.05);
+}
+
+.cc-brand:active {
+  transform: scale(0.97);
+}
+
+.brand-logo,
+.brand-text {
+  height: clamp(40px, 6vw, 60px);
+  width: auto;
+  display: block;
+}
+
+@media (min-width: 992px) {
+  .brand-logo,
+  .brand-text {
+    height: 90px;
+  }
+}
