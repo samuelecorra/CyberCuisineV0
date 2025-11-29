@@ -1,6 +1,6 @@
 /* Layout e strutture principali: header, navbar, footer, sezioni speciali */
 
-.cc-header {
+.cc-intestazione {
   background: linear-gradient(90deg, rgba(17, 17, 46, 0.95), rgba(27, 10, 38, 0.95));
   border-bottom: 1px solid var(--cc-border);
   min-height: 64px;
@@ -14,11 +14,11 @@
 }
 
 @media (min-width: 992px) {
-  .cc-header {
+  .cc-intestazione {
     height: 100px;
   }
 
-  .cc-header .navbar {
+  .cc-intestazione .navbar {
     height: 100%;
     padding-top: 0;
     padding-bottom: 0;
@@ -35,13 +35,13 @@
   color: var(--cc-accent);
 }
 
-.cc-footer {
+.cc-piede {
   border-top: 1px solid var(--cc-border);
   background-color: rgba(12, 11, 26, 0.8);
   color: var(--cc-muted);
 }
 
-.hero {
+.sezione-eroe {
   border-radius: 1rem;
   background: radial-gradient(circle at top, rgba(179, 18, 255, 0.2), rgba(0, 240, 255, 0.08));
 }

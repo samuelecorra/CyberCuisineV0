@@ -11,12 +11,12 @@
   </div>
 
   <!-- Badge dinamico che mostra il numero totale di ricette presenti nel ricettario.
-       Viene aggiornato in initCookbookView() → badge.textContent = "X ricette" -->
-  <span class="badge bg-accent" id="cookbookCount">0 ricette</span>
+       Viene aggiornato in inizializzaVistaRicettario() → badge.textContent = "X ricette" -->
+  <span class="badge bg-accento" id="conteggioRicettario">0 ricette</span>
 </section>
 
 <!-- LISTA DINAMICA DEL RICETTARIO:
      - È un contenitore a griglia bootstrap (.row g-4)
-     - initCookbookView() genera tutte le card con map().join() 
+     - inizializzaVistaRicettario() genera tutte le card con map().join() 
      - Ogni card contiene immagine, titolo, area, note private e pulsanti -->
-<section id="cookbookList" class="row g-4"></section>
+<section id="elencoRicettario" class="row g-4"></section>

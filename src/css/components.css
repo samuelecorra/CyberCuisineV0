@@ -5,7 +5,7 @@
   color: var(--cc-text);
 }
 
-.card-glow {
+.card-bagliore {
   box-shadow: 0 0 25px rgba(179, 18, 255, 0.1);
 }
 
@@ -21,23 +21,23 @@
   border-color: var(--cc-primary-hover);
 }
 
-.btn-outline-accent {
+.btn-contorno-accento {
   color: var(--cc-accent);
   border-color: var(--cc-accent);
 }
 
-.btn-outline-accent:hover,
-.btn-outline-accent:focus {
+.btn-contorno-accento:hover,
+.btn-contorno-accento:focus {
   background-color: var(--cc-accent);
   color: #051719;
 }
 
-.bg-accent {
+.bg-accento {
   background-color: var(--cc-accent) !important;
   color: #051719;
 }
 
-.text-accent {
+.testo-accento {
   color: var(--cc-accent) !important;
 }
 
@@ -45,28 +45,28 @@
   border-color: var(--cc-border);
 }
 
-.cc-brand {
+.cc-marchio {
   transition: transform 0.15s ease-out;
 }
 
-.cc-brand:hover {
+.cc-marchio:hover {
   transform: scale(1.05);
 }
 
-.cc-brand:active {
+.cc-marchio:active {
   transform: scale(0.97);
 }
 
-.brand-logo,
-.brand-text {
+.logo-marchio,
+.testo-marchio {
   height: clamp(40px, 6vw, 60px);
   width: auto;
   display: block;
 }
 
 @media (min-width: 992px) {
-  .brand-logo,
-  .brand-text {
+  .logo-marchio,
+  .testo-marchio {
     height: 90px;
   }
 }

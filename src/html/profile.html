@@ -2,48 +2,41 @@
 <section class="row justify-content-center">
   <!-- Larghezza massima del contenuto: su large occupa 8/12 -->
   <div class="col-lg-8">
-    <!-- CARD 1: mostra i dati attuali dell’utente (username, email, preferiti, ricette salvate...) -->
-    <div class="card card-glow mb-4">
+    <!-- CARD 1: mostra i dati attuali dell’utente (username, email, ricette salvate...) -->
+    <div class="card card-bagliore mb-4">
       <div class="card-body">
         <!-- Titolo dell’area profilo -->
         <h1 class="h3 mb-3">Profilo personale</h1>
 
         <!-- Contenitore dinamico: viene riempito da renderProfileInfo(user)
              nel controller initProfileView() -->
-        <div id="profileInfo"></div>
+        <div id="infoProfilo"></div>
       </div>
     </div>
 
     <!-- CARD 2: sezione per modificare le informazioni del profilo -->
-    <div class="card card-glow">
+    <div class="card card-bagliore">
       <div class="card-body">
         <!-- Titolo della card di modifica -->
         <h2 class="h5 mb-3">Aggiorna le informazioni</h2>
 
         <!-- Alert di successo (mostrato da showAlert(..., "success"))
              compare quando i dati sono stati salvati correttamente -->
-        <div class="alert alert-success d-none" id="profileAlertSuccess"></div>
+        <div class="alert alert-success d-none" id="avvisoProfiloSuccesso"></div>
 
         <!-- Alert per errori (email vuota, valori invalidi, ecc.)
              mostrato sempre da showAlert(...) -->
-        <div class="alert alert-danger d-none" id="profileAlertError"></div>
+        <div class="alert alert-danger d-none" id="avvisoProfiloErrore"></div>
 
         <!-- Form principale di aggiornamento profilo.
              initProfileView() intercetta submit, valida e salva -->
-        <form id="profileForm" novalidate>
+        <form id="formProfilo" novalidate>
           <!-- Campo email:
                - Viene precaricato con user.email da initProfileView()
                - Required + validazione HTML + validazione JS -->
           <div class="mb-3">
-            <label for="profileEmail" class="form-label">Email</label>
-            <input type="email" class="form-control" id="profileEmail" required />
-          </div>
-
-          <!-- Campo piatti preferiti (opzionale).
-               Il valore iniziale viene letto dal profilo utente -->
-          <div class="mb-3">
-            <label for="profileFavorites" class="form-label">Piatti preferiti</label>
-            <textarea class="form-control" id="profileFavorites" rows="2"></textarea>
+            <label for="emailProfilo" class="form-label">Email</label>
+            <input type="email" class="form-control" id="emailProfilo" required />
           </div>
 
           <!-- Pulsanti di azione:
@@ -55,13 +48,13 @@
             <button type="submit" class="btn btn-primary">Salva modifiche</button>
 
             <!-- Logout immediato dell’utente corrente -->
-            <button type="button" class="btn btn-outline-accent" id="logoutBtn">Logout</button>
+            <button type="button" class="btn btn-contorno-accento" id="bottoneLogout">Logout</button>
 
             <!-- Elimina il profilo:
                  - richiede conferma
                  - elimina user, le sue recensioni e i dati collegati
                  - poi logout e redirect -->
-            <button type="button" class="btn btn-danger ms-auto" id="deleteProfileBtn">
+            <button type="button" class="btn btn-danger ms-auto" id="bottoneEliminaProfilo">
               Elimina profilo
             </button>
           </div>

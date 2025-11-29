@@ -3,10 +3,10 @@
   color: var(--cc-muted) !important;
 }
 
-.text-pre-line {
+.testo-pre-linea {
   white-space: pre-line;
 }
 
-.object-fit-cover {
+.adatta-copertura {
   object-fit: cover;
 }

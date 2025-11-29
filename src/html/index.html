@@ -35,16 +35,16 @@
   </head>
   <body>
     <!-- HEADER DELL’APPLICAZIONE: contiene la navbar principale -->
-    <!-- cc-header è una classe “namespaced” (CyberCuisine) per dare uno stile personalizzato all’header -->
-    <header class="cc-header shadow-sm">
+    <!-- cc-intestazione è una classe “namespaced” (CyberCuisine) per dare uno stile personalizzato all’header -->
+    <header class="cc-intestazione shadow-sm">
       <!-- Navbar di Bootstrap: navbar-expand-lg = si espande “full width” da large in su; navbar-dark = testo chiaro su sfondo scuro -->
       <!-- container = allinea il contenuto al centro con una larghezza massima -->
       <nav class="navbar navbar-expand-lg navbar-dark container px-3">
         <!-- Brand/logo della piattaforma: cliccandolo vai sempre alla “home” logica della SPA -->
         <!-- href="#/home" perché la navigazione è gestita via hash routing (SPA) -->
         <!-- Il logo completo qui mostrato contiene un’immagine di un’aragosta cyberpunk affiancata dal nome -->
-        <a class="navbar-brand fw-bold d-flex align-items-center gap-2 cc-brand" href="#/home">
-          <img src="../assets/img/cc-logo.png" alt="CyberCuisine" class="brand-text" />
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2 cc-marchio" href="#/home">
+          <img src="../assets/img/cc-logo.png" alt="CyberCuisine" class="testo-marchio" />
         </a>
 
         <!-- Bottone “hamburger” che compare su schermi piccoli per comprimere/espandere il menu -->
@@ -52,8 +52,8 @@
           class="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#ccNavbar"
-          aria-controls="ccNavbar"
+          data-bs-target="#ccBarraNav"
+          aria-controls="ccBarraNav"
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
@@ -62,11 +62,11 @@
         </button>
 
         <!-- Contenuto collassabile della navbar: su mobile viene nascosto/mostrato dal bottone sopra -->
-        <div class="collapse navbar-collapse" id="ccNavbar">
+        <div class="collapse navbar-collapse" id="ccBarraNav">
           <!-- Lista dei link di navigazione -->
           <!-- ms-auto = “margin-start auto”: spinge la lista a destra nella navbar -->
-          <!-- id="ccNavLinks" ti serve in JS per gestire la classe “active” in base alla route corrente -->
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="ccNavLinks">
+          <!-- id="ccLinkNavigazione" ti serve in JS per gestire la classe “active” in base alla route corrente -->
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="ccLinkNavigazione">
             <!-- Ogni li.nav-item contiene un link di navigazione verso una “vista” della SPA -->
             <li class="nav-item">
               <!-- nav-link con href ad hash #/home: il router intercetta il cambio di hash e carica la vista Home -->
@@ -74,24 +74,24 @@
             </li>
             <li class="nav-item">
               <!-- Vista di ricerca ricette -->
-              <a class="nav-link" href="#/search">Ricerca</a>
+              <a class="nav-link" href="#/ricerca">Ricerca</a>
             </li>
             <li class="nav-item">
               <!-- Vista del ricettario personale (richiede utente loggato per funzionare appieno) -->
-              <a class="nav-link" href="#/cookbook">Ricettario</a>
+              <a class="nav-link" href="#/ricettario">Ricettario</a>
             </li>
             <li class="nav-item">
               <!-- Vista delle recensioni inserite dall’utente -->
-              <a class="nav-link" href="#/reviews">Recensioni</a>
+              <a class="nav-link" href="#/recensioni">Recensioni</a>
             </li>
             <li class="nav-item">
               <!-- Vista del profilo utente (dati registrazione, modifica, eliminazione profilo) -->
-              <a class="nav-link" href="#/profile">Profilo</a>
+              <a class="nav-link" href="#/profilo">Profilo</a>
             </li>
             <li class="nav-item">
               <!-- Link dedicato all’autenticazione -->
-              <!-- id="ccAuthLink" permette a JS di trasformare dinamicamente il testo (Registrati/Accedi ↔ Logout) e il comportamento, in base allo stato utente -->
-              <a class="nav-link" id="ccAuthLink" href="#/register">Registrati / Accedi</a>
+              <!-- id="ccLinkAccesso" permette a JS di trasformare dinamicamente il testo (Registrati/Accedi ↔ Logout) e il comportamento, in base allo stato utente -->
+              <a class="nav-link" id="ccLinkAccesso" href="#/registrazione">Registrati / Accedi</a>
             </li>
           </ul>
         </div>
@@ -104,8 +104,8 @@
     <main id="app" class="container py-4"></main>
 
     <!-- FOOTER FISSO IN FONDO ALLA PAGINA -->
-    <!-- cc-footer ti consente di stabilire uno stile coerente (colori, bordi, ecc.) per il footer nel tuo CSS -->
-    <footer class="cc-footer text-center py-3">
+    <!-- cc-piede ti consente di stabilire uno stile coerente (colori, bordi, ecc.) per il footer nel tuo CSS -->
+    <footer class="cc-piede text-center py-3">
       <!-- <small> per testo secondario / meno prominente -->
       <small>CyberCuisine · Progetto di Programmazione Web e Mobile · Uni</small>
     </footer>

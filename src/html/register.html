@@ -2,41 +2,41 @@
 <section class="row justify-content-center">
   <!-- Larghezza massima della form: su schermi grandi è larga 7/12 -->
   <div class="col-lg-7">
-    <!-- Card con stile neon personalizzato (card-glow definita nel CSS cyberpunk) -->
-    <div class="card card-glow">
+    <!-- Card con stile neon personalizzato (card-bagliore definita nel CSS cyberpunk) -->
+    <div class="card card-bagliore">
       <div class="card-body">
         <!-- Titolo della pagina di registrazione -->
         <h1 class="h3 mb-3">Crea il tuo profilo</h1>
 
         <!-- Alert dinamico per errori (username duplicato, email già usata, password corte...)
-             Lo script initRegisterView() controlla la validazione e mostra questo box -->
-        <div class="alert alert-danger d-none" id="registerAlert"></div>
+             Lo script inizializzaVistaRegistrazione() controlla la validazione e mostra questo box -->
+        <div class="alert alert-danger d-none" id="avvisoRegistrazione"></div>
 
         <!-- Form di registrazione:
-             - id="registerForm": intercettato da initRegisterView()
+             - id="formRegistrazione": intercettato da inizializzaVistaRegistrazione()
              - novalidate: disattiva la validazione HTML standard, userai quella custom JS -->
-        <form id="registerForm" novalidate>
+        <form id="formRegistrazione" novalidate>
           <!-- Griglia a due colonne responsiva -->
           <div class="row g-3">
             <!-- Campo Username: richiesto, verificato in JS per evitare duplicati -->
             <div class="col-md-6">
-              <label for="registerUsername" class="form-label">Username</label>
-              <input type="text" class="form-control" id="registerUsername" required />
+              <label for="usernameRegistrazione" class="form-label">Username</label>
+              <input type="text" class="form-control" id="usernameRegistrazione" required />
             </div>
 
             <!-- Campo Email: validato da HTML5 + ricontrollato nello script -->
             <div class="col-md-6">
-              <label for="registerEmail" class="form-label">Email istituzionale</label>
-              <input type="email" class="form-control" id="registerEmail" required />
+              <label for="emailRegistrazione" class="form-label">Email istituzionale</label>
+              <input type="email" class="form-control" id="emailRegistrazione" required />
             </div>
 
             <!-- Password: minimo 6 caratteri (controllo HTML + controllo JavaScript) -->
             <div class="col-md-6">
-              <label for="registerPassword" class="form-label">Password</label>
+              <label for="passwordRegistrazione" class="form-label">Password</label>
               <input
                 type="password"
                 class="form-control"
-                id="registerPassword"
+                id="passwordRegistrazione"
                 minlength="6"
                 required
               />
@@ -44,26 +44,16 @@
 
             <!-- Conferma password: confrontata in initRegisterView() -->
             <div class="col-md-6">
-              <label for="registerPasswordConfirm" class="form-label">Conferma password</label>
+              <label for="confermaPasswordRegistrazione" class="form-label">Conferma password</label>
               <input
                 type="password"
                 class="form-control"
-                id="registerPasswordConfirm"
+                id="confermaPasswordRegistrazione"
                 minlength="6"
                 required
               />
             </div>
 
-            <!-- Campo opzionale per indicare preferenze iniziali salvate nel profilo utente -->
-            <div class="col-12">
-              <label for="registerFavorites" class="form-label">Piatti preferiti (opzionale)</label>
-              <input
-                type="text"
-                class="form-control"
-                id="registerFavorites"
-                placeholder="Es. Carbonara, Ramen, Tacos"
-              />
-            </div>
           </div>
 
           <!-- Bottone di submit:
