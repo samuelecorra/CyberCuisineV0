@@ -61,6 +61,7 @@
 
 /* Colonna principale delle ricette, cresce e scrolla con la pagina */
 .recipes-column {
+<<<<<<< HEAD
   min-height: 60vh;
 }
 
@@ -101,5 +102,46 @@
 @media (max-width: 991.98px) {
   .letters-grid {
     grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+=======
+  min-height: 50vh;
+}
+
+@media (min-width: 992px) {
+  .recipes-column {
+    margin-right: 140px; /* spazio di sicurezza per la barra lettere fissata */
+  }
+}
+
+/* Contenitore fisso della barra lettere, agganciato al bordo destro del viewport */
+.letters-dock {
+  position: fixed;
+  top: 96px;
+  right: max(4px, env(safe-area-inset-right));
+  width: min(120px, 18vw);
+  max-height: calc(100vh - 120px);
+  z-index: 1040;
+}
+
+.letters-dock .letters-sidebar {
+  height: 100%;
+  max-height: inherit;
+  overflow-y: auto;
+}
+
+/* Lista verticale di lettere con pulsanti uno sotto l'altro */
+.letters-list {
+  display: flex;
+  flex-direction: column; /* disposizione verticale */
+}
+
+@media (max-width: 991.98px) {
+  .letters-dock {
+    display: none !important;
+  }
+
+  .letters-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+>>>>>>> e9d30dc3f2d471c99e8a73f1a8170b98d494c79c
   }
 }
