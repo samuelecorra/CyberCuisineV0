@@ -3,7 +3,7 @@ import {
   aggiornaRicettario,
   aggiornaNotaRicettario
 } from "../storage.js";
-import { garantisciRicettaInCache } from "../api.js";
+import { garantisciRicettaInCache } from "../gestione-api/api.js";
 import { creaCardRicettario } from "../componenti/carte.js";
 
 export async function inizializzaVistaRicettario() {

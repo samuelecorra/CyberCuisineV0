@@ -1,4 +1,4 @@
-import { ottieniUtenteCorrente, ottieniRecensioni, aggiornaRicettario } from "./storage.js";
+import { ottieniUtenteCorrente, ottieniRecensioni, aggiornaRicettario } from "../storage.js";
 
 let listenerRegistrato = false;
 let modalElementi = null;

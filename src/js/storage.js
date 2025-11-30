@@ -5,6 +5,10 @@ import { generaId } from "./ui.js";
 // Storage helpers
 // --------------------------
 
+// 1. Serve innanzitutto una funzione primaria per inizializzare lo storage,
+// ovvero per creare le chiavi di salvataggio se non esistono già.
+// In parole povere, se in localstorage non c'è ancora nulla perché è la prima volta
+// che l'utente apre l'app, dobbiamo creare le chiavi con i valori iniziali corretti, ovvero vuoti.
 export function inizializzaStorage() {
   if (!localStorage.getItem(CHIAVI_SALVATAGGIO.RICETTE)) {
     salvaSuStorage(CHIAVI_SALVATAGGIO.RICETTE, {});
@@ -20,21 +24,28 @@ export function inizializzaStorage() {
   }
 }
 
+// 2. Serve una funzione in grado di leggere da storage in modo sicuro,
+// restituendo un valore predefinito in caso di errore o chiave mancante.
+// Tranquilli: Javascript fornisce già tutto il necessario per fare ciò in modo semplice,
+// non dobbiamo reinventare nulla!
 export function leggiDaStorage(chiave, valorePredefinito) {
+  // si passa la coppia chiave/valore predefinito
   try {
-    const grezzo = localStorage.getItem(chiave);
-    return grezzo ? JSON.parse(grezzo) : valorePredefinito;
+    const grezzo = localStorage.getItem(chiave); // Prendiamo il valore grezzo da storage
+    return grezzo ? JSON.parse(grezzo) : valorePredefinito; // Lo parsiamo se esiste, altrimenti restituiamo il valore predefinito
   } catch (errore) {
     console.error("Errore lettura storage", errore);
-    return valorePredefinito;
+    return valorePredefinito; // Se tutto va bene non si arriva qui, ma in caso di errore restituiamo comunque il valore predefinito
   }
 }
 
+// 3. Serve una funzione in grado di salvare su storage in modo sicuro,
+// serializzando il valore in JSON prima di salvarlo, ovvero proprio l'opposto della lettura.
 export function salvaSuStorage(chiave, valore) {
   localStorage.setItem(chiave, JSON.stringify(valore));
 }
 
-// Utenti
+// Quando otteniamo gli utenti, che possono essere tanti, uno solo o nessuno,
 export function ottieniUtenti() {
   return leggiDaStorage(CHIAVI_SALVATAGGIO.UTENTI, []).map(trasformaUtenteInItaliano);
 }

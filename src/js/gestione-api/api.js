@@ -1,11 +1,19 @@
-import { BASE_API } from "./costanti.js";
+// MODULO DI SCRIPT ESSENZIALE PER INTERAGIRE CON LE API THEMEALDB
+// - Fornisce funzioni per cercare e recuperare ricette
+// - Gestisce la memorizzazione in cache delle ricette per performance
+// - Fornisce funzioni per ottenere e tradurre le aree di cucina dinamiche
+// - Normalizza i dati delle ricette in un formato coerente per l'app
+
+// ============================================================================
+
+// Importazioni necessarie
+import { BASE_API } from "../costanti.js"; // Costante base URL API per The MealDB
 import {
   ottieniCacheRicette,
   salvaCacheRicette,
   memorizzaRicette,
   adattaRicettaMemorizzata
-} from "./storage.js";
-import { generaId } from "./ui.js";
+} from "../storage.js";
 
 // Chiamata generica alle API TheMealDB
 export async function interrogaApi(endpoint) {
@@ -173,7 +181,6 @@ const TRADUZIONI_AREE = {
   australian: "Australia",
   algerian: "Algeria",
   dutchcaribbean: "Caraibi olandesi",
-  saudiarabian: "Arabia Saudita",
   "saudi arabian": "Arabia Saudita",
   syrian: "Siria",
   uruguayan: "Uruguay",

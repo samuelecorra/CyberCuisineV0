@@ -1,5 +1,5 @@
 import { ottieniUtenteCorrente, ottieniRecensioni, ottieniUtenti } from "../storage.js";
-import { garantisciRicettaInCache } from "../api.js";
+import { garantisciRicettaInCache } from "../gestione-api/api.js";
 import { creaCardRecensione } from "../componenti/carte.js";
 
 export async function inizializzaVistaRecensioni() {

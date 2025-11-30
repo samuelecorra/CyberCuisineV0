@@ -6,7 +6,7 @@ import {
   aggiornaRicettario,
   aggiornaNotaRicettario
 } from "../storage.js";
-import { garantisciRicettaInCache } from "../api.js";
+import { garantisciRicettaInCache } from "../gestione-api/api.js";
 import { creaFormRecensione, creaCardRecensione } from "../componenti/carte.js";
 import { generaId } from "../ui.js";
 

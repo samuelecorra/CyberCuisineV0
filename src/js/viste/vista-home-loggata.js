@@ -1,7 +1,7 @@
 import { ottieniUtenteCorrente } from "../storage.js";
-import { cercaRicettePerArea, descriviArea } from "../api.js";
+import { cercaRicettePerArea, descriviArea } from "../gestione-api/api.js";
 import { creaCardRicetta } from "../componenti/carte.js";
-import { ottieniStatoAzioniUtente } from "../azioni-card.js";
+import { ottieniStatoAzioniUtente } from "../componenti/azioni-card.js";
 
 export async function inizializzaVistaHomeLoggata() {
   const utente = ottieniUtenteCorrente();

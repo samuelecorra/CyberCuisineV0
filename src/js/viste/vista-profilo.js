@@ -1,7 +1,7 @@
 import { ottieniUtenteCorrente, salvaUtente, rimuoviUtente } from "../storage.js";
 import { mostraAvviso } from "../ui.js";
 import { gestisciLogout } from "../navbar.js";
-import { ottieniAreeCucina } from "../api.js";
+import { ottieniAreeCucina } from "../gestione-api/api.js";
 
 export function inizializzaVistaProfilo() {
   const utente = ottieniUtenteCorrente();

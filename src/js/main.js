@@ -1,8 +1,9 @@
 import { inizializzaStorage } from "./storage.js";
 import { impostaEventiAuthNav } from "./navbar.js";
-import { precaricaRicetteInEvidenza } from "./api.js";
+import { precaricaRicetteInEvidenza } from "./gestione-api/api.js";
 import { gestisciCambioRoute } from "./router.js";
-import { impostaAzioniCarteRicetta } from "./azioni-card.js";
+import { impostaAzioniCarteRicetta } from "./componenti/azioni-card.js";
+import { statoApp } from "./stato.js";
 
 // Inizializzazione app al caricamento della pagina iniziale (ovvero quando apriamo con liveserver index.html o ricarichiamo la pagina)
 // PROMEMORIA: L'event listener prende in ingresso il nome dell'evento e una funzione di callback da eseguire quando l'evento viene scatenato,
@@ -19,6 +20,7 @@ async function inizializzaApp() {
   inizializzaStorage(); // Recupera dati da localStorage/sessionStorage
   impostaEventiAuthNav(); // Imposta eventi per autenticazione e navigazione
   impostaAzioniCarteRicetta(); // Imposta eventi per azioni sulle carte ricetta
+  impostaRipristinoEsploraNav(); // Permette di resettare la vista esplora se già attiva
   await precaricaRicetteInEvidenza(); // Precarica ricette in evidenza per performance
   window.addEventListener("hashchange", gestisciCambioRoute); // Gestione cambio route
   await gestisciCambioRoute(); // Gestione route iniziale al caricamento della pagina
@@ -67,4 +69,17 @@ function gestisciInvioModalGenerico(evento) {
   if (!bottoneConferma) return;
   evento.preventDefault();
   bottoneConferma.click();
+}
+
+function impostaRipristinoEsploraNav() {
+  const linkEsplora = document.getElementById("ccLinkEsplora");
+  if (!linkEsplora) return;
+  linkEsplora.addEventListener("click", async evento => {
+    if (window.location.hash !== "#/esplora") return;
+    evento.preventDefault();
+    statoApp.catalogoCompleto = [];
+    statoApp.risultatiRicerca = [];
+    await gestisciCambioRoute();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 }
