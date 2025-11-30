@@ -1,4 +1,4 @@
-import { cercaRicettePerLettera } from "../api.js";
+import { cercaRicettePerLettera, cercaRicettePerNome, cercaRicettePerIngrediente } from "../api.js";
 import { creaCardRicetta } from "../componenti/carte.js";
 import { statoApp } from "../stato.js";
 import { memorizzaRicette } from "../storage.js";
@@ -9,16 +9,68 @@ const LETTERE = "abcdefghijklmnopqrstuvwxyz".split("");
 export function inizializzaVistaEsplora() {
   aggiornaBarraLettere(false);
   aggiornaHeroCatalogo(statoApp.catalogoCompleto.length > 0);
+  mostraRisultatiRicerca(statoApp.risultatiRicerca);
   const pulsanteCatalogo = document.getElementById("btnEsploraCatalogo");
   if (pulsanteCatalogo) {
     pulsanteCatalogo.addEventListener("click", gestisciCaricamentoCatalogo);
   }
+
+  const selectTipo = document.getElementById("tipoRicerca");
+  const campoTermine = document.getElementById("termineRicerca");
+  const pulsanteRicerca = document.getElementById("btnEseguiRicerca");
+  aggiornaPlaceholderRicerca();
+  selectTipo?.addEventListener("change", () => aggiornaPlaceholderRicerca());
+  pulsanteRicerca?.addEventListener("click", () => gestisciRicerca());
 
   // Se abbiamo già il catalogo in memoria, lo mostriamo subito
   if (statoApp.catalogoCompleto.length > 0) {
     const gruppi = raggruppaPerLettera(statoApp.catalogoCompleto);
     renderizzaCatalogo(gruppi);
   }
+}
+
+async function gestisciRicerca(tipoSelezionato) {
+  const badgeConteggio = document.getElementById("conteggioRicerca");
+  const contenitore = document.getElementById("risultatiRicerca");
+  const selectTipo = document.getElementById("tipoRicerca");
+  const campoTermine = document.getElementById("termineRicerca");
+  if (!badgeConteggio || !contenitore) return;
+
+  const tipo = tipoSelezionato || selectTipo?.value || "nome";
+  const valoreInput = campoTermine?.value ?? "";
+  let termine = valoreInput.trim();
+  if (tipo === "lettera") {
+    termine = (termine.charAt(0) || "").toLowerCase();
+    if (campoTermine) {
+      campoTermine.value = termine;
+    }
+  }
+
+  badgeConteggio.textContent = "Ricerca in corso...";
+  contenitore.innerHTML = '<p class="text-muted mb-0">Prepariamo i risultati...</p>';
+  mostraSpinnerCatalogo();
+
+  let risultati = [];
+  try {
+    if (tipo === "nome") {
+      risultati = await cercaRicettePerNome(termine);
+    } else if (tipo === "ingrediente") {
+      risultati = await cercaRicettePerIngrediente(termine);
+    } else if (tipo === "lettera") {
+      risultati = await cercaRicettePerLettera(termine);
+    }
+    memorizzaRicette(risultati);
+  } catch (errore) {
+    console.error("Errore durante la ricerca", errore);
+    badgeConteggio.textContent = "Errore di ricerca";
+    contenitore.innerHTML =
+      '<p class="text-danger">Impossibile completare la ricerca. Riprova.</p>';
+  } finally {
+    nascondiSpinnerCatalogo();
+  }
+
+  statoApp.risultatiRicerca = risultati;
+  mostraRisultatiRicerca(risultati);
 }
 
 async function gestisciCaricamentoCatalogo() {
@@ -162,6 +214,43 @@ function aggiornaHeroCatalogo(nascondi) {
   if (!hero) return;
   hero.classList.toggle("d-none", nascondi);
   hero.setAttribute("aria-hidden", nascondi ? "true" : "false");
+}
+
+function aggiornaPlaceholderRicerca() {
+  const selectTipo = document.getElementById("tipoRicerca");
+  const campoTermine = document.getElementById("termineRicerca");
+  if (!selectTipo || !campoTermine) return;
+  let placeholder = "Es. Arrabiata";
+  campoTermine.removeAttribute("maxlength");
+  if (selectTipo.value === "ingrediente") {
+    placeholder = "Es. Chicken";
+  } else if (selectTipo.value === "lettera") {
+    placeholder = "Es. a";
+    campoTermine.setAttribute("maxlength", "1");
+    campoTermine.value = (campoTermine.value.trim().charAt(0) || "").toLowerCase();
+  }
+  campoTermine.placeholder = placeholder;
+}
+
+function mostraRisultatiRicerca(risultati = []) {
+  const contenitore = document.getElementById("risultatiRicerca");
+  const badgeConteggio = document.getElementById("conteggioRicerca");
+  if (!contenitore || !badgeConteggio) return;
+  badgeConteggio.textContent = `${risultati.length} ricette`;
+  if (risultati.length === 0) {
+    contenitore.innerHTML =
+      '<p class="text-muted mb-0">Nessun risultato. Prova con un altro termine.</p>';
+    return;
+  }
+  const { idsRicettario, idsRecensioni } = ottieniStatoAzioniUtente();
+  contenitore.innerHTML = risultati
+    .map(ricetta =>
+      creaCardRicetta(ricetta, {
+        inRicettario: idsRicettario.has(ricetta.id),
+        haRecensione: idsRecensioni.has(ricetta.id)
+      })
+    )
+    .join("");
 }
 
 function mostraSpinnerCatalogo() {

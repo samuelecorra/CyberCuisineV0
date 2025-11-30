@@ -19,39 +19,88 @@
   </div>
 </section>
 
-<<<<<<< HEAD
-<section class="row g-4 explore-layout align-items-stretch">
-  <div class="col-12 col-lg-9 col-xl-10">
-=======
-<section class="row g-4 explore-layout">
-  <div class="col-12">
->>>>>>> e9d30dc3f2d471c99e8a73f1a8170b98d494c79c
-    <div id="contenutoCatalogo" class="d-flex flex-column gap-4 recipes-column">
+<!-- Ricerca ricette -->
+<section class="mb-4" id="sezioneRicerca">
+  <div class="card card-bagliore">
+    <div class="card-body">
+      <h2 class="h3 mb-3">Ricerca ricette</h2>
+      <p class="text-muted">
+        Scegli la modalità di ricerca preferita e lascia che TheMealDB trovi i piatti giusti per il
+        tuo esperimento culinario.
+      </p>
+
+      <div class="row g-3 align-items-end" id="controlliRicerca">
+        <div class="col-md-4 col-lg-3">
+          <label for="tipoRicerca" class="form-label">Modalità</label>
+          <select class="form-select" id="tipoRicerca">
+            <option value="nome" selected>Per nome</option>
+            <option value="ingrediente">Per ingrediente</option>
+            <option value="lettera">Per lettera iniziale</option>
+          </select>
+        </div>
+        <div class="col-md-5 col-lg-6">
+          <label for="termineRicerca" class="form-label">Termine di ricerca</label>
+          <input
+            type="text"
+            class="form-control"
+            id="termineRicerca"
+            placeholder="Es. Arrabiata"
+            autocomplete="off"
+          />
+        </div>
+        <div class="col-md-3 col-lg-3">
+          <label class="form-label d-block">&nbsp;</label>
+          <button class="btn btn-primary w-100" id="btnEseguiRicerca" data-ricerca-trigger="true">
+            Cerca
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mb-5">
+  <div class="card card-bagliore">
+    <div class="card-body">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="h5 mb-0">Risultati</h2>
+        <span class="badge bg-accento" id="conteggioRicerca">0 ricette</span>
+      </div>
+      <div class="row g-4" id="risultatiRicerca">
+        <p class="text-muted mb-0">Nessun risultato. Prova con un altro termine.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section
+  class="row g-4 explore-layout align-items-stretch"
+  aria-labelledby="catalogoCompletoTitolo"
+>
+  <div class="col-12 col-xl-9 order-2 order-xl-1">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h2 class="h5 mb-0" id="catalogoCompletoTitolo">Catalogo completo</h2>
+      <span class="badge bg-accento" id="conteggioLettere">0</span>
+    </div>
+    <div id="contenutoCatalogo" class="d-flex flex-column gap-4 recipes-column h-100">
       <p class="text-muted mb-0">
         Premi "Sfoglia l'intero catalogo" per caricare tutte le ricette e navigare tra le lettere.
       </p>
     </div>
   </div>
-<<<<<<< HEAD
-  <aside
-    id="lettersDock"
-    class="col-12 col-lg-3 col-xl-2 letters-dock d-none"
-    aria-label="Navigazione alfabetica del catalogo"
-    aria-hidden="true"
-  >
-    <div class="letters-panel card card-bagliore h-100 shadow-sm">
-      <div class="card-body d-flex flex-column gap-3">
-        <div class="d-flex align-items-center justify-content-between">
-          <h2 class="h6 text-uppercase mb-0">Lettere</h2>
-          <span class="badge bg-accento" id="conteggioLettere">0</span>
-        </div>
-        <div id="ancoreLettere" class="letters-grid"></div>
-        <p class="text-muted small mb-0">Seleziona una lettera per saltare alla sezione.</p>
+  <section class="col-12 col-xl-auto order-1 order-xl-2 explore-letters">
+    <div
+      id="lettersDock"
+      class="letters-panel card card-bagliore shadow-sm d-none"
+      aria-label="Navigazione alfabetica del catalogo"
+      aria-hidden="true"
+    >
+      <div class="card-body p-3 d-flex flex-column h-100">
+        <h2 class="h6 text-uppercase mb-3">Lettere</h2>
+        <div id="ancoreLettere" class="letters-list"></div>
       </div>
     </div>
-  </aside>
-=======
->>>>>>> e9d30dc3f2d471c99e8a73f1a8170b98d494c79c
+  </section>
 </section>
 
 <!-- Spinner catalogo esplora -->

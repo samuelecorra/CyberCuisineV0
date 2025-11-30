@@ -3,7 +3,6 @@ import { impostaEventiAuthNav } from "./navbar.js";
 import { precaricaRicetteInEvidenza } from "./api.js";
 import { gestisciCambioRoute } from "./router.js";
 import { impostaAzioniCarteRicetta } from "./azioni-card.js";
-import { impostaAzioniCarteRicetta } from "./azioni-card.js";
 
 // Inizializzazione app al caricamento della pagina iniziale (ovvero quando apriamo con liveserver index.html o ricarichiamo la pagina)
 // PROMEMORIA: L'event listener prende in ingresso il nome dell'evento e una funzione di callback da eseguire quando l'evento viene scatenato,
@@ -34,41 +33,15 @@ function gestisciInvioFormGenerico(evento) {
   if (!(target instanceof HTMLElement)) return;
   if (target.tagName === "TEXTAREA") return;
   const form = target.closest("form");
-  if (!form) return;
-  evento.preventDefault();
-  const submitter = form.querySelector("button[type='submit']");
-  if (submitter) {
-    submitter.click();
+  if (!form) {
+    const pannelloRicerca = target.closest("#controlliRicerca");
+    if (!pannelloRicerca) return;
+    const bottoneRicerca = pannelloRicerca.querySelector("button[data-ricerca-trigger]");
+    if (!bottoneRicerca) return;
+    evento.preventDefault();
+    bottoneRicerca.click();
     return;
   }
-  if (typeof form.requestSubmit === "function") {
-    form.requestSubmit();
-  } else {
-    form.submit();
-  }
-}
-
-function gestisciInvioModalGenerico(evento) {
-  if (evento.key !== "Enter") return;
-  const target = evento.target;
-  if (!(target instanceof HTMLElement)) return;
-  const modal = target.closest(".cc-modal-backdrop:not(.d-none)");
-  if (!modal) return;
-  const confirmId = modal.dataset.confirmButton;
-  if (!confirmId) return;
-  const bottoneConferma = document.getElementById(confirmId);
-  if (!bottoneConferma) return;
-  evento.preventDefault();
-  bottoneConferma.click();
-}
-
-function gestisciInvioFormGenerico(evento) {
-  if (evento.key !== "Enter") return;
-  const target = evento.target;
-  if (!(target instanceof HTMLElement)) return;
-  if (target.tagName === "TEXTAREA") return;
-  const form = target.closest("form");
-  if (!form) return;
   evento.preventDefault();
   const submitter = form.querySelector("button[type='submit']");
   if (submitter) {
