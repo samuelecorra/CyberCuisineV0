@@ -1,45 +1,38 @@
 # CyberCuisineV0
-Piattaforma Web per la Gestione di Ricette di Cucina (PGRC) - Progetto di Programmazione Web e Mobile @ UNIMI.
+Piattaforma web per la gestione di ricette (TheMealDB) - Progetto di Programmazione Web e Mobile @ UNIMI.
 
-## Struttura del Progetto
-
+## Struttura
 ```
-CyberCuisineV0/
-├── src/
-│   ├── html/
-│   │   └── index.html          # Pagina principale con Bootstrap 5
-│   ├── css/
-│   │   └── main.css            # Stili personalizzati
-│   ├── js/
-│   │   └── main.js             # Script JavaScript principale
-│   ├── assets/
-│   │   ├── img/                # Directory per le immagini
-│   │   └── json/               # Directory per i file JSON
-│   └── libs/                   # Directory per librerie esterne
-├── LICENSE
-└── README.md
+src/
+  html/          # Frammenti SPA (index + viste: home, ricerca, ricettario, recensioni, profilo, ecc.)
+  css/           # Stili modulari (theme, layout, componenti, forms, utilities)
+  js/
+    main.js      # Bootstrap iniziale della SPA
+    costanti.js  # Chiavi e URL condivisi
+    stato.js     # Stato globale leggero (cache frammenti, risultati ricerca, hash attivo)
+    ui.js        # Utility UI (alert, generaId)
+    storage.js   # Accesso localStorage + normalizzazioni/migrazioni + ricettario/recensioni
+    api.js       # Chiamate TheMealDB + normalizzazione ricette + preload
+    navbar.js    # Gestione link login/logout e nav attiva
+    rotte.js     # Mappa delle rotte SPA
+    router.js    # Router hash -> frammenti e onLoad delle viste
+    componenti/  # Componenti riutilizzabili (card ricetta/ricettario/recensione, form recensione)
+    viste/       # Controller per singole viste (accesso, registrazione, profilo, ricerca, ricettario, recensioni, dettaglio ricetta, home)
+  assets/
+    img/         # Immagini (logo, sfondi)
 ```
 
-## Descrizione
+## Come avviare
+1. Apri `src/html/index.html` in un browser.
+2. La SPA usa hash routing (es. `#/home`, `#/ricerca`, `#/ricetta/<id>`).
+3. Richiede accesso alla CDN di Bootstrap e alle API pubbliche di TheMealDB.
 
-La piattaforma utilizza:
-- **Bootstrap 5** via CDN per lo styling e i componenti UI
-- **HTML5** per la struttura delle pagine
-- **CSS3** per gli stili personalizzati
-- **JavaScript** per l'interattività
+## Dipendenze esterne
+- Bootstrap 5 (CDN)
+- Google Fonts (Orbitron, Space Grotesk)
+- TheMealDB (REST API pubblica)
 
-## Come Iniziare
-
-1. Aprire `src/html/index.html` in un browser web
-2. Il file include automaticamente Bootstrap 5 via CDN
-3. Gli stili personalizzati sono in `src/css/main.css`
-4. La logica JavaScript è in `src/js/main.js`
-
-## Directory
-
-- **src/html/** - Contiene i file HTML dell'applicazione
-- **src/css/** - Contiene i fogli di stile CSS
-- **src/js/** - Contiene i file JavaScript
-- **src/assets/img/** - Directory per le immagini
-- **src/assets/json/** - Directory per i dati JSON
-- **src/libs/** - Directory per librerie esterne locali
+## Note di manutenzione
+- Rotte in italiano: `#/home`, `#/accesso`, `#/registrazione`, `#/profilo`, `#/ricerca`, `#/ricettario`, `#/recensioni`, `#/ricetta/<id>`.
+- I dati localStorage vengono normalizzati in `storage.js` per mantenere compatibilità con chiavi legacy.
+- I componenti UI riutilizzabili sono in `js/componenti/`; i controller di vista in `js/viste/`.

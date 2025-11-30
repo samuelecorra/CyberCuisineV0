@@ -1,45 +1,48 @@
-<!-- Contenitore principale centrato: la row Bootstrap usa justify-content-center
-     per centrare la card del login nella pagina -->
+<!-- Vista di accesso -->
 <section class="row justify-content-center">
-  <!-- Larghezza massima: su schermi medi occuperà metà pagina -->
   <div class="col-md-6">
-    <!-- Card con effetto neon (card-bagliore definita nel CSS personalizzato) -->
     <div class="card card-bagliore">
       <div class="card-body">
-        <!-- Titolo della pagina di login -->
         <h1 class="h3 mb-3">Accesso utente</h1>
 
-        <!-- Alert dinamico per errori di login (mostrato da initLoginView()) -->
         <div class="alert alert-danger d-none" id="avvisoLogin"></div>
 
-        <!-- Form di login:
-             - id="formLogin" permette allo script di intercettare il submit
-             - novalidate disabilita la validazione HTML default,
-               perché la validazione viene gestita in JavaScript -->
         <form id="formLogin" novalidate>
-          <!-- Campo per username o email: l'utente può usare entrambi
-               per accedere, come previsto nel controller JavaScript -->
           <div class="mb-3">
             <label for="identificatoreLogin" class="form-label">Username o email</label>
             <input type="text" class="form-control" id="identificatoreLogin" required />
           </div>
 
-          <!-- Campo password: required, valore verificato in JS -->
           <div class="mb-3">
             <label for="passwordLogin" class="form-label">Password</label>
             <input type="password" class="form-control" id="passwordLogin" required />
           </div>
 
-          <!-- Pulsante submit: la callback in initLoginView() gestisce l’autenticazione -->
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="ricordaAccesso" />
+            <label class="form-check-label" for="ricordaAccesso"
+              >Ricordami su questo dispositivo</label
+            >
+          </div>
+
           <button type="submit" class="btn btn-primary w-100">Entra in CyberCuisine</button>
         </form>
 
-        <!-- Link per passare alla registrazione
-             (il router intercetta "#/registrazione" e carica la view dedicata) -->
-        <p class="mt-3 mb-0 text-center">
-          Nuovo/a su CyberCuisine? <a href="#/registrazione">Registrati ora</a>
+        <div class="text-center my-3 text-muted">
+          <span>— Oppure —</span>
+        </div>
+        <p class="text-center mb-0">
+          Non hai un account? <a href="#/registrazione">Crea subito il tuo account CyberCuisine</a>
         </p>
       </div>
     </div>
   </div>
 </section>
+
+<!-- Spinner accesso -->
+<div class="piadina-spinner-backdrop d-none" id="loginSpinner" aria-hidden="true">
+  <div class="piadina-spinner" role="status" aria-live="polite">
+    <img src="../assets/img/piadina-spinner.png" alt="Caricamento" />
+    <p class="mt-3 mb-0">Un attimo, stiamo apparecchiando la tua home...</p>
+  </div>
+</div>

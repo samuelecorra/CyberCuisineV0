@@ -91,7 +91,7 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
     const formRecensione = document.getElementById("formRecensione");
     formRecensione?.addEventListener("submit", event => {
       event.preventDefault();
-      gestisciInvioRecensione(ricetta.id, formRecensione);
+      gestisciInvioRecensione(ricetta.id, formRecensione, ricetta);
     });
     compilaFormRecensione(ricetta.id, formRecensione);
   }
@@ -130,7 +130,7 @@ export function mostraElencoRecensioni(idRicetta, ricettaCorrente) {
   contenitore.innerHTML = schede;
 }
 
-export function gestisciInvioRecensione(idRicetta, form) {
+export function gestisciInvioRecensione(idRicetta, form, ricettaCorrente = null) {
   const utente = ottieniUtenteCorrente();
   if (!utente) {
     window.location.hash = "#/accesso";
@@ -162,5 +162,5 @@ export function gestisciInvioRecensione(idRicetta, form) {
     recensioni.push(datiRecensione);
   }
   salvaRecensioni(recensioni);
-  mostraElencoRecensioni(idRicetta);
+  mostraElencoRecensioni(idRicetta, ricettaCorrente);
 }

@@ -53,3 +53,53 @@
 .navbar-toggler-icon {
   filter: invert(82%) sepia(34%) saturate(4481%) hue-rotate(117deg) brightness(101%) contrast(99%);
 }
+
+/* Sezione esplora: mantiene il contenuto ancorato in alto */
+.explore-layout {
+  align-items: flex-start;
+}
+
+/* Colonna principale delle ricette, cresce e scrolla con la pagina */
+.recipes-column {
+  min-height: 60vh;
+}
+
+.explore-layout {
+  align-items: stretch;
+}
+
+.letters-dock {
+  display: flex;
+  align-items: stretch;
+}
+
+.letters-panel {
+  width: 100%;
+}
+
+.letters-panel .card-body {
+  height: 100%;
+}
+
+.letters-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.letters-grid button {
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .letters-dock {
+    max-width: 220px;
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .letters-grid {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  }
+}

@@ -9,6 +9,19 @@ export function inizializzaVistaLogin() {
   }
   const form = document.getElementById("formLogin");
   const boxAvviso = document.getElementById("avvisoLogin");
+  const checkRicorda = document.getElementById("ricordaAccesso");
+  const bottoneSubmit = form?.querySelector('button[type="submit"]');
+
+  // Messaggio post-registrazione
+  mostraMessaggioPostRegistrazione();
+
+  // Prefill se l'utente ha scelto di essere ricordato
+  const credenzialiSalvate = caricaCredenzialiSalvate();
+  if (credenzialiSalvate) {
+    document.getElementById("identificatoreLogin").value = credenzialiSalvate.identificatore;
+    document.getElementById("passwordLogin").value = credenzialiSalvate.password;
+    checkRicorda.checked = true;
+  }
   form?.addEventListener("submit", event => {
     event.preventDefault();
     const identificatore = document.getElementById("identificatoreLogin").value.trim();
@@ -22,8 +35,83 @@ export function inizializzaVistaLogin() {
       mostraAvviso(boxAvviso, "Credenziali non valide.");
       return;
     }
-    impostaUtenteCorrente(utente);
-    aggiornaStatoAuthNav();
-    window.location.hash = "#/home";
+    if (checkRicorda?.checked) {
+      salvaCredenziali(identificatore, password);
+    } else {
+      rimuoviCredenzialiSalvate();
+    }
+    mostraSpinnerAccesso();
+    bottoneSubmit?.setAttribute("disabled", "disabled");
+    setTimeout(() => {
+      impostaUtenteCorrente(utente);
+      aggiornaStatoAuthNav();
+      nascondiSpinnerAccesso();
+      bottoneSubmit?.removeAttribute("disabled");
+      window.location.hash = "#/home";
+    }, 1100);
   });
+}
+
+const CHIAVE_RICORDA = "cc_accesso_ricorda";
+
+function salvaCredenziali(identificatore, password) {
+  try {
+    sessionStorage.setItem(CHIAVE_RICORDA, JSON.stringify({ identificatore, password }));
+  } catch (e) {
+    // silenzioso
+  }
+}
+
+function caricaCredenzialiSalvate() {
+  try {
+    const raw = sessionStorage.getItem(CHIAVE_RICORDA);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function rimuoviCredenzialiSalvate() {
+  try {
+    sessionStorage.removeItem(CHIAVE_RICORDA);
+  } catch (e) {
+    // silenzioso
+  }
+}
+
+function mostraSpinnerAccesso() {
+  const spinner = document.getElementById("loginSpinner");
+  if (!spinner) return;
+  spinner.classList.remove("d-none");
+  spinner.setAttribute("aria-hidden", "false");
+}
+
+function nascondiSpinnerAccesso() {
+  const spinner = document.getElementById("loginSpinner");
+  if (!spinner) return;
+  spinner.classList.add("d-none");
+  spinner.setAttribute("aria-hidden", "true");
+}
+
+function mostraMessaggioPostRegistrazione() {
+  try {
+    const payload = sessionStorage.getItem("cc_post_signup");
+    if (!payload) return;
+    sessionStorage.removeItem("cc_post_signup");
+    const dati = JSON.parse(payload);
+    const boxAvviso = document.getElementById("avvisoLogin");
+    if (boxAvviso) {
+      mostraAvviso(
+        boxAvviso,
+        dati?.messaggio || "Account creato con successo. Accedi per continuare.",
+        "success"
+      );
+    }
+    if (dati?.identificatore) {
+      document.getElementById("identificatoreLogin").value = dati.identificatore;
+      document.getElementById("passwordLogin").focus();
+    }
+  } catch (e) {
+    // ignora
+  }
 }

@@ -1,11 +1,8 @@
 import { statoApp } from "../stato.js";
-import {
-  cercaRicettePerNome,
-  cercaRicettePerIngrediente,
-  cercaRicettePerLettera
-} from "../api.js";
+import { cercaRicettePerNome, cercaRicettePerIngrediente, cercaRicettePerLettera } from "../api.js";
 import { memorizzaRicette } from "../storage.js";
 import { creaCardRicetta } from "../componenti/carte.js";
+import { ottieniStatoAzioniUtente } from "../azioni-card.js";
 
 export function inizializzaVistaRicerca() {
   mostraRisultatiRicerca(statoApp.risultatiRicerca);
@@ -36,6 +33,12 @@ export async function gestisciRicerca(tipo) {
     memorizzaRicette(risultati);
   } catch (errore) {
     console.error("Errore durante la ricerca", errore);
+    badgeConteggio.textContent = "Errore di ricerca";
+    const contenitore = document.getElementById("risultatiRicerca");
+    if (contenitore) {
+      contenitore.innerHTML =
+        '<p class="text-danger">Impossibile completare la ricerca. Riprova.</p>';
+    }
   }
   statoApp.risultatiRicerca = risultati;
   mostraRisultatiRicerca(risultati);
@@ -47,8 +50,17 @@ export function mostraRisultatiRicerca(risultati = []) {
   if (!contenitore || !badgeConteggio) return;
   badgeConteggio.textContent = `${risultati.length} ricette`;
   if (risultati.length === 0) {
-    contenitore.innerHTML = '<p class="text-muted">Nessun risultato. Prova con un altro termine.</p>';
+    contenitore.innerHTML =
+      '<p class="text-muted">Nessun risultato. Prova con un altro termine.</p>';
     return;
   }
-  contenitore.innerHTML = risultati.map(ricetta => creaCardRicetta(ricetta)).join("");
+  const { idsRicettario, idsRecensioni } = ottieniStatoAzioniUtente();
+  contenitore.innerHTML = risultati
+    .map(ricetta =>
+      creaCardRicetta(ricetta, {
+        inRicettario: idsRicettario.has(ricetta.id),
+        haRecensione: idsRecensioni.has(ricetta.id)
+      })
+    )
+    .join("");
 }

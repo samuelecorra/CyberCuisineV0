@@ -4,6 +4,8 @@ import { ottieniUtenteCorrente } from "./storage.js";
 import { aggiornaNavigazioneAttiva, aggiornaStatoAuthNav } from "./navbar.js";
 
 export async function gestisciCambioRoute() {
+  nascondiBarraLettere();
+  const percorsoPrecedente = statoApp.percorsoAttivo;
   let hash = window.location.hash || "#/home";
   if (!hash.startsWith("#/")) {
     hash = "#/home";
@@ -23,19 +25,31 @@ export async function gestisciCambioRoute() {
     return;
   }
 
-  if (configurazionePercorso.protetta && !ottieniUtenteCorrente()) {
+  const utente = ottieniUtenteCorrente();
+
+  if (configurazionePercorso.protetta && !utente) {
     window.location.hash = "#/accesso";
     return;
   }
 
+  deallocaCatalogoEsplora(percorsoPrecedente, hash);
   statoApp.percorsoAttivo = hash;
   try {
-    const frammentoCaricato = await caricaFrammento(configurazionePercorso.frammento);
+    const frammentoDaUsare =
+      utente && configurazionePercorso.frammentoProtetto
+        ? configurazionePercorso.frammentoProtetto
+        : configurazionePercorso.frammento;
+    const onLoadDaUsare =
+      utente && configurazionePercorso.alCaricamentoProtetto
+        ? configurazionePercorso.alCaricamentoProtetto
+        : configurazionePercorso.alCaricamento;
+
+    const frammentoCaricato = await caricaFrammento(frammentoDaUsare);
     const contenitoreApp = document.getElementById("app");
     contenitoreApp.innerHTML = frammentoCaricato;
 
-    if (typeof configurazionePercorso.alCaricamento === "function") {
-      await configurazionePercorso.alCaricamento(parametroDinamico);
+    if (typeof onLoadDaUsare === "function") {
+      await onLoadDaUsare(parametroDinamico);
     }
 
     aggiornaNavigazioneAttiva(hash);
@@ -77,4 +91,17 @@ function mostraErroreRoute() {
             <p class="text-muted">Si è verificato un problema nel caricamento della vista. Riprova tra qualche istante.</p>
         </section>
     `;
+}
+
+function nascondiBarraLettere() {
+  const dock = document.getElementById("lettersDock");
+  if (!dock) return;
+  dock.classList.add("d-none");
+  dock.setAttribute("aria-hidden", "true");
+}
+
+function deallocaCatalogoEsplora(percorsoPrecedente, nuovoPercorso) {
+  if (percorsoPrecedente === "#/esplora" && nuovoPercorso !== "#/esplora") {
+    statoApp.catalogoCompleto = [];
+  }
 }

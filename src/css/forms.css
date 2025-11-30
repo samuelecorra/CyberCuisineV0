@@ -18,3 +18,103 @@ select:focus {
   border-color: var(--cc-accent) !important;
   box-shadow: 0 0 0 0.2rem rgba(0, 240, 255, 0.2) !important;
 }
+
+select option {
+  background-color: #0c0b1a;
+  color: #f5f5ff;
+}
+
+.select-compatta {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.doc-link {
+  color: var(--cc-accent);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.doc-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 4, 20, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.doc-modal {
+  width: min(600px, 90vw);
+  max-height: 80vh;
+  background: var(--cc-panel);
+  border: 1px solid var(--cc-border);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-modal__header,
+.doc-modal__footer {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--cc-border);
+}
+
+.doc-modal__footer {
+  border-bottom: none;
+  border-top: 1px solid var(--cc-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.doc-modal__body {
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+  line-height: 1.6;
+}
+
+.doc-modal__close {
+  background: none;
+  border: none;
+  color: var(--cc-text);
+  font-size: 1.3rem;
+}
+
+.piadina-spinner-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 4, 20, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.piadina-spinner {
+  text-align: center;
+  background: var(--cc-panel);
+  padding: 2rem;
+  border: 1px solid var(--cc-border);
+  border-radius: 1rem;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+}
+
+.piadina-spinner img {
+  width: 90px;
+  height: 90px;
+  animation: piadina-spin 1.2s linear infinite;
+}
+
+@keyframes piadina-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
