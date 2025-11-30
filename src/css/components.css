@@ -64,6 +64,51 @@
   display: block;
 }
 
+.card-media {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(179, 18, 255, 0.12));
+  border: 1px solid var(--cc-accent);
+  border-radius: 0.75rem;
+  padding: 0.35rem;
+  margin: 0.25rem 0.25rem 0;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.card-media:hover,
+.card-media:focus-visible {
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.card-media img {
+  border-radius: 0.6rem;
+  width: 100%;
+  height: auto;
+  transition: transform 0.35s ease;
+}
+
+.card-media:hover img,
+.card-media:focus-visible img {
+  transform: scale(1.05);
+}
+
+.dropdown-menu {
+  background-color: var(--cc-panel);
+  border: 1px solid var(--cc-border);
+  min-width: 12rem;
+}
+
+.dropdown-menu .dropdown-item {
+  color: var(--cc-text);
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+  background-color: rgba(0, 240, 255, 0.1);
+  color: var(--cc-accent);
+}
+
 @media (min-width: 992px) {
   .logo-marchio,
   .testo-marchio {

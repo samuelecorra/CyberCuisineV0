@@ -1,36 +1,38 @@
-<!-- Sezione principale: una row Bootstrap che centra orizzontalmente il form -->
+<!-- Vista registrazione -->
 <section class="row justify-content-center">
-  <!-- Larghezza massima della form: su schermi grandi è larga 7/12 -->
   <div class="col-lg-7">
-    <!-- Card con stile neon personalizzato (card-bagliore definita nel CSS cyberpunk) -->
     <div class="card card-bagliore">
       <div class="card-body">
-        <!-- Titolo della pagina di registrazione -->
         <h1 class="h3 mb-3">Crea il tuo profilo</h1>
 
-        <!-- Alert dinamico per errori (username duplicato, email già usata, password corte...)
-             Lo script inizializzaVistaRegistrazione() controlla la validazione e mostra questo box -->
         <div class="alert alert-danger d-none" id="avvisoRegistrazione"></div>
 
-        <!-- Form di registrazione:
-             - id="formRegistrazione": intercettato da inizializzaVistaRegistrazione()
-             - novalidate: disattiva la validazione HTML standard, userai quella custom JS -->
         <form id="formRegistrazione" novalidate>
-          <!-- Griglia a due colonne responsiva -->
           <div class="row g-3">
-            <!-- Campo Username: richiesto, verificato in JS per evitare duplicati -->
+            <div class="col-md-6">
+              <label for="nomeRegistrazione" class="form-label">Nome</label>
+              <input type="text" class="form-control" id="nomeRegistrazione" required />
+            </div>
+            <div class="col-md-6">
+              <label for="cognomeRegistrazione" class="form-label">Cognome</label>
+              <input type="text" class="form-control" id="cognomeRegistrazione" required />
+            </div>
             <div class="col-md-6">
               <label for="usernameRegistrazione" class="form-label">Username</label>
               <input type="text" class="form-control" id="usernameRegistrazione" required />
             </div>
-
-            <!-- Campo Email: validato da HTML5 + ricontrollato nello script -->
             <div class="col-md-6">
-              <label for="emailRegistrazione" class="form-label">Email istituzionale</label>
+              <label for="emailRegistrazione" class="form-label">Email</label>
               <input type="email" class="form-control" id="emailRegistrazione" required />
             </div>
-
-            <!-- Password: minimo 6 caratteri (controllo HTML + controllo JavaScript) -->
+            <div class="col-md-6">
+              <label for="paeseOrigineRegistrazione" class="form-label">Paese di origine</label>
+              <select class="form-select select-compatta" id="paeseOrigineRegistrazione"></select>
+            </div>
+            <div class="col-md-6">
+              <label for="paeseResidenzaRegistrazione" class="form-label">Paese di residenza</label>
+              <select class="form-select select-compatta" id="paeseResidenzaRegistrazione"></select>
+            </div>
             <div class="col-md-6">
               <label for="passwordRegistrazione" class="form-label">Password</label>
               <input
@@ -41,10 +43,10 @@
                 required
               />
             </div>
-
-            <!-- Conferma password: confrontata in initRegisterView() -->
             <div class="col-md-6">
-              <label for="confermaPasswordRegistrazione" class="form-label">Conferma password</label>
+              <label for="confermaPasswordRegistrazione" class="form-label"
+                >Conferma password</label
+              >
               <input
                 type="password"
                 class="form-control"
@@ -53,14 +55,124 @@
                 required
               />
             </div>
-
+          </div>
+          <div class="mt-4">
+            <p class="small text-muted mb-2">Consulta e accetta i documenti legali:</p>
+            <div class="d-flex flex-wrap gap-3">
+              <button type="button" class="btn btn-link p-0 doc-link" data-doc-modal="modalTermini">
+                Termini e condizioni
+              </button>
+              <button type="button" class="btn btn-link p-0 doc-link" data-doc-modal="modalPrivacy">
+                Informativa privacy
+              </button>
+            </div>
+            <div class="form-check mt-3">
+              <input class="form-check-input" type="checkbox" id="accettaTermini" />
+              <label class="form-check-label" for="accettaTermini">
+                Ho letto e accetto i Termini e condizioni.
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="accettaPrivacy" />
+              <label class="form-check-label" for="accettaPrivacy">
+                Ho letto e accetto l'Informativa sulla privacy.
+              </label>
+            </div>
           </div>
 
-          <!-- Bottone di submit:
-               Lo script intercetta l'invio, valida i campi e crea il nuovo utente -->
           <button type="submit" class="btn btn-primary w-100 mt-4">Attiva il profilo</button>
         </form>
+
+        <div class="text-center my-3 text-muted">
+          <span>— Oppure —</span>
+        </div>
+        <p class="text-center mb-0">Hai già un account? <a href="#/accesso">Accedi</a></p>
       </div>
     </div>
   </div>
 </section>
+
+<!-- Modal Termini -->
+<div class="doc-modal-backdrop d-none" id="modalTermini" aria-hidden="true">
+  <div class="doc-modal" role="dialog" aria-modal="true" aria-labelledby="modalTerminiTitolo">
+    <div class="doc-modal__header d-flex justify-content-between align-items-center">
+      <h2 class="h6 mb-0" id="modalTerminiTitolo">Termini e Condizioni</h2>
+      <button class="doc-modal__close" type="button" data-close-doc>&times;</button>
+    </div>
+    <div class="doc-modal__body" tabindex="0">
+      <p>
+        Benvenuto su CyberCuisine. Ti chiediamo di leggere attentamente i presenti Termini e
+        condizioni prima di completare la registrazione. Utilizzando la piattaforma accetti tutte le
+        clausole, comprese quelle relative all'utilizzo dei contenuti generati dagli utenti, alla
+        condotta consentita e al trattamento dei dati.
+      </p>
+      <p>
+        1. Servizi offerti: CyberCuisine fornisce una raccolta di ricette e strumenti per creare
+        recensioni personali. 2. Uso consentito: non è permesso pubblicare contenuti offensivi o che
+        violino diritti d'autore. 3. Disponibilità: la piattaforma potrebbe subire manutenzioni
+        programmate. 4. Limitazione di responsabilità: non rispondiamo di eventuali danni indiretti
+        derivanti dall'uso del servizio.
+      </p>
+      <p>
+        5. Contenuti degli utenti: mantenete i diritti sulle vostre ricette ma ci fornite una
+        licenza per mostrarle all'interno dell'applicazione. 6. Sicurezza: custodite le credenziali
+        di accesso e segnalate immediatamente usi non autorizzati. 7. Modifiche: ci riserviamo il
+        diritto di aggiornare i presenti Termini; verrai avvisato in caso di modifiche sostanziali.
+      </p>
+      <p>
+        Scorri fino in fondo per abilitare il pulsante di chiusura e tornare al modulo di
+        registrazione.
+      </p>
+    </div>
+    <div class="doc-modal__footer">
+      <small class="text-muted">Scorri tutto il documento per continuare.</small>
+      <button type="button" class="btn btn-contorno-accento" data-close-doc disabled>
+        Torna al form
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Privacy -->
+<div class="doc-modal-backdrop d-none" id="modalPrivacy" aria-hidden="true">
+  <div class="doc-modal" role="dialog" aria-modal="true" aria-labelledby="modalPrivacyTitolo">
+    <div class="doc-modal__header d-flex justify-content-between align-items-center">
+      <h2 class="h6 mb-0" id="modalPrivacyTitolo">Informativa sulla privacy</h2>
+      <button class="doc-modal__close" type="button" data-close-doc>&times;</button>
+    </div>
+    <div class="doc-modal__body" tabindex="0">
+      <p>
+        CyberCuisine tratta i dati personali in conformità al Regolamento (UE) 2016/679. Raccogliamo
+        informazioni anagrafiche e preferenze culinarie esclusivamente per fornire la migliore
+        esperienza possibile e non vendiamo i dati a terzi.
+      </p>
+      <p>
+        Base giuridica: il trattamento avviene sulla base del tuo consenso espresso e per adempiere
+        agli obblighi contrattuali del servizio. Conservazione: i dati vengono mantenuti finché
+        mantieni un account attivo o per il periodo necessario a rispettare gli obblighi di legge.
+      </p>
+      <p>
+        Diritti dell'interessato: puoi esercitare i diritti di accesso, rettifica, cancellazione e
+        portabilità scrivendo a privacy@cybercuisine.fake. Misure di sicurezza: adottiamo tecniche
+        di cifratura e controlli di accesso per proteggere le informazioni.
+      </p>
+      <p>
+        Scorri fino al termine per abilitare il pulsante e confermare la lettura dell'informativa.
+      </p>
+    </div>
+    <div class="doc-modal__footer">
+      <small class="text-muted">Scorri tutto il documento per continuare.</small>
+      <button type="button" class="btn btn-contorno-accento" data-close-doc disabled>
+        Torna al form
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Spinner registrazione -->
+<div class="piadina-spinner-backdrop d-none" id="registrazioneSpinner" aria-hidden="true">
+  <div class="piadina-spinner" role="status" aria-live="polite">
+    <img src="../assets/img/piadina-spinner.png" alt="Caricamento" />
+    <p class="mt-3 mb-0">Stiamo impiattando il tuo profilo...</p>
+  </div>
+</div>

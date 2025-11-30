@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="it">
   <head>
-    <!-- Dichiarazione del set di caratteri: UTF-8 supporta correttamente lettere accentate e simboli -->
+    <!-- Set di caratteri -->
     <meta charset="UTF-8" />
-    <!-- Viewport responsivo: dice al browser mobile di adattare la pagina alla larghezza dello schermo -->
+    <!-- Viewport responsivo -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Titolo che comparirà nella scheda del browser -->
     <title>CyberCuisine - Piattaforma Ricette</title>
 
-    <!-- Ottimizzazione: preconnessione ai server di Google Fonts per ridurre la latenza nel caricamento dei font -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Import dei font “Orbitron” (più futuristico) e “Space Grotesk” (più leggibile) da Google Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Space+Grotesk:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
 
-    <!-- Import di Bootstrap 5 (CSS) via CDN: fornisce griglia, componenti e utilità di stile pronti all’uso -->
+    <!-- Bootstrap 5 -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -25,29 +23,23 @@
       crossorigin="anonymous"
     />
 
-    <!-- Fogli di stile custom modulati: mantengono la stessa estetica cyberpunk ma suddivisi per responsabilità -->
+    <!-- Stili custom -->
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/base.css" />
     <link rel="stylesheet" href="../css/layout.css" />
     <link rel="stylesheet" href="../css/components.css" />
     <link rel="stylesheet" href="../css/forms.css" />
     <link rel="stylesheet" href="../css/utilities.css" />
+    <link rel="stylesheet" href="../css/modal.css" />
   </head>
   <body>
-    <!-- HEADER DELL’APPLICAZIONE: contiene la navbar principale -->
-    <!-- cc-intestazione è una classe “namespaced” (CyberCuisine) per dare uno stile personalizzato all’header -->
+    <!-- Header e navbar -->
     <header class="cc-intestazione shadow-sm">
-      <!-- Navbar di Bootstrap: navbar-expand-lg = si espande “full width” da large in su; navbar-dark = testo chiaro su sfondo scuro -->
-      <!-- container = allinea il contenuto al centro con una larghezza massima -->
       <nav class="navbar navbar-expand-lg navbar-dark container px-3">
-        <!-- Brand/logo della piattaforma: cliccandolo vai sempre alla “home” logica della SPA -->
-        <!-- href="#/home" perché la navigazione è gestita via hash routing (SPA) -->
-        <!-- Il logo completo qui mostrato contiene un’immagine di un’aragosta cyberpunk affiancata dal nome -->
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2 cc-marchio" href="#/home">
           <img src="../assets/img/cc-logo.png" alt="CyberCuisine" class="testo-marchio" />
         </a>
 
-        <!-- Bottone “hamburger” che compare su schermi piccoli per comprimere/espandere il menu -->
         <button
           class="navbar-toggler"
           type="button"
@@ -57,40 +49,51 @@
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
-          <!-- Icona standard dell’hamburger di Bootstrap -->
           <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Contenuto collassabile della navbar: su mobile viene nascosto/mostrato dal bottone sopra -->
         <div class="collapse navbar-collapse" id="ccBarraNav">
-          <!-- Lista dei link di navigazione -->
-          <!-- ms-auto = “margin-start auto”: spinge la lista a destra nella navbar -->
-          <!-- id="ccLinkNavigazione" ti serve in JS per gestire la classe “active” in base alla route corrente -->
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="ccLinkNavigazione">
-            <!-- Ogni li.nav-item contiene un link di navigazione verso una “vista” della SPA -->
             <li class="nav-item">
-              <!-- nav-link con href ad hash #/home: il router intercetta il cambio di hash e carica la vista Home -->
               <a class="nav-link" href="#/home">Home</a>
             </li>
             <li class="nav-item">
-              <!-- Vista di ricerca ricette -->
+              <a class="nav-link" href="#/esplora">Esplora ricette</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="#/ricerca">Ricerca</a>
             </li>
             <li class="nav-item">
-              <!-- Vista del ricettario personale (richiede utente loggato per funzionare appieno) -->
               <a class="nav-link" href="#/ricettario">Ricettario</a>
             </li>
             <li class="nav-item">
-              <!-- Vista delle recensioni inserite dall’utente -->
               <a class="nav-link" href="#/recensioni">Recensioni</a>
             </li>
-            <li class="nav-item">
-              <!-- Vista del profilo utente (dati registrazione, modifica, eliminazione profilo) -->
-              <a class="nav-link" href="#/profilo">Profilo</a>
+            <li class="nav-item dropdown d-none" id="ccUserMenu">
+              <a
+                class="nav-link dropdown-toggle d-flex align-items-center gap-1"
+                href="#"
+                role="button"
+                id="ccUserMenuToggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span id="ccUserGreeting">Ciao Chef</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="ccUserMenuToggle">
+                <li>
+                  <a class="dropdown-item" href="#/profilo" id="ccGestisciProfilo"
+                    >Gestisci profilo</a
+                  >
+                </li>
+                <li>
+                  <button class="dropdown-item text-danger" type="button" id="ccLogoutTrigger">
+                    Logout
+                  </button>
+                </li>
+              </ul>
             </li>
             <li class="nav-item">
-              <!-- Link dedicato all’autenticazione -->
-              <!-- id="ccLinkAccesso" permette a JS di trasformare dinamicamente il testo (Registrati/Accedi ↔ Logout) e il comportamento, in base allo stato utente -->
               <a class="nav-link" id="ccLinkAccesso" href="#/registrazione">Registrati / Accedi</a>
             </li>
           </ul>
@@ -98,29 +101,102 @@
       </nav>
     </header>
 
-    <!-- CONTENITORE PRINCIPALE DELLA SPA -->
-    <!-- id="app" è il “root container” dove il router JS inietterà le varie viste HTML (home, search, ecc.) -->
-    <!-- container + py-4 sono classi Bootstrap: centrano il contenuto e aggiungono padding verticale -->
+    <!-- Contenitore SPA -->
     <main id="app" class="container py-4"></main>
 
-    <!-- FOOTER FISSO IN FONDO ALLA PAGINA -->
-    <!-- cc-piede ti consente di stabilire uno stile coerente (colori, bordi, ecc.) per il footer nel tuo CSS -->
+    <!-- Barra lettere globale per la vista Esplora: resta fuori dal container per stare a filo viewport -->
+    <aside
+      id="lettersDock"
+      class="letters-dock d-none"
+      aria-label="Navigazione alfabetica del catalogo"
+      aria-hidden="true"
+    >
+      <div class="letters-sidebar card card-bagliore shadow-sm">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h2 class="h6 text-uppercase mb-0">Lettere</h2>
+            <span class="badge bg-accento" id="conteggioLettere">0</span>
+          </div>
+          <div id="ancoreLettere" class="letters-list d-flex flex-column gap-2"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Modal conferma azioni carta ricetta -->
+    <div
+      class="cc-modal-backdrop d-none"
+      id="modalAzioniRicetta"
+      aria-hidden="true"
+      data-confirm-button="modalAzioniConferma"
+    >
+      <div class="cc-modal" role="dialog" aria-labelledby="modalAzioniTitolo" aria-modal="true">
+        <div class="cc-modal-header d-flex justify-content-between align-items-center">
+          <h2 class="h6 mb-0" id="modalAzioniTitolo">Conferma azione</h2>
+          <button
+            class="cc-modal-close"
+            type="button"
+            id="modalAzioniChiudi"
+            aria-label="Chiudi modal"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="cc-modal-body">
+          <p id="modalAzioniMessaggio" class="mb-0"></p>
+        </div>
+        <div class="cc-modal-footer">
+          <button type="button" class="btn btn-contorno-accento" id="modalAzioniAnnulla">
+            Annulla
+          </button>
+          <button type="button" class="btn btn-primary" id="modalAzioniConferma">Conferma</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal conferma logout -->
+    <div
+      class="cc-modal-backdrop d-none"
+      id="modalLogout"
+      aria-hidden="true"
+      data-confirm-button="modalLogoutConferma"
+    >
+      <div class="cc-modal" role="dialog" aria-labelledby="modalLogoutTitolo" aria-modal="true">
+        <div class="cc-modal-header d-flex justify-content-between align-items-center">
+          <h2 class="h6 mb-0" id="modalLogoutTitolo">Confermi il logout?</h2>
+          <button
+            class="cc-modal-close"
+            type="button"
+            id="modalLogoutChiudi"
+            aria-label="Chiudi modal"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="cc-modal-body">
+          <p class="mb-0">Stai per uscire da CyberCuisine. Vuoi davvero disconnetterti?</p>
+        </div>
+        <div class="cc-modal-footer">
+          <button type="button" class="btn btn-contorno-accento" id="modalLogoutAnnulla">
+            Annulla
+          </button>
+          <button type="button" class="btn btn-danger" id="modalLogoutConferma">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
     <footer class="cc-piede text-center py-3">
-      <!-- <small> per testo secondario / meno prominente -->
-      <small>CyberCuisine · Progetto di Programmazione Web e Mobile · Uni</small>
+      <small>CyberCuisine - Progetto di Programmazione Web e Mobile - Uni</small>
     </footer>
 
-    <!-- Bootstrap JS bundle: include Popper + JS dei componenti (collapse, modals, ecc.) -->
-    <!-- Necessario per far funzionare il toggle della navbar e altri componenti interattivi -->
+    <!-- Bootstrap bundle -->
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
 
-    <!-- Script principale dell’applicazione, in modalità ES module -->
-    <!-- type="module" permette di usare import/export e scope modulare moderno -->
-    <!-- Il percorso relativo ../js/main.js parte da src/html/ e risale alla cartella js -->
+    <!-- Script principale -->
     <script type="module" src="../js/main.js"></script>
   </body>
 </html>

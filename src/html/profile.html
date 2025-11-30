@@ -1,65 +1,94 @@
-<!-- Contenitore principale della vista profilo, centrato orizzontalmente -->
+<!-- Vista profilo (singola card con azioni) -->
 <section class="row justify-content-center">
-  <!-- Larghezza massima del contenuto: su large occupa 8/12 -->
   <div class="col-lg-8">
-    <!-- CARD 1: mostra i dati attuali dell’utente (username, email, ricette salvate...) -->
     <div class="card card-bagliore mb-4">
       <div class="card-body">
-        <!-- Titolo dell’area profilo -->
-        <h1 class="h3 mb-3">Profilo personale</h1>
+        <h1 class="h4 mb-3">Profilo personale</h1>
 
-        <!-- Contenitore dinamico: viene riempito da renderProfileInfo(user)
-             nel controller initProfileView() -->
         <div id="infoProfilo"></div>
-      </div>
-    </div>
 
-    <!-- CARD 2: sezione per modificare le informazioni del profilo -->
-    <div class="card card-bagliore">
-      <div class="card-body">
-        <!-- Titolo della card di modifica -->
-        <h2 class="h5 mb-3">Aggiorna le informazioni</h2>
+        <hr class="border-secondary" />
 
-        <!-- Alert di successo (mostrato da showAlert(..., "success"))
-             compare quando i dati sono stati salvati correttamente -->
-        <div class="alert alert-success d-none" id="avvisoProfiloSuccesso"></div>
-
-        <!-- Alert per errori (email vuota, valori invalidi, ecc.)
-             mostrato sempre da showAlert(...) -->
-        <div class="alert alert-danger d-none" id="avvisoProfiloErrore"></div>
-
-        <!-- Form principale di aggiornamento profilo.
-             initProfileView() intercetta submit, valida e salva -->
         <form id="formProfilo" novalidate>
-          <!-- Campo email:
-               - Viene precaricato con user.email da initProfileView()
-               - Required + validazione HTML + validazione JS -->
-          <div class="mb-3">
-            <label for="emailProfilo" class="form-label">Email</label>
-            <input type="email" class="form-control" id="emailProfilo" required />
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="nomeProfilo" class="form-label">Nome</label>
+              <input type="text" class="form-control" id="nomeProfilo" disabled required />
+            </div>
+            <div class="col-md-6">
+              <label for="cognomeProfilo" class="form-label">Cognome</label>
+              <input type="text" class="form-control" id="cognomeProfilo" disabled required />
+            </div>
+            <div class="col-md-6">
+              <label for="emailProfilo" class="form-label">Email</label>
+              <input type="email" class="form-control" id="emailProfilo" disabled required />
+            </div>
+            <div class="col-md-6">
+              <label for="paeseOrigineProfilo" class="form-label">Paese di origine</label>
+              <select
+                class="form-select select-compatta"
+                id="paeseOrigineProfilo"
+                disabled
+              ></select>
+            </div>
+            <div class="col-md-6">
+              <label for="paeseResidenzaProfilo" class="form-label">Paese di residenza</label>
+              <select
+                class="form-select select-compatta"
+                id="paeseResidenzaProfilo"
+                disabled
+              ></select>
+            </div>
+            <div class="col-md-6">
+              <label for="passwordProfilo" class="form-label">Password</label>
+              <input type="password" class="form-control" id="passwordProfilo" disabled />
+            </div>
           </div>
 
-          <!-- Pulsanti di azione:
-               - Salva modifiche → submit form
-               - Logout → handleLogout()
-               - Elimina profilo → removeUser() + redirect -->
-          <div class="d-flex flex-wrap gap-3">
-            <!-- Bottone principale: salva email e preferenze aggiornate -->
-            <button type="submit" class="btn btn-primary">Salva modifiche</button>
-
-            <!-- Logout immediato dell’utente corrente -->
-            <button type="button" class="btn btn-contorno-accento" id="bottoneLogout">Logout</button>
-
-            <!-- Elimina il profilo:
-                 - richiede conferma
-                 - elimina user, le sue recensioni e i dati collegati
-                 - poi logout e redirect -->
+          <div class="d-flex flex-wrap gap-3 mt-4">
+            <button type="button" class="btn btn-primary" id="bottoneModificaProfilo">
+              Modifica profilo
+            </button>
+            <button type="submit" class="btn btn-primary d-none" id="bottoneSalvaProfilo">
+              Salva modifiche
+            </button>
             <button type="button" class="btn btn-danger ms-auto" id="bottoneEliminaProfilo">
               Elimina profilo
             </button>
           </div>
+
+          <div class="alert alert-success d-none mt-3" id="avvisoProfiloSuccesso"></div>
+          <div class="alert alert-danger d-none mt-3" id="avvisoProfiloErrore"></div>
         </form>
       </div>
     </div>
   </div>
 </section>
+
+<!-- Modal conferma password -->
+<div
+  class="cc-modal-backdrop d-none"
+  id="modalPassword"
+  data-confirm-button="confermaModalPassword"
+>
+  <div class="cc-modal">
+    <div class="cc-modal-header d-flex justify-content-between align-items-center">
+      <h2 class="h6 mb-0">Conferma password</h2>
+      <button class="cc-modal-close" type="button" id="chiudiModalPassword">&times;</button>
+    </div>
+    <div class="cc-modal-body">
+      <p class="mb-3">Inserisci la tua password per abilitare la modifica del profilo.</p>
+      <div class="mb-3">
+        <label for="passwordConfermaProfilo" class="form-label">Password</label>
+        <input type="password" class="form-control" id="passwordConfermaProfilo" />
+      </div>
+      <div class="alert alert-danger d-none" id="erroreModalPassword"></div>
+    </div>
+    <div class="cc-modal-footer">
+      <button type="button" class="btn btn-contorno-accento" id="annullaModalPassword">
+        Annulla
+      </button>
+      <button type="button" class="btn btn-primary" id="confermaModalPassword">Conferma</button>
+    </div>
+  </div>
+</div>

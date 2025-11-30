@@ -6,17 +6,17 @@ import { generaId } from "./ui.js";
 // --------------------------
 
 export function inizializzaStorage() {
-  if (!localStorage.getItem(CHIAVI_SALVATAGGIO.MEALS)) {
-    salvaSuStorage(CHIAVI_SALVATAGGIO.MEALS, {});
+  if (!localStorage.getItem(CHIAVI_SALVATAGGIO.RICETTE)) {
+    salvaSuStorage(CHIAVI_SALVATAGGIO.RICETTE, {});
   }
-  if (!localStorage.getItem(CHIAVI_SALVATAGGIO.USERS)) {
-    salvaSuStorage(CHIAVI_SALVATAGGIO.USERS, []);
+  if (!localStorage.getItem(CHIAVI_SALVATAGGIO.UTENTI)) {
+    salvaSuStorage(CHIAVI_SALVATAGGIO.UTENTI, []);
   }
-  if (!localStorage.getItem(CHIAVI_SALVATAGGIO.REVIEWS)) {
-    salvaSuStorage(CHIAVI_SALVATAGGIO.REVIEWS, []);
+  if (!localStorage.getItem(CHIAVI_SALVATAGGIO.RECENSIONI)) {
+    salvaSuStorage(CHIAVI_SALVATAGGIO.RECENSIONI, []);
   }
-  if (!localStorage.getItem(CHIAVI_SALVATAGGIO.CURRENT_USER)) {
-    salvaSuStorage(CHIAVI_SALVATAGGIO.CURRENT_USER, null);
+  if (!localStorage.getItem(CHIAVI_SALVATAGGIO.UTENTE_CORRENTE)) {
+    salvaSuStorage(CHIAVI_SALVATAGGIO.UTENTE_CORRENTE, null);
   }
 }
 
@@ -36,29 +36,29 @@ export function salvaSuStorage(chiave, valore) {
 
 // Utenti
 export function ottieniUtenti() {
-  return leggiDaStorage(CHIAVI_SALVATAGGIO.USERS, []).map(trasformaUtenteInItaliano);
+  return leggiDaStorage(CHIAVI_SALVATAGGIO.UTENTI, []).map(trasformaUtenteInItaliano);
 }
 
 export function salvaUtenti(utenti) {
-  salvaSuStorage(CHIAVI_SALVATAGGIO.USERS, utenti);
+  salvaSuStorage(CHIAVI_SALVATAGGIO.UTENTI, utenti);
 }
 
 export function ottieniUtenteCorrente() {
-  const utenteSalvato = leggiDaStorage(CHIAVI_SALVATAGGIO.CURRENT_USER, null);
+  const utenteSalvato = leggiDaStorage(CHIAVI_SALVATAGGIO.UTENTE_CORRENTE, null);
   return trasformaUtenteInItaliano(utenteSalvato);
 }
 
 export function impostaUtenteCorrente(utente) {
-  salvaSuStorage(CHIAVI_SALVATAGGIO.CURRENT_USER, utente);
+  salvaSuStorage(CHIAVI_SALVATAGGIO.UTENTE_CORRENTE, utente);
 }
 
 // Cache ricette
 export function ottieniCacheRicette() {
-  return leggiDaStorage(CHIAVI_SALVATAGGIO.MEALS, {});
+  return leggiDaStorage(CHIAVI_SALVATAGGIO.RICETTE, {});
 }
 
 export function salvaCacheRicette(cache) {
-  salvaSuStorage(CHIAVI_SALVATAGGIO.MEALS, cache);
+  salvaSuStorage(CHIAVI_SALVATAGGIO.RICETTE, cache);
 }
 
 export function memorizzaRicette(ricette = []) {
@@ -102,6 +102,10 @@ export function trasformaUtenteInItaliano(utente) {
   return {
     ...utente,
     nomeUtente: utente.nomeUtente ?? utente.username,
+    nome: utente.nome ?? utente.firstName ?? "",
+    cognome: utente.cognome ?? utente.lastName ?? "",
+    paeseOrigine: utente.paeseOrigine ?? "",
+    paeseResidenza: utente.paeseResidenza ?? "",
     ricettario: ricettario.map(voce => ({
       idRicetta: voce.idRicetta ?? voce.mealId ?? voce.idRicetta,
       nota: voce.nota ?? voce.note ?? ""
@@ -120,9 +124,7 @@ export function trasformaRecensioneInItaliano(recensione) {
 
 // Recensioni
 export function ottieniRecensioni() {
-  return leggiDaStorage(CHIAVI_SALVATAGGIO.REVIEWS, []).map(
-    trasformaRecensioneInItaliano
-  );
+  return leggiDaStorage(CHIAVI_SALVATAGGIO.REVIEWS, []).map(trasformaRecensioneInItaliano);
 }
 
 export function salvaRecensioni(recensioni) {
@@ -148,7 +150,9 @@ export function salvaUtente(utenteAggiornato) {
 export function rimuoviUtente(idUtente) {
   const restanti = ottieniUtenti().filter(utente => utente.id !== idUtente);
   salvaUtenti(restanti);
-  const recensioniFiltrate = ottieniRecensioni().filter(recensione => recensione.idUtente !== idUtente);
+  const recensioniFiltrate = ottieniRecensioni().filter(
+    recensione => recensione.idUtente !== idUtente
+  );
   salvaRecensioni(recensioniFiltrate);
   const utenteCorrente = ottieniUtenteCorrente();
   if (utenteCorrente && utenteCorrente.id === idUtente) {

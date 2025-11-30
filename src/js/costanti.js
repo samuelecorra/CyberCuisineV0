@@ -1,8 +1,8 @@
 export const CHIAVI_SALVATAGGIO = {
-  MEALS: "pgrc_meals",
-  USERS: "pgrc_users",
-  CURRENT_USER: "pgrc_currentUser",
-  REVIEWS: "pgrc_reviews"
+  RICETTE: "ricette_cybercuisine",
+  UTENTI: "utenti_cybercuisine",
+  UTENTE_CORRENTE: "utente_corrente_cybercuisine",
+  RECENSIONI: "recensioni_cybercuisine"
 };
 
 export const BASE_API = "https://www.themealdb.com/api/json/v1/1/";

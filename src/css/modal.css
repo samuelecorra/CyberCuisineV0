@@ -1,0 +1,49 @@
+/* Stile base per modali riutilizzabili */
+.cc-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.cc-modal {
+  background: #151531;
+  border: 1px solid var(--cc-border);
+  color: var(--cc-text);
+  border-radius: 0.75rem;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.cc-modal-header,
+.cc-modal-footer {
+  padding: 1rem 1.25rem;
+  border-color: var(--cc-border);
+}
+
+.cc-modal-header {
+  border-bottom: 1px solid var(--cc-border);
+}
+
+.cc-modal-body {
+  padding: 1rem 1.25rem;
+}
+
+.cc-modal-footer {
+  border-top: 1px solid var(--cc-border);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.cc-modal-close {
+  background: none;
+  border: none;
+  color: var(--cc-text);
+  font-size: 1.2rem;
+}
