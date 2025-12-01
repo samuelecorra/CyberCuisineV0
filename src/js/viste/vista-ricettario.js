@@ -1,9 +1,5 @@
-import {
-  ottieniUtenteCorrente,
-  aggiornaRicettario,
-  aggiornaNotaRicettario
-} from "../storage.js";
-import { garantisciRicettaInCache } from "../gestione-api/api.js";
+import { ottieniUtenteCorrente, aggiornaRicettario, aggiornaNotaRicettario } from "../storage.js";
+import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRicettario } from "../componenti/carte.js";
 
 export async function inizializzaVistaRicettario() {
@@ -18,7 +14,7 @@ export async function inizializzaVistaRicettario() {
 
   const ricetteSalvate = await Promise.all(
     (utente.ricettario ?? []).map(async voce => {
-      const ricetta = await garantisciRicettaInCache(voce.idRicetta);
+      const ricetta = await recuperaRicettaPerId(voce.idRicetta);
       return { ricetta, nota: voce.nota ?? "" };
     })
   );

@@ -141,10 +141,9 @@ function mostraErroreRoute() {
       `;
 }
 
-// Dealloca il catalogo completo delle ricette quando si esce dalla vista esplora
-// - Serve a liberare memoria e a forzare il reload del catalogo quando si rientra
+// Resetta i risultati visualizzati quando si esce dalla vista esplora
 function deallocaCatalogoEsplora(percorsoPrecedente, nuovoPercorso) {
   if (percorsoPrecedente === "#/esplora" && nuovoPercorso !== "#/esplora") {
-    statoApp.catalogoCompleto = [];
+    statoApp.risultatiRicerca = [];
   }
 }

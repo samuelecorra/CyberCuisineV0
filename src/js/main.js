@@ -1,6 +1,6 @@
 import { inizializzaStorage } from "./storage.js";
 import { impostaEventiAuthNav } from "./navbar.js";
-import { precaricaRicetteInEvidenza } from "./gestione-api/api.js";
+import { precaricaCatalogoRicette } from "./gestione-api/api.js";
 import { gestisciCambioRoute } from "./router.js";
 import { impostaAzioniCarteRicetta } from "./componenti/azioni-card.js";
 import { statoApp } from "./stato.js";
@@ -21,7 +21,7 @@ async function inizializzaApp() {
   impostaEventiAuthNav(); // Imposta eventi per autenticazione e navigazione
   impostaAzioniCarteRicetta(); // Imposta eventi per azioni sulle carte ricetta
   impostaRipristinoEsploraNav(); // Permette di resettare la vista esplora se già attiva
-  await precaricaRicetteInEvidenza(); // Precarica ricette in evidenza per performance
+  statoApp.catalogoCompleto = await precaricaCatalogoRicette(); // Scarica l'intero catalogo una volta sola
   window.addEventListener("hashchange", gestisciCambioRoute); // Gestione cambio route
   await gestisciCambioRoute(); // Gestione route iniziale al caricamento della pagina
 }
@@ -71,13 +71,15 @@ function gestisciInvioModalGenerico(evento) {
   bottoneConferma.click();
 }
 
+// Funzione per impostare il reset della vista esplora quando si clicca sul link di navigazione
+// se la vista è già attiva. In questo modo l'utente può facilmente ripulire i filtri e le ricerche
+// fatte in precedenza senza dover ricaricare la pagina o navigare altrove e tornare indietro.
 function impostaRipristinoEsploraNav() {
   const linkEsplora = document.getElementById("ccLinkEsplora");
   if (!linkEsplora) return;
   linkEsplora.addEventListener("click", async evento => {
     if (window.location.hash !== "#/esplora") return;
     evento.preventDefault();
-    statoApp.catalogoCompleto = [];
     statoApp.risultatiRicerca = [];
     await gestisciCambioRoute();
     window.scrollTo({ top: 0, behavior: "smooth" });

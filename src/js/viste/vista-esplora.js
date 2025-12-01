@@ -1,10 +1,14 @@
-import { cercaRicettePerLettera, cercaRicettePerNome, cercaRicettePerIngrediente } from "../gestione-api/api.js";
+import {
+  cercaRicettePerLettera,
+  cercaRicettePerNome,
+  cercaRicettePerIngrediente,
+  ottieniCatalogoOrdinato
+} from "../gestione-api/api.js";
 import { creaCardRicetta } from "../componenti/carte.js";
 import { statoApp } from "../stato.js";
-import { memorizzaRicette } from "../storage.js";
 import { ottieniStatoAzioniUtente } from "../componenti/azioni-card.js";
 
-const LETTERE = "abcdefghijklmnopqrstuvwxyz".split("");
+const DURATA_INTERMEZZO_MS = 2000; // Piccolo delay per permettere allo spinner di essere percepito
 
 export function inizializzaVistaEsplora() {
   if (statoApp.risultatiRicerca.length > 0) {
@@ -44,6 +48,7 @@ async function gestisciRicerca(tipoSelezionato) {
   badgeConteggio.textContent = "Ricerca in corso...";
   contenitore.innerHTML = '<p class="text-muted mb-0">Prepariamo i risultati...</p>';
   mostraSpinnerCatalogo();
+  await attendiIntermezzo();
 
   let risultati = [];
   try {
@@ -54,7 +59,6 @@ async function gestisciRicerca(tipoSelezionato) {
     } else if (tipo === "lettera") {
       risultati = await cercaRicettePerLettera(termine);
     }
-    memorizzaRicette(risultati);
   } catch (errore) {
     console.error("Errore durante la ricerca", errore);
     badgeConteggio.textContent = "Errore di ricerca";
@@ -84,10 +88,10 @@ async function gestisciCaricamentoCatalogo() {
   mostraSpinnerCatalogo();
 
   try {
-    const ricette = await recuperaCatalogoCompleto();
+    await attendiIntermezzo();
+    const ricette = recuperaCatalogoCompleto();
     statoApp.catalogoCompleto = ricette;
     statoApp.risultatiRicerca = ricette;
-    memorizzaRicette(ricette);
     mostraRisultatiRicerca(ricette);
   } catch (errore) {
     console.error("Errore durante il caricamento del catalogo", errore);
@@ -101,22 +105,13 @@ async function gestisciCaricamentoCatalogo() {
   }
 }
 
-async function recuperaCatalogoCompleto() {
-  if (statoApp.catalogoCompleto.length > 0) return statoApp.catalogoCompleto;
-  const richieste = LETTERE.map(lettera => cercaRicettePerLettera(lettera));
-  const risultati = await Promise.all(richieste);
-  const appiattito = risultati.flat().filter(Boolean);
-
-  // Evito duplicati per id
-  const ricetteUniche = [];
-  const idsVisti = new Set();
-  appiattito.forEach(ricetta => {
-    if (ricetta && !idsVisti.has(ricetta.id)) {
-      idsVisti.add(ricetta.id);
-      ricetteUniche.push(ricetta);
-    }
-  });
-  return ricetteUniche;
+function recuperaCatalogoCompleto() {
+  if (statoApp.catalogoCompleto.length > 0) {
+    return statoApp.catalogoCompleto;
+  }
+  const catalogo = ottieniCatalogoOrdinato();
+  statoApp.catalogoCompleto = catalogo;
+  return catalogo;
 }
 
 function aggiornaPlaceholderRicerca() {
@@ -176,4 +171,8 @@ function nascondiSpinnerCatalogo() {
   if (!spinner) return;
   spinner.classList.add("d-none");
   spinner.setAttribute("aria-hidden", "true");
+}
+
+function attendiIntermezzo(ms = DURATA_INTERMEZZO_MS) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

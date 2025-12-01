@@ -72,41 +72,6 @@ export function salvaCacheRicette(cache) {
   salvaSuStorage(CHIAVI_SALVATAGGIO.RICETTE, cache);
 }
 
-export function memorizzaRicette(ricette = []) {
-  const cache = ottieniCacheRicette();
-  ricette.forEach(ricetta => {
-    if (ricetta?.id) {
-      cache[ricetta.id] = ricetta;
-    }
-  });
-  salvaCacheRicette(cache);
-}
-
-// Migrazione/normalizzazione dati
-export function adattaRicettaMemorizzata(ricetta) {
-  if (!ricetta) return ricetta;
-  if (ricetta.nome) return ricetta;
-  const ingredientiConvertiti =
-    ricetta.ingredienti ??
-    ricetta.ingredients?.map(item => ({
-      nome: item.name ?? "",
-      quantita: item.measure ?? ""
-    })) ??
-    [];
-  return {
-    id: ricetta.id,
-    nome: ricetta.name ?? "",
-    categoria: ricetta.category ?? "N/D",
-    area: ricetta.area ?? "N/D",
-    istruzioni: ricetta.instructions ?? "",
-    miniatura: ricetta.thumbnail ?? "",
-    etichette: ricetta.tags ?? [],
-    youtube: ricetta.youtube ?? "",
-    fonte: ricetta.source ?? "",
-    ingredienti: ingredientiConvertiti
-  };
-}
-
 export function trasformaUtenteInItaliano(utente) {
   if (!utente) return utente;
   const ricettario = utente.ricettario ?? utente.cookbook ?? [];

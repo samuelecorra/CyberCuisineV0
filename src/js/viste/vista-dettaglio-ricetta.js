@@ -2,13 +2,15 @@ import {
   ottieniUtenteCorrente,
   ottieniRecensioni,
   ottieniUtenti,
-  salvaRecensioni,
-  aggiornaRicettario,
-  aggiornaNotaRicettario
+  aggiornaRicettario
 } from "../storage.js";
-import { garantisciRicettaInCache } from "../gestione-api/api.js";
-import { creaFormRecensione, creaCardRecensione } from "../componenti/carte.js";
-import { generaId } from "../ui.js";
+import { recuperaRicettaPerId } from "../gestione-api/api.js";
+import { creaCardRecensione } from "../componenti/carte.js";
+import {
+  renderModaleRecensione,
+  inizializzaModaleRecensione,
+  apriModaleRecensione
+} from "../componenti/modale-recensione.js";
 
 export async function inizializzaVistaDettaglioRicetta(idRicetta) {
   const wrapper = document.getElementById("dettaglioRicetta");
@@ -17,106 +19,142 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
     return;
   }
   wrapper.innerHTML = '<p class="text-muted">Caricamento dettagli ricetta...</p>';
-  const ricetta = await garantisciRicettaInCache(idRicetta);
+  const ricetta = await recuperaRicettaPerId(idRicetta);
   if (!ricetta) {
     wrapper.innerHTML = '<p class="text-danger">Impossibile recuperare la ricetta.</p>';
     return;
   }
+  const youtubeId = estraiIdYoutube(ricetta.youtube);
+  const youtubeThumb = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : null;
+  const youtubeEmbed = youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null;
   const utente = ottieniUtenteCorrente();
   const inRicettario = utente?.ricettario?.some(entry => entry.idRicetta === ricetta.id);
-  const notaAttuale = utente?.ricettario?.find(entry => entry.idRicetta === ricetta.id)?.nota ?? "";
+  const recensioneUtente = ottieniRecensioni().find(
+    recensione => recensione.idRicetta === ricetta.id && recensione.idUtente === utente?.id
+  );
+  const badgeEtichette =
+    ricetta.etichette?.length > 0
+      ? ricetta.etichette
+          .map(tag => `<span class="badge bg-accento text-uppercase">${tag}</span>`)
+          .join(" ")
+      : "";
+  const ingredientiHtml = ricetta.ingredienti
+    .map(item => `<li class="col mb-2">- ${item.quantita} ${item.nome}</li>`)
+    .join("");
+  const passiIstruzioni = ricetta.istruzioni
+    ?.split(/\r?\n/)
+    .map(step => step.trim())
+    .filter(Boolean) ?? [];
+  const istruzioniHtml =
+    passiIstruzioni.length > 0
+      ? `<ol class="ps-3 mb-0">${passiIstruzioni
+          .map(step => `<li class="mb-2">${step}</li>`)
+          .join("")}</ol>`
+      : `<p class="testo-pre-linea mb-0">${ricetta.istruzioni}</p>`;
 
   wrapper.innerHTML = `
-        <div class="col-lg-7">
-            <div class="card card-bagliore mb-4">
-                <img src="${ricetta.miniatura}" class="card-img-top" alt="${ricetta.nome}" />
-                <div class="card-body">
-                    <p class="text-uppercase testo-accento mb-1">${ricetta.categoria} - ${ricetta.area}</p>
-                    <h1 class="h3 mb-3">${ricetta.nome}</h1>
-                    <div class="mb-3">
-                        <h2 class="h6 text-uppercase">Ingredienti</h2>
-                        <ul class="list-unstyled small">
-                            ${ricetta.ingredienti.map(item => `<li>- ${item.quantita} ${item.nome}</li>`).join("")}
-                        </ul>
-                    </div>
-                    <div>
-                        <h2 class="h6 text-uppercase">Istruzioni</h2>
-                        <p class="testo-pre-linea">${ricetta.istruzioni}</p>
-                    </div>
-                </div>
+    <div class="col-12">
+      <div class="card card-bagliore mb-4">
+        <div class="card-body">
+          <div class="row g-4 align-items-start">
+            <div class="col-lg-5">
+              <div class="ratio ratio-4x3 rounded overflow-hidden bg-dark-subtle">
+                <img src="${ricetta.miniatura}" class="img-fluid h-100 w-100 adatta-copertura" alt="${ricetta.nome}" loading="lazy" />
+              </div>
+              <div class="d-flex gap-3 mt-3 justify-content-center">
+                <button class="btn btn-primary flex-fill fw-semibold fs-6" id="bottoneRicettario">
+                  ${inRicettario ? "Rimuovi dal ricettario" : "Aggiungi al ricettario"}
+                </button>
+                <button class="btn btn-contorno-accento flex-fill fw-semibold fs-6" id="bottoneRecensione">
+                  ${recensioneUtente ? "Vedi la tua recensione" : "Scrivi recensione"}
+                </button>
+              </div>
+              ${
+                youtubeThumb
+                  ? `<div class="card card-bagliore mt-3" id="anteprimaVideo" role="button" tabindex="0" aria-label="Guarda il video della ricetta">
+                      <div class="position-relative overflow-hidden rounded">
+                        <img src="${youtubeThumb}" alt="Anteprima video YouTube" class="img-fluid w-100" />
+                        <span class="position-absolute top-50 start-50 translate-middle badge bg-accento text-dark px-3 py-2">
+                          Play video
+                        </span>
+                      </div>
+                    </div>`
+                  : ""
+              }
             </div>
+            <div class="col-lg-7">
+              <p class="text-uppercase testo-accento mb-2 fw-semibold" style="font-size: 1.05rem;">${ricetta.categoria} - ${ricetta.area}</p>
+              <h1 class="h2 mb-3">${ricetta.nome}</h1>
+              ${badgeEtichette ? `<div class="d-flex flex-wrap gap-2 mb-3">${badgeEtichette}</div>` : ""}
+              <div class="d-flex align-items-center gap-2 small mb-4">
+                <span class="text-muted">Fonte</span>
+                <span class="mb-0">${
+                  ricetta.fonte
+                    ? `<a href="${ricetta.fonte}" target="_blank" rel="noopener">Visita la fonte</a>`
+                    : "N/D"
+                }</span>
+              </div>
+              <hr class="my-3" style="border-color: var(--cc-accent); opacity: 1;" />
+              <div class="mb-4">
+                <h2 class="h5 text-uppercase">Ingredienti</h2>
+                <ul class="row row-cols-1 row-cols-md-2 list-unstyled small mb-0">
+                  ${ingredientiHtml}
+                </ul>
+              </div>
+              <hr class="my-3" style="border-color: var(--cc-accent); opacity: 1;" />
+              <div>
+                <h2 class="h5 text-uppercase">Istruzioni</h2>
+                ${istruzioniHtml}
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="col-lg-5">
-            <div class="card card-bagliore mb-4">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">Ricettario personale</h2>
-                    ${
-                      utente
-                        ? `
-                            <button class="btn btn-primary w-100 mb-3" id="bottoneRicettario">${
-                              inRicettario ? "Rimuovi dal ricettario" : "Aggiungi al ricettario"
-                            }</button>
-                            <label for="notaRicettario" class="form-label">Nota privata</label>
-                            <textarea class="form-control" id="notaRicettario" rows="3" ${
-                              inRicettario ? "" : "disabled"
-                            }>${notaAttuale}</textarea>
-                        `
-                        : '<p class="text-muted">Accedi per salvare la ricetta e annotare le tue prove.</p>'
-                    }
-                </div>
-            </div>
-            <div class="card card-bagliore">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">Recensioni</h2>
-                    <div id="contenitoreRecensioni"></div>
-                    ${
-                      utente
-                        ? creaFormRecensione(ricetta.id)
-                        : '<p class="text-muted">Effettua il login per lasciare una recensione.</p>'
-                    }
-                </div>
-            </div>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="card card-bagliore">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Recensioni</h2>
+          <div id="contenitoreRecensioni"></div>
         </div>
-    `;
+      </div>
+    </div>
+    ${renderModaleRecensione(ricetta)}
+  `;
 
-  if (utente) {
-    document.getElementById("bottoneRicettario").addEventListener("click", () => {
-      aggiornaRicettario(ricetta.id, !inRicettario);
-      inizializzaVistaDettaglioRicetta(ricetta.id);
-    });
-    const campoNota = document.getElementById("notaRicettario");
-    campoNota?.addEventListener("change", () => {
-      aggiornaNotaRicettario(ricetta.id, campoNota.value);
-    });
-    const formRecensione = document.getElementById("formRecensione");
-    formRecensione?.addEventListener("submit", event => {
-      event.preventDefault();
-      gestisciInvioRecensione(ricetta.id, formRecensione, ricetta);
-    });
-    compilaFormRecensione(ricetta.id, formRecensione);
-  }
+  const bottoneRicettario = document.getElementById("bottoneRicettario");
+  bottoneRicettario?.addEventListener("click", () => {
+    if (!utente) {
+      window.location.hash = "#/accesso";
+      return;
+    }
+    aggiornaRicettario(ricetta.id, !inRicettario);
+    inizializzaVistaDettaglioRicetta(ricetta.id);
+  });
+
+  const bottoneRecensione = document.getElementById("bottoneRecensione");
+  bottoneRecensione?.addEventListener("click", () => {
+    if (!utente) {
+      window.location.hash = "#/accesso";
+      return;
+    }
+    apriModaleRecensione();
+  });
+
+  inizializzaModaleRecensione(ricetta, () => mostraElencoRecensioni(ricetta.id, ricetta));
 
   mostraElencoRecensioni(ricetta.id, ricetta);
-}
-
-export function compilaFormRecensione(idRicetta, form) {
-  if (!form) return;
-  const utente = ottieniUtenteCorrente();
-  const esistente = ottieniRecensioni().find(
-    recensione => recensione.idRicetta === idRicetta && recensione.idUtente === utente?.id
-  );
-  if (!esistente) return;
-  form.querySelector("#dataRecensione").value = esistente.dataPreparazione;
-  form.querySelector("#difficoltaRecensione").value = esistente.difficolta;
-  form.querySelector("#gustoRecensione").value = esistente.gusto;
-  form.querySelector("#commentoRecensione").value = esistente.commento ?? "";
+  if (youtubeEmbed) {
+    inizializzaAnteprimaVideo(youtubeEmbed);
+  }
 }
 
 export function mostraElencoRecensioni(idRicetta, ricettaCorrente) {
   const contenitore = document.getElementById("contenitoreRecensioni");
   const recensioni = ottieniRecensioni().filter(recensione => recensione.idRicetta === idRicetta);
   if (recensioni.length === 0) {
-    contenitore.innerHTML = '<p class="text-muted">Ancora nessuna recensione per questa ricetta.</p>';
+    contenitore.innerHTML =
+      '<p class="text-muted">Ancora nessuna recensione per questa ricetta.</p>';
     return;
   }
   const utenti = ottieniUtenti();
@@ -127,40 +165,33 @@ export function mostraElencoRecensioni(idRicetta, ricettaCorrente) {
       return creaCardRecensione(recensione, ricettaFittizia, autore);
     })
     .join("");
-  contenitore.innerHTML = schede;
+  contenitore.innerHTML = `<div class="row g-3">${schede}</div>`;
 }
 
-export function gestisciInvioRecensione(idRicetta, form, ricettaCorrente = null) {
-  const utente = ottieniUtenteCorrente();
-  if (!utente) {
-    window.location.hash = "#/accesso";
-    return;
-  }
-  const dataPreparazione = form.querySelector("#dataRecensione").value;
-  const difficolta = Number(form.querySelector("#difficoltaRecensione").value);
-  const gusto = Number(form.querySelector("#gustoRecensione").value);
-  const commento = form.querySelector("#commentoRecensione").value.trim();
-  if (!dataPreparazione || difficolta < 1 || gusto < 1) {
-    return;
-  }
-  const recensioni = ottieniRecensioni();
-  const indiceEsistente = recensioni.findIndex(
-    recensione => recensione.idRicetta === idRicetta && recensione.idUtente === utente.id
-  );
-  const datiRecensione = {
-    id: indiceEsistente !== -1 ? recensioni[indiceEsistente].id : generaId("recensione"),
-    idRicetta,
-    idUtente: utente.id,
-    dataPreparazione,
-    difficolta,
-    gusto,
-    commento
+function estraiIdYoutube(url) {
+  if (!url) return null;
+  const match = url.match(/(?:v=|be\/|embed\/)([A-Za-z0-9_-]{11})/);
+  return match?.[1] ?? null;
+}
+
+function inizializzaAnteprimaVideo(embedUrl) {
+  const anteprima = document.getElementById("anteprimaVideo");
+  if (!anteprima) return;
+  const attivaPlayer = () => {
+    anteprima.innerHTML = `
+      <div class="ratio ratio-16x9">
+        <iframe src="${embedUrl}?autoplay=1" title="Video ricetta" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+      </div>
+    `;
+    anteprima.removeEventListener("click", attivaPlayer);
+    anteprima.removeEventListener("keydown", onKeyDown);
   };
-  if (indiceEsistente !== -1) {
-    recensioni[indiceEsistente] = datiRecensione;
-  } else {
-    recensioni.push(datiRecensione);
-  }
-  salvaRecensioni(recensioni);
-  mostraElencoRecensioni(idRicetta, ricettaCorrente);
+  const onKeyDown = evento => {
+    if (evento.key === "Enter" || evento.key === " ") {
+      evento.preventDefault();
+      attivaPlayer();
+    }
+  };
+  anteprima.addEventListener("click", attivaPlayer);
+  anteprima.addEventListener("keydown", onKeyDown);
 }
