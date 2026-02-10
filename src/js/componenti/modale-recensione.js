@@ -1,5 +1,9 @@
-import { ottieniUtenteCorrente, ottieniRecensioni, salvaRecensioni } from "../storage.js";
-import { generaId } from "../ui.js";
+import {
+  ottieniUtenteCorrente,
+  ottieniRecensioniRicetta,
+  salvaRecensioniRicetta,
+  generaIdRecensione
+} from "../storage.js";
 
 let contestoModale = {
   ricetta: null,
@@ -27,47 +31,35 @@ export function renderModaleRecensione(ricetta) {
                 <input type="date" class="form-control" id="dataRecensione" required />
               </div>
               <div class="col-md-4">
-                <label class="form-label" for="stelleRecensione">Valutazione</label>
-                <select class="form-select" id="stelleRecensione" required>
-                  <option value="5">5 &#9733;</option>
-                  <option value="4" selected>4 &#9733;</option>
-                  <option value="3">3 &#9733;</option>
-                  <option value="2">2 &#9733;</option>
-                  <option value="1">1 &#9733;</option>
+                <label class="form-label" for="difficoltaRecensione">Difficolta (1-5)</label>
+                <select class="form-select" id="difficoltaRecensione" required>
+                  <option value="5">5</option>
+                  <option value="4">4</option>
+                  <option value="3" selected>3</option>
+                  <option value="2">2</option>
+                  <option value="1">1</option>
                 </select>
               </div>
               <div class="col-md-4">
-                <label class="form-label" for="tempoRecensione">Tempo preparazione (min)</label>
-                <input type="number" min="0" class="form-control" id="tempoRecensione" placeholder="Es. 45" />
-              </div>
-            </div>
-            <div class="row g-3 align-items-end">
-              <div class="col-md-6">
-                <label class="form-label" for="difficoltaRecensione">Difficoltà</label>
-                <select class="form-select" id="difficoltaRecensione" required>
-                  <option value="facile">Facile</option>
-                  <option value="media" selected>Media</option>
-                  <option value="difficile">Difficile</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="consiglioRecensione">La consiglieresti?</label>
-                <select class="form-select" id="consiglioRecensione">
-                  <option value="si" selected>Sì, assolutamente</option>
-                  <option value="forse">Forse</option>
-                  <option value="no">No</option>
+                <label class="form-label" for="gustoRecensione">Gusto (1-5)</label>
+                <select class="form-select" id="gustoRecensione" required>
+                  <option value="5">5</option>
+                  <option value="4" selected>4</option>
+                  <option value="3">3</option>
+                  <option value="2">2</option>
+                  <option value="1">1</option>
                 </select>
               </div>
             </div>
             <div>
-              <label class="form-label" for="testoRecensione">Raccontaci la tua esperienza</label>
+              <label class="form-label" for="testoRecensione">Commento (opzionale)</label>
               <textarea class="form-control" id="testoRecensione" rows="4" placeholder="Note, varianti, abbinamenti..."></textarea>
             </div>
           </form>
         </div>
         <div class="cc-modal-footer">
           <button type="button" class="btn btn-contorno-accento" id="modalRecensioneAnnulla">Chiudi</button>
-          <button type="submit" class="btn btn-primary" id="modalRecensioneConferma" form="formRecensioneModal">Pubblica recensione</button>
+          <button type="submit" class="btn btn-primary" id="modalRecensioneConferma" form="formRecensioneModal">Salva recensione</button>
         </div>
       </div>
     </div>
@@ -118,35 +110,40 @@ function gestisciInvioRecensione(evento) {
     return;
   }
   const idRicetta = contestoModale.ricetta.id;
-  const dataPreparazione = form.querySelector("#dataRecensione").value;
-  const difficolta = form.querySelector("#difficoltaRecensione").value;
-  const valutazione = Number(form.querySelector("#stelleRecensione").value);
-  const tempoPreparazione = Number(form.querySelector("#tempoRecensione").value) || null;
-  const consigliata = form.querySelector("#consiglioRecensione").value;
+  const cookedAt = form.querySelector("#dataRecensione").value;
+  const difficulty = Number(form.querySelector("#difficoltaRecensione").value);
+  const taste = Number(form.querySelector("#gustoRecensione").value);
   const commento = form.querySelector("#testoRecensione").value.trim();
-  if (!dataPreparazione || valutazione < 1) return;
+  if (!cookedAt || !difficulty || !taste) {
+    form.reportValidity();
+    return;
+  }
 
-  const recensioni = ottieniRecensioni();
+  const recensioni = ottieniRecensioniRicetta(idRicetta);
   const indiceEsistente = recensioni.findIndex(
-    recensione => recensione.idRicetta === idRicetta && recensione.idUtente === utente.id
+    recensione => recensione.idUtente === utente.id
   );
+  const now = new Date().toISOString();
   const datiRecensione = {
-    id: indiceEsistente !== -1 ? recensioni[indiceEsistente].id : generaId("recensione"),
-    idRicetta,
-    idUtente: utente.id,
-    dataPreparazione,
-    difficolta,
-    valutazione,
-    tempoPreparazione,
-    consigliata,
-    commento
+    id: indiceEsistente !== -1 ? recensioni[indiceEsistente].id : generaIdRecensione(),
+    userId: utente.id,
+    cookedAt,
+    difficulty,
+    taste,
+    commento,
+    createdAt:
+      indiceEsistente !== -1
+        ? recensioni[indiceEsistente].createdAt ?? now
+        : now,
+    updatedAt: now
   };
+
   if (indiceEsistente !== -1) {
     recensioni[indiceEsistente] = datiRecensione;
   } else {
     recensioni.push(datiRecensione);
   }
-  salvaRecensioni(recensioni);
+  salvaRecensioniRicetta(idRicetta, recensioni);
   salvaSnapshotFormRecensione(form);
   chiudiModalRecensione(false);
   if (typeof contestoModale.onSalvata === "function") {
@@ -156,20 +153,13 @@ function gestisciInvioRecensione(evento) {
 
 function compilaFormRecensione(form, idRicetta) {
   const utente = ottieniUtenteCorrente();
-  const esistente = ottieniRecensioni().find(
-    recensione => recensione.idRicetta === idRicetta && recensione.idUtente === utente?.id
+  const esistente = ottieniRecensioniRicetta(idRicetta).find(
+    recensione => recensione.idUtente === utente?.id
   );
   const oggi = new Date().toISOString().split("T")[0];
-  form.querySelector("#dataRecensione").value = esistente?.dataPreparazione ?? oggi;
-  form.querySelector("#difficoltaRecensione").value = esistente?.difficolta ?? "media";
-  form.querySelector("#stelleRecensione").value = esistente?.valutazione ?? esistente?.gusto ?? 4;
-  form.querySelector("#tempoRecensione").value = esistente?.tempoPreparazione ?? "";
-  form.querySelector("#consiglioRecensione").value =
-    esistente?.consigliata === false
-      ? "no"
-      : esistente?.consigliata === "forse"
-        ? "forse"
-        : "si";
+  form.querySelector("#dataRecensione").value = esistente?.cookedAt ?? oggi;
+  form.querySelector("#difficoltaRecensione").value = String(esistente?.difficulty ?? 3);
+  form.querySelector("#gustoRecensione").value = String(esistente?.taste ?? 4);
   form.querySelector("#testoRecensione").value = esistente?.commento ?? "";
   salvaSnapshotFormRecensione(form);
 }
@@ -188,10 +178,8 @@ function formSporco(form) {
 function snapshotFormRecensione(form) {
   return {
     data: form.querySelector("#dataRecensione")?.value || "",
-    stelle: form.querySelector("#stelleRecensione")?.value || "",
-    tempo: form.querySelector("#tempoRecensione")?.value || "",
     difficolta: form.querySelector("#difficoltaRecensione")?.value || "",
-    consiglio: form.querySelector("#consiglioRecensione")?.value || "",
+    gusto: form.querySelector("#gustoRecensione")?.value || "",
     testo: (form.querySelector("#testoRecensione")?.value || "").trim()
   };
 }

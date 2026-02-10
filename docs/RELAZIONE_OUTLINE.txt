@@ -1,0 +1,56 @@
+RELAZIONE_OUTLINE – CyberCuisine
+
+1. Introduzione
+   - Obiettivo del progetto e scenario richiesto dal corso.
+   - Tecnologie usate: HTML5, CSS3, JS vanilla, Bootstrap, TheMealDB, Web Storage.
+
+2. Requisiti del docente e interpretazione
+   - Elenco macro-scenari richiesti.
+   - Scelte implementative per rispettare lo startup con dati in localStorage.
+
+3. Architettura dell’app
+   - SPA con hash routing e frammenti HTML.
+   - Moduli JS principali e responsabilita.
+   - Flusso di rendering e routing.
+
+4. Modello dati e web storage
+   - Schema versionato e chiavi usate.
+   - Descrizione JSON per ogni chiave.
+   - Politiche di migrazione e compatibilita.
+
+5. Pipeline di startup
+   - Inizializzazione storage + migrazione.
+   - Download seed da TheMealDB.
+   - Popolamento cache e rendering immediato.
+   - Eventuale refresh in background.
+
+6. Integrazione TheMealDB
+   - Endpoint usati.
+   - Normalizzazione dati (ingredienti, immagini, istruzioni).
+   - Strategia di caching.
+
+7. Flussi funzionali
+   - Registrazione e login.
+   - Profilo (modifica, eliminazione).
+   - Ricerca ricette (nome, ingrediente, lettera).
+   - Ricettario personale e note private.
+   - Recensioni (data, difficolta, gusto, CRUD).
+
+8. Sicurezza e gestione credenziali
+   - Hash + salt con Web Crypto.
+   - Sessione utente con chiave dedicata.
+   - Motivazioni e limiti didattici.
+
+9. UI/UX e accessibilita
+   - Coerenza Bootstrap.
+   - Stati vuoti, spinners, feedback utente.
+   - Modal per conferme.
+
+10. Test manuali
+   - Checklist rapida per ogni scenario.
+
+11. Screenshot richiesti
+   - Elenco delle schermate con riferimento ai requisiti.
+
+12. Conclusioni
+   - Risultati ottenuti, possibili estensioni future.

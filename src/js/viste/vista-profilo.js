@@ -1,7 +1,13 @@
-import { ottieniUtenteCorrente, salvaUtente, rimuoviUtente } from "../storage.js";
+import {
+  ottieniUtenteCorrente,
+  salvaUtente,
+  rimuoviUtente,
+  ottieniRecensioni
+} from "../storage.js";
 import { mostraAvviso } from "../ui.js";
 import { gestisciLogout } from "../navbar.js";
 import { ottieniAreeCucina } from "../gestione-api/api.js";
+import { creaCredenzialiPassword, verificaPassword } from "../auth.js";
 
 export function inizializzaVistaProfilo() {
   const utente = ottieniUtenteCorrente();
@@ -33,9 +39,10 @@ export function inizializzaVistaProfilo() {
     mostraModalPassword();
   });
 
-  confermaModal?.addEventListener("click", () => {
+  confermaModal?.addEventListener("click", async () => {
     const pwd = campoPasswordModal.value;
-    if (pwd !== utente.password) {
+    const ok = await verificaPassword(pwd, utente);
+    if (!ok) {
       erroreModal.textContent = "Password errata.";
       erroreModal.classList.remove("d-none");
       return;
@@ -51,19 +58,31 @@ export function inizializzaVistaProfilo() {
   chiudiModal?.addEventListener("click", nascondiModalPassword);
   annullaModal?.addEventListener("click", nascondiModalPassword);
 
-  form?.addEventListener("submit", event => {
+  form?.addEventListener("submit", async event => {
     event.preventDefault();
     const profiloAggiornato = raccogliProfilo(utente);
     if (!profiloAggiornato.email || !profiloAggiornato.nome || !profiloAggiornato.cognome) {
       mostraAvviso(avvisoErroreProfilo, "Compila tutti i campi obbligatori.");
       return;
     }
+    const nuovaPassword = document.getElementById("passwordProfilo").value.trim();
+    if (nuovaPassword) {
+      if (nuovaPassword.length < 6) {
+        mostraAvviso(avvisoErroreProfilo, "La password deve contenere almeno 6 caratteri.");
+        return;
+      }
+      const credenziali = await creaCredenzialiPassword(nuovaPassword);
+      profiloAggiornato.passwordHash = credenziali.passwordHash;
+      profiloAggiornato.salt = credenziali.salt;
+    }
+    profiloAggiornato.updatedAt = new Date().toISOString();
     salvaUtente(profiloAggiornato);
     mostraInfoProfilo(profiloAggiornato);
     mostraAvviso(avvisoSuccessoProfilo, "Profilo aggiornato con successo.", "success");
     setCampiAbilitati(false);
     bottoneSalva.classList.add("d-none");
     bottoneModifica.classList.remove("d-none");
+    document.getElementById("passwordProfilo").value = "";
   });
 
   bottoneElimina?.addEventListener("click", () => {
@@ -94,7 +113,9 @@ export function inizializzaVistaProfilo() {
 export function mostraInfoProfilo(utente) {
   const contenitoreProfilo = document.getElementById("infoProfilo");
   const conteggioRicettario = utente.ricettario?.length ?? 0;
-  const conteggioRecensioni = (utente.recensioni ?? 0) || 0;
+  const conteggioRecensioni = ottieniRecensioni().filter(
+    recensione => recensione.idUtente === utente.id
+  ).length;
   contenitoreProfilo.innerHTML = `
         <div class="row g-3 align-items-center">
             <div class="col-md-6">
@@ -119,10 +140,13 @@ function compilaForm(utente) {
   document.getElementById("emailProfilo").value = utente.email ?? "";
   document.getElementById("paeseOrigineProfilo").value = utente.paeseOrigine ?? "";
   document.getElementById("paeseResidenzaProfilo").value = utente.paeseResidenza ?? "";
-  document.getElementById("passwordProfilo").value = utente.password ?? "";
+  document.getElementById("piattiPreferitiProfilo").value =
+    (utente.favoriteDishes ?? []).join(", ");
+  document.getElementById("passwordProfilo").value = "";
 }
 
 function raccogliProfilo(utente) {
+  const piattiPreferitiRaw = document.getElementById("piattiPreferitiProfilo").value.trim();
   return {
     ...utente,
     nome: document.getElementById("nomeProfilo").value.trim(),
@@ -130,7 +154,7 @@ function raccogliProfilo(utente) {
     email: document.getElementById("emailProfilo").value.trim(),
     paeseOrigine: document.getElementById("paeseOrigineProfilo").value.trim(),
     paeseResidenza: document.getElementById("paeseResidenzaProfilo").value.trim(),
-    password: document.getElementById("passwordProfilo").value.trim()
+    favoriteDishes: normalizzaPreferiti(piattiPreferitiRaw)
   };
 }
 
@@ -152,4 +176,12 @@ function popolaSelectAree(utente) {
     selectOrigine.value = utente.paeseOrigine ?? "";
     selectResidenza.value = utente.paeseResidenza ?? "";
   });
+}
+
+function normalizzaPreferiti(valore) {
+  if (!valore) return [];
+  return valore
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
 }

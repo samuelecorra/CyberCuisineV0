@@ -10,7 +10,11 @@
 import { BASE_API } from "../costanti.js"; // Costante base URL API per The MealDB
 import {
   ottieniCacheRicette, // tutte le funzioni di utility per la gestione della cache
-  salvaCacheRicette
+  salvaCacheRicette,
+  ottieniMetaApp,
+  aggiornaCacheInfoRicette,
+  ottieniCacheAree,
+  salvaCacheAree
 } from "../storage.js";
 
 // Chiamata generica alle API TheMealDB
@@ -28,28 +32,115 @@ export async function interrogaApi(endpoint) {
 // organizzato e modulare.
 
 const LETTERE_CATALOGO = "abcdefghijklmnopqrstuvwxyz".split("");
+const LETTERE_SEED = ["a", "b", "c"];
+const TTL_CACHE_ORE = 72;
 
 // --------------------------
-// Prefetch completo del catalogo da usare localmente
+// Precaricamento catalogo (seed + refresh)
 // --------------------------
 export async function precaricaCatalogoRicette() {
+  const cache = ottieniCacheRicette();
+  const infoCache = ottieniMetaApp()?.apiCacheInfo?.recipes ?? {};
+
+  if (Object.keys(cache).length > 0) {
+    if (cacheScaduta(infoCache.lastFetchAt, infoCache.ttlHours ?? TTL_CACHE_ORE)) {
+      aggiornaCatalogoInBackground(infoCache.complete ? LETTERE_CATALOGO : LETTERE_SEED, {
+        complete: Boolean(infoCache.complete)
+      });
+    }
+    return ordinaRicette(Object.values(cache));
+  }
+
   try {
-    const risposte = await Promise.all(
-      LETTERE_CATALOGO.map(lettera => interrogaApi(`search.php?f=${encodeURIComponent(lettera)}`))
-    );
-    const ricette = risposte.flatMap(dati => normalizzaElencoRicette(dati.meals));
-    const dizionario = {};
-    ricette.forEach(ricetta => {
-      if (ricetta?.id) {
-        dizionario[ricetta.id] = ricetta;
-      }
-    });
+    const ricette = await scaricaRicettePerLettere(LETTERE_SEED);
+    const dizionario = indicizzaRicette(ricette);
     salvaCacheRicette(dizionario);
+    aggiornaCacheInfoRicette({
+      strategy: "letters",
+      seedLetters: LETTERE_SEED,
+      lastFetchAt: new Date().toISOString(),
+      ttlHours: TTL_CACHE_ORE,
+      complete: false
+    });
+    return ordinaRicette(Object.values(dizionario));
+  } catch (errore) {
+    console.error("Impossibile precaricare il catalogo base", errore);
+    return ordinaRicette(ottieniCatalogoLocale());
+  }
+}
+
+export async function precaricaCatalogoCompleto() {
+  const cache = ottieniCacheRicette();
+  const infoCache = ottieniMetaApp()?.apiCacheInfo?.recipes ?? {};
+  if (
+    Object.keys(cache).length > 0 &&
+    infoCache.complete &&
+    !cacheScaduta(infoCache.lastFetchAt, infoCache.ttlHours ?? TTL_CACHE_ORE)
+  ) {
+    return ordinaRicette(Object.values(cache));
+  }
+  try {
+    const ricette = await scaricaRicettePerLettere(LETTERE_CATALOGO);
+    const dizionario = indicizzaRicette(ricette);
+    salvaCacheRicette(dizionario);
+    aggiornaCacheInfoRicette({
+      strategy: "letters",
+      seedLetters: LETTERE_SEED,
+      lastFetchAt: new Date().toISOString(),
+      ttlHours: TTL_CACHE_ORE,
+      complete: true
+    });
     return ordinaRicette(Object.values(dizionario));
   } catch (errore) {
     console.error("Impossibile precaricare l'intero catalogo", errore);
     return ordinaRicette(ottieniCatalogoLocale());
   }
+}
+
+async function scaricaRicettePerLettere(lettere) {
+  const risposte = await Promise.all(
+    lettere.map(lettera => interrogaApi(`search.php?f=${encodeURIComponent(lettera)}`))
+  );
+  return risposte.flatMap(dati => normalizzaElencoRicette(dati.meals));
+}
+
+function indicizzaRicette(ricette) {
+  const dizionario = {};
+  ricette.forEach(ricetta => {
+    if (ricetta?.id) {
+      dizionario[ricetta.id] = ricetta;
+    }
+  });
+  return dizionario;
+}
+
+function cacheScaduta(lastFetchAt, ttlHours) {
+  if (!lastFetchAt) return true;
+  const last = new Date(lastFetchAt).getTime();
+  if (Number.isNaN(last)) return true;
+  const ms = Date.now() - last;
+  const ttlMs = (ttlHours ?? TTL_CACHE_ORE) * 60 * 60 * 1000;
+  return ms > ttlMs;
+}
+
+function aggiornaCatalogoInBackground(lettere, info = {}) {
+  (async () => {
+    try {
+      const ricette = await scaricaRicettePerLettere(lettere);
+      const nuovi = indicizzaRicette(ricette);
+      const cacheAttuale = ottieniCacheRicette();
+      salvaCacheRicette({ ...cacheAttuale, ...nuovi });
+      aggiornaCacheInfoRicette({
+        strategy: "letters",
+        seedLetters: LETTERE_SEED,
+        lastFetchAt: new Date().toISOString(),
+        ttlHours: TTL_CACHE_ORE,
+        complete: Boolean(info.complete)
+      });
+    } catch (errore) {
+      console.warn("Aggiornamento catalogo in background fallito", errore);
+    }
+  })();
 }
 
 function ottieniCatalogoLocale() {
@@ -97,7 +188,21 @@ export async function cercaRicettePerIngrediente(ingrediente) {
 export async function recuperaRicettaPerId(id) {
   if (!id) return null;
   const cache = ottieniCacheRicette();
-  return cache?.[id] ?? null;
+  if (cache?.[id]) {
+    return cache[id];
+  }
+  try {
+    const dati = await interrogaApi(`lookup.php?i=${encodeURIComponent(id)}`);
+    const ricetta = normalizzaElencoRicette(dati.meals)[0] ?? null;
+    if (ricetta?.id) {
+      salvaCacheRicette({ ...cache, [ricetta.id]: ricetta });
+      aggiornaCacheInfoRicette({ lastFetchAt: new Date().toISOString() });
+    }
+    return ricetta;
+  } catch (errore) {
+    console.error("Impossibile recuperare la ricetta", errore);
+    return null;
+  }
 }
 
 export async function cercaRicettePerArea(area, limite = 4) {
@@ -126,6 +231,11 @@ export async function ottieniAreeCucina() {
   if (cacheAree) {
     return cacheAree; // Se la cache è già popolata, la restituiamo direttamente
   }
+  const cacheLocale = ottieniCacheAree();
+  if (cacheLocale?.items?.length) {
+    cacheAree = cacheLocale.items;
+    return cacheAree;
+  }
   // Se invece la cache è vuota (prima chiamata), interroghiamo l'API
   const dati = await interrogaApi("list.php?a=list"); // Endpoint per ottenere le aree di cucina
   const aree = (dati.meals ?? []) // dati.meals è un array di oggetti con proprietà strArea, ovvero il nome in inglese dell'area:
@@ -143,6 +253,7 @@ export async function ottieniAreeCucina() {
     .sort((a, b) => a.nomeIt.localeCompare(b.nomeIt, "it")); // Infine ordiniamo l'elenco in ordine alfabetico basato sul nome in italiano, così
   // da non dover sopportare la fastidiosa e incoerente organizzazione data da TheMealDB, che è casuale e non localizzata.
   cacheAree = aree;
+  salvaCacheAree(aree);
   return aree;
 }
 

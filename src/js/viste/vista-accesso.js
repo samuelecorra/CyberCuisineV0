@@ -1,6 +1,7 @@
 import { ottieniUtenteCorrente, ottieniUtenti, impostaUtenteCorrente } from "../storage.js";
 import { mostraAvviso } from "../ui.js";
 import { aggiornaStatoAuthNav } from "../navbar.js";
+import { verificaPassword } from "../auth.js";
 
 export function inizializzaVistaLogin() {
   if (ottieniUtenteCorrente()) {
@@ -19,24 +20,31 @@ export function inizializzaVistaLogin() {
   const credenzialiSalvate = caricaCredenzialiSalvate();
   if (credenzialiSalvate) {
     document.getElementById("identificatoreLogin").value = credenzialiSalvate.identificatore;
-    document.getElementById("passwordLogin").value = credenzialiSalvate.password;
     checkRicorda.checked = true;
   }
-  form?.addEventListener("submit", event => {
+  form?.addEventListener("submit", async event => {
     event.preventDefault();
     const identificatore = document.getElementById("identificatoreLogin").value.trim();
     const password = document.getElementById("passwordLogin").value.trim();
+    if (!identificatore || !password) {
+      mostraAvviso(boxAvviso, "Inserisci username/email e password.");
+      return;
+    }
     const utenti = ottieniUtenti();
     const utente = utenti.find(
-      u =>
-        (u.nomeUtente === identificatore || u.email === identificatore) && u.password === password
+      u => u.nomeUtente === identificatore || u.username === identificatore || u.email === identificatore
     );
     if (!utente) {
       mostraAvviso(boxAvviso, "Credenziali non valide.");
       return;
     }
+    const ok = await verificaPassword(password, utente);
+    if (!ok) {
+      mostraAvviso(boxAvviso, "Credenziali non valide.");
+      return;
+    }
     if (checkRicorda?.checked) {
-      salvaCredenziali(identificatore, password);
+      salvaCredenziali(identificatore);
     } else {
       rimuoviCredenzialiSalvate();
     }
@@ -54,9 +62,9 @@ export function inizializzaVistaLogin() {
 
 const CHIAVE_RICORDA = "cc_accesso_ricorda";
 
-function salvaCredenziali(identificatore, password) {
+function salvaCredenziali(identificatore) {
   try {
-    sessionStorage.setItem(CHIAVE_RICORDA, JSON.stringify({ identificatore, password }));
+    sessionStorage.setItem(CHIAVE_RICORDA, JSON.stringify({ identificatore }));
   } catch (e) {
     // silenzioso
   }

@@ -2,7 +2,7 @@ import {
   cercaRicettePerLettera,
   cercaRicettePerNome,
   cercaRicettePerIngrediente,
-  ottieniCatalogoOrdinato
+  precaricaCatalogoCompleto
 } from "../gestione-api/api.js";
 import { creaCardRicetta } from "../componenti/carte.js";
 import { statoApp } from "../stato.js";
@@ -89,7 +89,7 @@ async function gestisciCaricamentoCatalogo() {
 
   try {
     await attendiIntermezzo();
-    const ricette = recuperaCatalogoCompleto();
+    const ricette = await precaricaCatalogoCompleto();
     statoApp.catalogoCompleto = ricette;
     statoApp.risultatiRicerca = ricette;
     mostraRisultatiRicerca(ricette);
@@ -103,15 +103,6 @@ async function gestisciCaricamentoCatalogo() {
     pulsante.textContent = testoOriginale;
     nascondiSpinnerCatalogo();
   }
-}
-
-function recuperaCatalogoCompleto() {
-  if (statoApp.catalogoCompleto.length > 0) {
-    return statoApp.catalogoCompleto;
-  }
-  const catalogo = ottieniCatalogoOrdinato();
-  statoApp.catalogoCompleto = catalogo;
-  return catalogo;
 }
 
 function aggiornaPlaceholderRicerca() {

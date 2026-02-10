@@ -77,35 +77,38 @@ export function creaCardRicettario(ricetta, nota = "") {
     `;
 }
 
-export function creaCardRecensione(recensione, ricetta, autore = "Utente") {
-  const valutazione = recensione.valutazione ?? recensione.gusto ?? null;
-  const difficolta = recensione.difficolta ?? "N/D";
-  const tempo = recensione.tempoPreparazione ? `${recensione.tempoPreparazione} min` : "N/D";
-  const consigliata =
-    recensione.consigliata === "no"
-      ? "No"
-      : recensione.consigliata === "forse"
-        ? "Forse"
-        : "Sì";
+export function creaCardRecensione(recensione, ricetta, autore = "Utente", opzioni = {}) {
+  const difficolta = formattaVoto(recensione.difficulty ?? recensione.difficolta);
+  const gusto = formattaVoto(recensione.taste ?? recensione.valutazione ?? recensione.gusto);
+  const dataPreparazione =
+    recensione.cookedAt ?? recensione.dataPreparazione ?? "Data non disponibile";
+  const pulsanteRimuovi = opzioni.mostraRimuovi
+    ? `<button class="btn btn-danger mt-2" data-rimuovi-recensione="${recensione.id}" data-ricetta-id="${recensione.idRicetta}">Rimuovi recensione</button>`
+    : "";
   return `
         <div class="col-md-6">
             <div class="card card-bagliore h-100">
                 <div class="card-body">
                     <p class="small testo-accento mb-1">${autore}</p>
                     <h3 class="h5">${ricetta?.nome ?? "Ricetta"}</h3>
-                    <p class="text-muted">Preparata il ${recensione.dataPreparazione ?? "Data non disponibile"}</p>
-                    <p class="mb-1">Valutazione: <strong>${valutazione ? `${valutazione}/5` : "N/D"}</strong></p>
-                    <p class="mb-1">Difficoltà: <strong>${difficolta}</strong></p>
-                    <p class="mb-1">Tempo: <strong>${tempo}</strong></p>
-                    <p class="mb-1">La consiglieresti? <strong>${consigliata}</strong></p>
+                    <p class="text-muted">Preparata il ${dataPreparazione}</p>
+                    <p class="mb-1">Difficolta: <strong>${difficolta}</strong></p>
+                    <p class="mb-1">Gusto: <strong>${gusto}</strong></p>
                     <p class="small text-muted">${recensione.commento || "Nessun commento."}</p>
                     <a class="btn btn-contorno-accento" href="#/ricetta/${
                       recensione.idRicetta
                     }">Vai alla ricetta</a>
+                    ${pulsanteRimuovi}
                 </div>
             </div>
         </div>
     `;
+}
+
+function formattaVoto(valore) {
+  const numero = Number(valore);
+  if (!numero || Number.isNaN(numero)) return "N/D";
+  return `${numero}/5`;
 }
 
 function escapeHtmlAttribute(valore = "") {

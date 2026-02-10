@@ -1,4 +1,9 @@
-import { ottieniUtenteCorrente, ottieniRecensioni, ottieniUtenti } from "../storage.js";
+import {
+  ottieniUtenteCorrente,
+  ottieniRecensioni,
+  ottieniUtenti,
+  rimuoviRecensione
+} from "../storage.js";
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRecensione } from "../componenti/carte.js";
 
@@ -20,8 +25,20 @@ export async function inizializzaVistaRecensioni() {
     recensioni.map(async recensione => {
       const ricetta = await recuperaRicettaPerId(recensione.idRicetta);
       const autore = utenti.find(u => u.id === recensione.idUtente)?.nomeUtente ?? "Utente";
-      return creaCardRecensione(recensione, ricetta, autore);
+      return creaCardRecensione(recensione, ricetta, autore, { mostraRimuovi: true });
     })
   );
   contenitoreRecensioni.innerHTML = schedeRecensioni.join("");
+
+  contenitoreRecensioni.addEventListener("click", event => {
+    const target = event.target.closest("[data-rimuovi-recensione]");
+    if (!target) return;
+    const idRecensione = target.dataset.rimuoviRecensione;
+    const idRicetta = target.dataset.ricettaId;
+    if (!idRecensione || !idRicetta) return;
+    const conferma = window.confirm("Vuoi rimuovere questa recensione?");
+    if (!conferma) return;
+    rimuoviRecensione(idRicetta, idRecensione, utente.id);
+    inizializzaVistaRecensioni();
+  });
 }

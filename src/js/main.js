@@ -17,11 +17,11 @@ document.addEventListener("keydown", gestisciInvioModalGenerico);
 // Funzione principale di inizializzazione dell'app:
 // E' essenzialmente una serie di chiamate a funzioni di setup e inizializzazione, tutte accorpate in un unico punto per chiarezza e manutenzione.
 async function inizializzaApp() {
-  inizializzaStorage(); // Recupera dati da localStorage/sessionStorage
+  await inizializzaStorage(); // Recupera dati da localStorage/sessionStorage
   impostaEventiAuthNav(); // Imposta eventi per autenticazione e navigazione
   impostaAzioniCarteRicetta(); // Imposta eventi per azioni sulle carte ricetta
   impostaRipristinoEsploraNav(); // Permette di resettare la vista esplora se già attiva
-  statoApp.catalogoCompleto = await precaricaCatalogoRicette(); // Scarica l'intero catalogo una volta sola
+  statoApp.catalogoCompleto = await precaricaCatalogoRicette(); // Scarica il catalogo base una sola volta
   window.addEventListener("hashchange", gestisciCambioRoute); // Gestione cambio route
   await gestisciCambioRoute(); // Gestione route iniziale al caricamento della pagina
 }

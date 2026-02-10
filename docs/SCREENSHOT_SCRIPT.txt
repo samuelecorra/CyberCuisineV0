@@ -1,0 +1,19 @@
+SCREENSHOT_SCRIPT – CyberCuisine
+
+1. Home pubblica con “Ricette in evidenza” visibili.
+2. DevTools Application -> localStorage: `app:meta`, `recipes:cache` popolato.
+3. Registrazione completata (form compilato + conferma).
+4. Login riuscito (navbar con saluto utente).
+5. Profilo utente con dati e preferenze visibili.
+6. Ricerca ricette per nome con risultati.
+7. Ricerca ricette per ingrediente con risultati.
+8. Ricerca ricette per lettera con risultati.
+9. Dettaglio ricetta con ingredienti e istruzioni.
+10. Aggiunta ricetta al ricettario (bottone attivo).
+11. Pagina ricettario con ricette salvate e nota privata.
+12. Inserimento recensione (modale compilata).
+13. Dettaglio ricetta con recensione visibile e voti 1-5.
+14. Pagina “Le tue recensioni” con elenco.
+15. Rimozione recensione (prima/dopo).
+16. DevTools Application -> localStorage: `users`, `session`, `cookbook:<userId>`, `reviews:<recipeId>`.
+17. Logout e ritorno alla home pubblica.

@@ -1,6 +1,7 @@
 import { ottieniUtenteCorrente, ottieniUtenti, salvaUtenti } from "../storage.js";
 import { mostraAvviso, generaId } from "../ui.js";
 import { ottieniAreeCucina } from "../gestione-api/api.js";
+import { creaCredenzialiPassword } from "../auth.js";
 
 // 1. La funzione principale per inizializzare la vista di registrazione
 // è progettata per gestire il flusso di registrazione dell'utente,
@@ -20,7 +21,7 @@ export function inizializzaVistaRegistrazione() {
   popolaSelectAree(); // Popoliamo le select di aree di cucina - vedere riga 87
   const boxAvviso = document.getElementById("avvisoRegistrazione");
   impostaGestioneDocumentiLegali();
-  form?.addEventListener("submit", event => {
+  form?.addEventListener("submit", async event => {
     event.preventDefault();
     const nome = document.getElementById("nomeRegistrazione").value.trim();
     const cognome = document.getElementById("cognomeRegistrazione").value.trim();
@@ -30,6 +31,9 @@ export function inizializzaVistaRegistrazione() {
     const confermaPassword = document.getElementById("confermaPasswordRegistrazione").value.trim();
     const paeseOrigine = document.getElementById("paeseOrigineRegistrazione").value.trim();
     const paeseResidenza = document.getElementById("paeseResidenzaRegistrazione").value.trim();
+    const piattiPreferitiRaw = document
+      .getElementById("piattiPreferitiRegistrazione")
+      .value.trim();
     const accettaTermini = document.getElementById("accettaTermini").checked;
     const accettaPrivacy = document.getElementById("accettaPrivacy").checked;
 
@@ -59,16 +63,20 @@ export function inizializzaVistaRegistrazione() {
       return;
     }
 
+    const { passwordHash, salt } = await creaCredenzialiPassword(password);
     const nuovoUtente = {
       id: generaId("utente"),
-      nome,
-      cognome,
-      nomeUtente,
+      username: nomeUtente,
       email,
-      password,
-      paeseOrigine,
-      paeseResidenza,
-      ricettario: []
+      passwordHash,
+      salt,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      firstName: nome,
+      lastName: cognome,
+      originCountry: paeseOrigine,
+      residenceCountry: paeseResidenza,
+      favoriteDishes: normalizzaPreferiti(piattiPreferitiRaw)
     };
     utenti.push(nuovoUtente);
     salvaUtenti(utenti);
@@ -167,4 +175,12 @@ function nascondiSpinnerRegistrazione() {
   if (!spinner) return;
   spinner.classList.add("d-none");
   spinner.setAttribute("aria-hidden", "true");
+}
+
+function normalizzaPreferiti(valore) {
+  if (!valore) return [];
+  return valore
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
 }

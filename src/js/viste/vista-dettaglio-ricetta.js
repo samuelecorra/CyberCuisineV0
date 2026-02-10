@@ -1,8 +1,9 @@
 import {
   ottieniUtenteCorrente,
-  ottieniRecensioni,
+  ottieniRecensioniRicetta,
   ottieniUtenti,
-  aggiornaRicettario
+  aggiornaRicettario,
+  rimuoviRecensione
 } from "../storage.js";
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRecensione } from "../componenti/carte.js";
@@ -29,8 +30,8 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
   const youtubeEmbed = youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null;
   const utente = ottieniUtenteCorrente();
   const inRicettario = utente?.ricettario?.some(entry => entry.idRicetta === ricetta.id);
-  const recensioneUtente = ottieniRecensioni().find(
-    recensione => recensione.idRicetta === ricetta.id && recensione.idUtente === utente?.id
+  const recensioneUtente = ottieniRecensioniRicetta(ricetta.id).find(
+    recensione => recensione.idUtente === utente?.id
   );
   const badgeEtichette =
     ricetta.etichette?.length > 0
@@ -141,17 +142,18 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
     apriModaleRecensione();
   });
 
-  inizializzaModaleRecensione(ricetta, () => mostraElencoRecensioni(ricetta.id, ricetta));
+  inizializzaModaleRecensione(ricetta, () => mostraElencoRecensioni(ricetta.id, ricetta, utente));
 
-  mostraElencoRecensioni(ricetta.id, ricetta);
+  mostraElencoRecensioni(ricetta.id, ricetta, utente);
+  impostaRimozioneRecensioni(ricetta.id, ricetta, utente);
   if (youtubeEmbed) {
     inizializzaAnteprimaVideo(youtubeEmbed);
   }
 }
 
-export function mostraElencoRecensioni(idRicetta, ricettaCorrente) {
+export function mostraElencoRecensioni(idRicetta, ricettaCorrente, utente) {
   const contenitore = document.getElementById("contenitoreRecensioni");
-  const recensioni = ottieniRecensioni().filter(recensione => recensione.idRicetta === idRicetta);
+  const recensioni = ottieniRecensioniRicetta(idRicetta);
   if (recensioni.length === 0) {
     contenitore.innerHTML =
       '<p class="text-muted">Ancora nessuna recensione per questa ricetta.</p>';
@@ -162,10 +164,30 @@ export function mostraElencoRecensioni(idRicetta, ricettaCorrente) {
     .map(recensione => {
       const ricettaFittizia = ricettaCorrente ?? { id: idRicetta, nome: "Ricetta" };
       const autore = utenti.find(u => u.id === recensione.idUtente)?.nomeUtente ?? "Utente";
-      return creaCardRecensione(recensione, ricettaFittizia, autore);
+      return creaCardRecensione(recensione, ricettaFittizia, autore, {
+        mostraRimuovi: utente && recensione.idUtente === utente.id
+      });
     })
     .join("");
   contenitore.innerHTML = `<div class="row g-3">${schede}</div>`;
+}
+
+function impostaRimozioneRecensioni(idRicetta, ricettaCorrente, utente) {
+  const contenitore = document.getElementById("contenitoreRecensioni");
+  if (!contenitore || !utente) return;
+  contenitore.addEventListener("click", event => {
+    const target = event.target.closest("[data-rimuovi-recensione]");
+    if (!target) return;
+    const idRecensione = target.dataset.rimuoviRecensione;
+    const recipeId = target.dataset.ricettaId || idRicetta;
+    if (!idRecensione || !recipeId) return;
+    const conferma = window.confirm("Vuoi rimuovere questa recensione?");
+    if (!conferma) return;
+    const ok = rimuoviRecensione(recipeId, idRecensione, utente.id);
+    if (ok) {
+      inizializzaVistaDettaglioRicetta(recipeId);
+    }
+  });
 }
 
 function estraiIdYoutube(url) {
