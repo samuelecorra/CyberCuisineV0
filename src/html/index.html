@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
   <head>
     <!-- Set di caratteri -->
@@ -43,54 +43,78 @@
         <button
           class="navbar-toggler"
           type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#ccBarraNav"
-          aria-controls="ccBarraNav"
-          aria-expanded="false"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#ccOffcanvasNav"
+          aria-controls="ccOffcanvasNav"
           aria-label="Toggle navigation"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="ccBarraNav">
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="ccLinkNavigazione">
-            <li class="nav-item">
-              <a class="nav-link" href="#/esplora" id="ccLinkEsplora">Esplora ricette</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#/ricettario">Ricettario</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#/recensioni">Recensioni</a>
-            </li>
-            <li class="nav-item dropdown d-none" id="ccUserMenu">
-              <a
-                class="nav-link dropdown-toggle d-flex align-items-center gap-1"
-                href="#"
-                role="button"
-                id="ccUserMenuToggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <span id="ccUserGreeting">Ciao Chef</span>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="ccUserMenuToggle">
-                <li>
-                  <a class="dropdown-item" href="#/profilo" id="ccGestisciProfilo"
-                    >Gestisci profilo</a
-                  >
-                </li>
-                <li>
-                  <button class="dropdown-item text-danger" type="button" id="ccLogoutTrigger">
-                    Logout
-                  </button>
-                </li>
-              </ul>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" id="ccLinkAccesso" href="#/registrazione">Registrati / Accedi</a>
-            </li>
-          </ul>
+        <div
+          class="offcanvas-lg offcanvas-end"
+          data-bs-theme="dark"
+          tabindex="-1"
+          id="ccOffcanvasNav"
+          aria-labelledby="ccOffcanvasLabel"
+        >
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="ccOffcanvasLabel">Menu</h5>
+            <button
+              type="button"
+              class="cc-menu-close"
+              data-bs-dismiss="offcanvas"
+              data-bs-target="#ccOffcanvasNav"
+              aria-label="Chiudi"
+            >
+              &times;
+            </button>
+          </div>
+          <div class="offcanvas-body">
+            <ul class="navbar-nav ms-auto" id="ccLinkNavigazione">
+              <li class="nav-item">
+                <a class="nav-link" href="#/esplora" id="ccLinkEsplora">Esplora ricette</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#/ricettario">Ricettario</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#/recensioni">Recensioni</a>
+              </li>
+              <li class="nav-item dropdown d-none" id="ccUserMenu">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  id="ccUserMenuToggle"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <span id="ccUserGreeting">Ciao Chef</span>
+                </a>
+                <ul
+                  class="dropdown-menu dropdown-menu-end shadow"
+                  aria-labelledby="ccUserMenuToggle"
+                >
+                  <li>
+                    <a class="dropdown-item" href="#/profilo" id="ccGestisciProfilo"
+                      >Gestisci profilo</a
+                    >
+                  </li>
+                  <li>
+                    <button class="dropdown-item text-danger" type="button" id="ccLogoutTrigger">
+                      Logout
+                    </button>
+                  </li>
+                </ul>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="ccLinkAccesso" href="#/registrazione"
+                  >Registrati / Accedi</a
+                >
+              </li>
+            </ul>
+          </div>
         </div>
       </nav>
     </header>
@@ -100,62 +124,80 @@
 
     <!-- Modal conferma azioni carta ricetta -->
     <div
-      class="cc-modal-backdrop d-none"
+      class="modal fade"
       id="modalAzioniRicetta"
+      tabindex="-1"
+      aria-labelledby="modalAzioniTitolo"
       aria-hidden="true"
-      data-confirm-button="modalAzioniConferma"
     >
-      <div class="cc-modal" role="dialog" aria-labelledby="modalAzioniTitolo" aria-modal="true">
-        <div class="cc-modal-header d-flex justify-content-between align-items-center">
-          <h2 class="h6 mb-0" id="modalAzioniTitolo">Conferma azione</h2>
-          <button
-            class="cc-modal-close"
-            type="button"
-            id="modalAzioniChiudi"
-            aria-label="Chiudi modal"
-          >
-            &times;
-          </button>
-        </div>
-        <div class="cc-modal-body">
-          <p id="modalAzioniMessaggio" class="mb-0"></p>
-        </div>
-        <div class="cc-modal-footer">
-          <button type="button" class="btn btn-contorno-accento" id="modalAzioniAnnulla">
-            Annulla
-          </button>
-          <button type="button" class="btn btn-primary" id="modalAzioniConferma">Conferma</button>
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content cc-modal">
+          <div class="modal-header border-0">
+            <h2 class="h6 mb-0" id="modalAzioniTitolo">Conferma azione</h2>
+            <button
+              class="cc-modal-close"
+              type="button"
+              id="modalAzioniChiudi"
+              aria-label="Chiudi modal"
+              data-bs-dismiss="modal"
+            >
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="modalAzioniMessaggio" class="mb-0"></p>
+          </div>
+          <div class="modal-footer border-0">
+            <button
+              type="button"
+              class="btn btn-contorno-accento"
+              id="modalAzioniAnnulla"
+              data-bs-dismiss="modal"
+            >
+              Annulla
+            </button>
+            <button type="button" class="btn btn-primary" id="modalAzioniConferma">Conferma</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Modal conferma logout -->
     <div
-      class="cc-modal-backdrop d-none"
+      class="modal fade"
       id="modalLogout"
+      tabindex="-1"
+      aria-labelledby="modalLogoutTitolo"
       aria-hidden="true"
-      data-confirm-button="modalLogoutConferma"
     >
-      <div class="cc-modal" role="dialog" aria-labelledby="modalLogoutTitolo" aria-modal="true">
-        <div class="cc-modal-header d-flex justify-content-between align-items-center">
-          <h2 class="h6 mb-0" id="modalLogoutTitolo">Confermi il logout?</h2>
-          <button
-            class="cc-modal-close"
-            type="button"
-            id="modalLogoutChiudi"
-            aria-label="Chiudi modal"
-          >
-            &times;
-          </button>
-        </div>
-        <div class="cc-modal-body">
-          <p class="mb-0">Stai per uscire da CyberCuisine. Vuoi davvero disconnetterti?</p>
-        </div>
-        <div class="cc-modal-footer">
-          <button type="button" class="btn btn-contorno-accento" id="modalLogoutAnnulla">
-            Annulla
-          </button>
-          <button type="button" class="btn btn-danger" id="modalLogoutConferma">Logout</button>
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content cc-modal">
+          <div class="modal-header border-0">
+            <h2 class="h6 mb-0" id="modalLogoutTitolo">Confermi il logout?</h2>
+            <button
+              class="cc-modal-close"
+              type="button"
+              id="modalLogoutChiudi"
+              aria-label="Chiudi modal"
+              data-bs-dismiss="modal"
+            >
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-0">Stai per uscire da CyberCuisine. Vuoi davvero disconnetterti?</p>
+          </div>
+          <div class="modal-footer border-0">
+            <button
+              type="button"
+              class="btn btn-contorno-accento"
+              id="modalLogoutAnnulla"
+              data-bs-dismiss="modal"
+            >
+              Annulla
+            </button>
+            <button type="button" class="btn btn-danger" id="modalLogoutConferma">Logout</button>
+          </div>
         </div>
       </div>
     </div>

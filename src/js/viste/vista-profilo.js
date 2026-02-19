@@ -100,11 +100,27 @@ export function inizializzaVistaProfilo() {
   }
 
   function mostraModalPassword() {
-    modal.classList.remove("d-none");
+    const BootstrapModal = window.bootstrap?.Modal;
+    if (!BootstrapModal) {
+      modal.classList.add("show");
+      modal.style.display = "block";
+      modal.removeAttribute("aria-hidden");
+      return;
+    }
+    const instance = BootstrapModal.getOrCreateInstance(modal, { backdrop: true, keyboard: true });
+    instance.show();
   }
 
   function nascondiModalPassword() {
-    modal.classList.add("d-none");
+    const BootstrapModal = window.bootstrap?.Modal;
+    if (!BootstrapModal) {
+      modal.classList.remove("show");
+      modal.style.display = "none";
+      modal.setAttribute("aria-hidden", "true");
+    } else {
+      const instance = BootstrapModal.getOrCreateInstance(modal);
+      instance.hide();
+    }
     erroreModal?.classList.add("d-none");
     campoPasswordModal.value = "";
   }

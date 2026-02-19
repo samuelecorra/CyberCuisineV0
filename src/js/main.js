@@ -10,9 +10,8 @@ import { statoApp } from "./stato.js";
 // ergo ripassare adeguatamente l'argomento di addEventListener e suoi correlati prima di usarlo!
 document.addEventListener("DOMContentLoaded", inizializzaApp);
 
-// Gestione invio form e modali con tasto Enter
+// Gestione invio form con tasto Enter
 document.addEventListener("keydown", gestisciInvioFormGenerico);
-document.addEventListener("keydown", gestisciInvioModalGenerico);
 
 // Funzione principale di inizializzazione dell'app:
 // E' essenzialmente una serie di chiamate a funzioni di setup e inizializzazione, tutte accorpate in un unico punto per chiarezza e manutenzione.
@@ -55,20 +54,6 @@ function gestisciInvioFormGenerico(evento) {
   } else {
     form.submit();
   }
-}
-
-function gestisciInvioModalGenerico(evento) {
-  if (evento.key !== "Enter") return;
-  const target = evento.target;
-  if (!(target instanceof HTMLElement)) return;
-  const modal = target.closest(".cc-modal-backdrop:not(.d-none)");
-  if (!modal) return;
-  const confirmId = modal.dataset.confirmButton;
-  if (!confirmId) return;
-  const bottoneConferma = document.getElementById(confirmId);
-  if (!bottoneConferma) return;
-  evento.preventDefault();
-  bottoneConferma.click();
 }
 
 // Funzione per impostare il reset della vista esplora quando si clicca sul link di navigazione

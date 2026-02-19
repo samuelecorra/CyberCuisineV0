@@ -86,28 +86,45 @@
 
 <!-- Modal conferma password -->
 <div
-  class="cc-modal-backdrop d-none"
+  class="modal fade"
   id="modalPassword"
-  data-confirm-button="confermaModalPassword"
+  tabindex="-1"
+  aria-labelledby="modalPasswordTitolo"
+  aria-hidden="true"
 >
-  <div class="cc-modal">
-    <div class="cc-modal-header d-flex justify-content-between align-items-center">
-      <h2 class="h6 mb-0">Conferma password</h2>
-      <button class="cc-modal-close" type="button" id="chiudiModalPassword">&times;</button>
-    </div>
-    <div class="cc-modal-body">
-      <p class="mb-3">Inserisci la tua password per abilitare la modifica del profilo.</p>
-      <div class="mb-3">
-        <label for="passwordConfermaProfilo" class="form-label">Password</label>
-        <input type="password" class="form-control" id="passwordConfermaProfilo" />
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content cc-modal">
+      <div class="modal-header border-0">
+        <h2 class="h6 mb-0" id="modalPasswordTitolo">Conferma password</h2>
+        <button
+          class="cc-modal-close"
+          type="button"
+          id="chiudiModalPassword"
+          aria-label="Chiudi modal"
+          data-bs-dismiss="modal"
+        >
+          &times;
+        </button>
       </div>
-      <div class="alert alert-danger d-none" id="erroreModalPassword"></div>
-    </div>
-    <div class="cc-modal-footer">
-      <button type="button" class="btn btn-contorno-accento" id="annullaModalPassword">
-        Annulla
-      </button>
-      <button type="button" class="btn btn-primary" id="confermaModalPassword">Conferma</button>
+      <div class="modal-body">
+        <p class="mb-3">Inserisci la tua password per abilitare la modifica del profilo.</p>
+        <div class="mb-3">
+          <label for="passwordConfermaProfilo" class="form-label">Password</label>
+          <input type="password" class="form-control" id="passwordConfermaProfilo" />
+        </div>
+        <div class="alert alert-danger d-none" id="erroreModalPassword"></div>
+      </div>
+      <div class="modal-footer border-0">
+        <button
+          type="button"
+          class="btn btn-contorno-accento"
+          id="annullaModalPassword"
+          data-bs-dismiss="modal"
+        >
+          Annulla
+        </button>
+        <button type="button" class="btn btn-primary" id="confermaModalPassword">Conferma</button>
+      </div>
     </div>
   </div>
 </div>

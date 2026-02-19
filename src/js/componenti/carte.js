@@ -49,25 +49,51 @@ export function creaCardRicetta(ricetta, stato = {}) {
     `;
 }
 
-export function creaCardRicettario(ricetta, nota = "") {
+export function creaCardRicettario(ricetta) {
+  const nomeRicettaAttr = escapeHtmlAttribute(ricetta.nome ?? "");
   return `
         <div class="col-md-6">
             <div class="card card-bagliore h-100">
                 <div class="row g-0 h-100">
                     <div class="col-md-4">
-                        <img src="${ricetta.miniatura}" class="img-fluid rounded-start h-100 adatta-copertura" alt="${ricetta.nome}" />
+                        <div
+                          class="cc-card-clickable h-100"
+                          role="button"
+                          tabindex="0"
+                          data-apri-dettaglio="true"
+                          data-ricetta-id="${ricetta.id}"
+                          aria-label="Apri i dettagli di ${nomeRicettaAttr}"
+                        >
+                          <img src="${ricetta.miniatura}" class="img-fluid rounded-start h-100 adatta-copertura" alt="${ricetta.nome}" />
+                        </div>
                     </div>
                     <div class="col-md-8">
                         <div class="card-body d-flex flex-column">
-                            <h3 class="h5">${ricetta.nome}</h3>
+                            <h3
+                              class="h5 cc-card-title cc-card-clickable"
+                              role="button"
+                              tabindex="0"
+                              data-apri-dettaglio="true"
+                              data-ricetta-id="${ricetta.id}"
+                              aria-label="Apri i dettagli di ${nomeRicettaAttr}"
+                            >
+                              ${ricetta.nome}
+                            </h3>
                             <p class="text-muted mb-2">${ricetta.categoria} - ${ricetta.area}</p>
-                            <div class="mb-3">
-                                <label class="form-label">Nota privata</label>
-                                <textarea class="form-control" rows="2" data-nota-ricetta="${ricetta.id}">${nota}</textarea>
-                            </div>
                             <div class="mt-auto d-flex gap-2">
-                                <a class="btn btn-contorno-accento" href="#/ricetta/${ricetta.id}">Dettagli</a>
-                                <button class="btn btn-danger" data-rimuovi-ricetta="${ricetta.id}">Rimuovi</button>
+                                <button
+                                  class="btn btn-contorno-accento btn-azione-ricetta"
+                                  data-azione-ricetta="review"
+                                  data-review-mode="write"
+                                  data-review-direct="true"
+                                  data-ricetta-id="${ricetta.id}"
+                                  data-ricetta-nome="${nomeRicettaAttr}"
+                                >
+                                  Scrivi recensione
+                                </button>
+                                <button class="btn btn-danger" data-rimuovi-ricetta="${ricetta.id}">
+                                  Rimuovi dal ricettario
+                                </button>
                             </div>
                         </div>
                     </div>

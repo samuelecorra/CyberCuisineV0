@@ -1,4 +1,4 @@
-import { ottieniUtenteCorrente, aggiornaRicettario, aggiornaNotaRicettario } from "../storage.js";
+import { ottieniUtenteCorrente, aggiornaRicettario } from "../storage.js";
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRicettario } from "../componenti/carte.js";
 
@@ -15,20 +15,18 @@ export async function inizializzaVistaRicettario() {
   const ricetteSalvate = await Promise.all(
     (utente.ricettario ?? []).map(async voce => {
       const ricetta = await recuperaRicettaPerId(voce.idRicetta);
-      return { ricetta, nota: voce.nota ?? "" };
+      return ricetta;
     })
   );
-  badge.textContent = `${ricetteSalvate.filter(item => item.ricetta).length} ricette`;
-  if (ricetteSalvate.length === 0) {
+  const ricetteValide = ricetteSalvate.filter(Boolean);
+  badge.textContent = `${ricetteValide.length} ricette`;
+  if (ricetteValide.length === 0) {
     elenco.innerHTML =
       '<p class="text-muted">Il ricettario è vuoto. Visita una ricetta e salvala.</p>';
     return;
   }
 
-  elenco.innerHTML = ricetteSalvate
-    .filter(item => item.ricetta)
-    .map(({ ricetta, nota }) => creaCardRicettario(ricetta, nota))
-    .join("");
+  elenco.innerHTML = ricetteValide.map(ricetta => creaCardRicettario(ricetta)).join("");
 
   elenco.onclick = event => {
     const target = event.target;
@@ -39,11 +37,5 @@ export async function inizializzaVistaRicettario() {
     }
   };
 
-  elenco.onchange = event => {
-    const target = event.target;
-    if (target.matches("[data-nota-ricetta]")) {
-      const idRicetta = target.dataset.notaRicetta;
-      aggiornaNotaRicettario(idRicetta, target.value);
-    }
-  };
+  elenco.onchange = null;
 }

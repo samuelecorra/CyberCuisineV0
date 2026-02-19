@@ -1,4 +1,5 @@
 import { ottieniUtenteCorrente, ottieniRecensioni, aggiornaRicettario } from "../storage.js";
+import { apriModaleRecensione } from "./modale-recensione.js";
 
 let listenerRegistrato = false;
 let modalElementi = null;
@@ -73,6 +74,17 @@ function gestisciClickAzioneRicetta(evento) {
 
   if (azione === "review") {
     const modalita = pulsante.dataset.reviewMode === "view" ? "view" : "write";
+    const direct = pulsante.dataset.reviewDirect === "true";
+    if (direct) {
+      apriModaleRecensione(
+        {
+          id: ricettaId,
+          nome: ricettaNome || "questa ricetta"
+        },
+        null
+      );
+      return;
+    }
     const titolo = modalita === "view" ? "Guarda la tua recensione" : "Scrivi recensione";
     const messaggio =
       modalita === "view"
@@ -86,7 +98,7 @@ function gestisciClickAzioneRicetta(evento) {
 
 function preparaModalConferma() {
   modalElementi = {
-    backdrop: document.getElementById("modalAzioniRicetta"),
+    modal: document.getElementById("modalAzioniRicetta"),
     titolo: document.getElementById("modalAzioniTitolo"),
     messaggio: document.getElementById("modalAzioniMessaggio"),
     annulla: document.getElementById("modalAzioniAnnulla"),
@@ -94,7 +106,7 @@ function preparaModalConferma() {
     chiudi: document.getElementById("modalAzioniChiudi")
   };
 
-  if (!modalElementi.backdrop) {
+  if (!modalElementi.modal) {
     console.warn(
       "Modal di conferma per le carte non trovata: verranno eseguite le azioni senza conferma."
     );
@@ -103,11 +115,6 @@ function preparaModalConferma() {
 
   modalElementi.annulla?.addEventListener("click", chiudiModalAzioni);
   modalElementi.chiudi?.addEventListener("click", chiudiModalAzioni);
-  modalElementi.backdrop.addEventListener("click", evento => {
-    if (evento.target === modalElementi.backdrop) {
-      chiudiModalAzioni();
-    }
-  });
   modalElementi.conferma?.addEventListener("click", async () => {
     if (!azioneProgrammata) {
       chiudiModalAzioni();
@@ -126,22 +133,20 @@ function preparaModalConferma() {
 }
 
 function mostraModalConferma(titolo, messaggio, onConfirm) {
-  if (!modalElementi?.backdrop) {
+  if (!modalElementi?.modal) {
     onConfirm?.();
     return;
   }
   azioneProgrammata = onConfirm;
   if (modalElementi.titolo) modalElementi.titolo.textContent = titolo;
   if (modalElementi.messaggio) modalElementi.messaggio.textContent = messaggio;
-  modalElementi.backdrop.classList.remove("d-none");
-  modalElementi.backdrop.setAttribute("aria-hidden", "false");
+  mostraBootstrapModal(modalElementi.modal);
   modalElementi.conferma?.focus();
 }
 
 function chiudiModalAzioni() {
-  if (!modalElementi?.backdrop) return;
-  modalElementi.backdrop.classList.add("d-none");
-  modalElementi.backdrop.setAttribute("aria-hidden", "true");
+  if (!modalElementi?.modal) return;
+  nascondiBootstrapModal(modalElementi.modal);
   azioneProgrammata = null;
 }
 
@@ -165,4 +170,28 @@ function escapeForSelector(valore) {
     return window.CSS.escape(valore);
   }
   return String(valore).replace(/"/g, '\\"');
+}
+
+function mostraBootstrapModal(modal) {
+  const BootstrapModal = window.bootstrap?.Modal;
+  if (!BootstrapModal) {
+    modal.classList.add("show");
+    modal.style.display = "block";
+    modal.removeAttribute("aria-hidden");
+    return;
+  }
+  const istanza = BootstrapModal.getOrCreateInstance(modal, { backdrop: true, keyboard: true });
+  istanza.show();
+}
+
+function nascondiBootstrapModal(modal) {
+  const BootstrapModal = window.bootstrap?.Modal;
+  if (!BootstrapModal) {
+    modal.classList.remove("show");
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    return;
+  }
+  const istanza = BootstrapModal.getOrCreateInstance(modal);
+  istanza.hide();
 }

@@ -2,5 +2,6 @@ export const statoApp = {
   cacheFrammenti: {},
   risultatiRicerca: [],
   catalogoCompleto: [],
-  percorsoAttivo: "#/home"
+  percorsoAttivo: "#/home",
+  modalitaEsplora: "search"
 };

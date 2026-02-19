@@ -1,14 +1,20 @@
-/* Stile base per modali riutilizzabili */
-.cc-modal-backdrop {
-  position: fixed;
-  inset: 0;
+/* Stile Bootstrap modal + backdrop */
+.modal-backdrop {
   background: rgba(0, 0, 0, 0.55);
+}
+
+.modal-backdrop.show {
+  opacity: 1;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1500;
+}
+
+.modal {
+  z-index: 1055;
+}
+
+.modal-backdrop {
+  z-index: 1050;
 }
 
 .cc-modal {
@@ -16,13 +22,7 @@
   border: 1px solid var(--cc-border);
   color: var(--cc-text);
   border-radius: 0.75rem;
-  max-width: 480px;
-  width: 90%;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-}
-
-.cc-modal-large {
-  max-width: 840px;
 }
 
 .cc-modal-header,

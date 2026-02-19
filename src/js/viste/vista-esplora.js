@@ -9,10 +9,14 @@ import { statoApp } from "../stato.js";
 import { ottieniStatoAzioniUtente } from "../componenti/azioni-card.js";
 
 const DURATA_INTERMEZZO_MS = 2000; // Piccolo delay per permettere allo spinner di essere percepito
+const LETTERE_ALFABETO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+let observerLettere = null;
 
 export function inizializzaVistaEsplora() {
   if (statoApp.risultatiRicerca.length > 0) {
-    mostraRisultatiRicerca(statoApp.risultatiRicerca);
+    mostraRisultatiRicerca(statoApp.risultatiRicerca, {
+      modalita: statoApp.modalitaEsplora
+    });
   }
   const pulsanteCatalogo = document.getElementById("btnEsploraCatalogo");
   if (pulsanteCatalogo) {
@@ -69,7 +73,8 @@ async function gestisciRicerca(tipoSelezionato) {
   }
 
   statoApp.risultatiRicerca = risultati;
-  mostraRisultatiRicerca(risultati);
+  statoApp.modalitaEsplora = "search";
+  mostraRisultatiRicerca(risultati, { modalita: "search" });
 }
 
 async function gestisciCaricamentoCatalogo() {
@@ -92,7 +97,8 @@ async function gestisciCaricamentoCatalogo() {
     const ricette = await precaricaCatalogoCompleto();
     statoApp.catalogoCompleto = ricette;
     statoApp.risultatiRicerca = ricette;
-    mostraRisultatiRicerca(ricette);
+    statoApp.modalitaEsplora = "catalogo";
+    mostraRisultatiRicerca(ricette, { modalita: "catalogo" });
   } catch (errore) {
     console.error("Errore durante il caricamento del catalogo", errore);
     badgeConteggio.textContent = "Errore caricamento";
@@ -121,26 +127,219 @@ function aggiornaPlaceholderRicerca() {
   campoTermine.placeholder = placeholder;
 }
 
-function mostraRisultatiRicerca(risultati = []) {
+function mostraRisultatiRicerca(risultati = [], opzioni = {}) {
   mostraSezioneRisultati();
   const contenitore = document.getElementById("risultatiRicerca");
   const badgeConteggio = document.getElementById("conteggioRicerca");
   if (!contenitore || !badgeConteggio) return;
+  const modalita = opzioni.modalita || "search";
+  const catalogoCompleto = modalita === "catalogo";
+  aggiornaLayoutCatalogo(catalogoCompleto);
   badgeConteggio.textContent = `${risultati.length} ricette`;
   if (risultati.length === 0) {
     contenitore.innerHTML =
       '<p class="text-muted mb-0">Nessun risultato. Prova con un altro termine.</p>';
     return;
   }
-  const { idsRicettario, idsRecensioni } = ottieniStatoAzioniUtente();
-  contenitore.innerHTML = risultati
-    .map(ricetta =>
-      creaCardRicetta(ricetta, {
-        inRicettario: idsRicettario.has(ricetta.id),
-        haRecensione: idsRecensioni.has(ricetta.id)
-      })
-    )
-    .join("");
+  const statoAzioni = ottieniStatoAzioniUtente();
+  if (catalogoCompleto) {
+    const gruppi = buildAlphabetGroups(risultati);
+    renderAlphabetIndexBar(gruppi);
+    renderCatalogWithSeparators(gruppi, statoAzioni);
+    attachAlphabetNavHandlers(gruppi);
+  } else {
+    resetAlphabetNav(true);
+    contenitore.innerHTML = risultati
+      .map(ricetta =>
+        creaCardRicetta(ricetta, {
+          inRicettario: statoAzioni.idsRicettario.has(ricetta.id),
+          haRecensione: statoAzioni.idsRecensioni.has(ricetta.id)
+        })
+      )
+      .join("");
+  }
+}
+
+function buildAlphabetGroups(ricette = []) {
+  const groups = new Map();
+  LETTERE_ALFABETO.forEach(lettera => groups.set(lettera, []));
+  groups.set("#", []);
+
+  ricette.forEach(ricetta => {
+    const lettera = normalizzaLettera(ricetta?.nome);
+    const gruppo = groups.get(lettera) || groups.get("#");
+    gruppo.push(ricetta);
+  });
+
+  const order = [...LETTERE_ALFABETO];
+  if (groups.get("#")?.length) {
+    order.push("#");
+  }
+
+  const counts = {};
+  order.forEach(lettera => {
+    counts[lettera] = groups.get(lettera)?.length ?? 0;
+  });
+
+  return { groups, order, counts };
+}
+
+function renderCatalogWithSeparators(gruppi, statoAzioni) {
+  const contenitore = document.getElementById("risultatiRicerca");
+  if (!contenitore) return;
+  let html = "";
+  gruppi.order.forEach(lettera => {
+    const elenco = gruppi.groups.get(lettera) || [];
+    if (elenco.length === 0) return;
+    const anchorId = lettera === "#" ? "letter-ALTRO" : `letter-${lettera}`;
+    const titolo = lettera === "#" ? "Altro" : lettera;
+    html += `
+      <div class="col-12">
+        <div class="alpha-separator" id="${anchorId}">
+          <h3 class="alpha-title">${titolo}</h3>
+          <span class="badge bg-accento ms-2">${elenco.length}</span>
+        </div>
+      </div>
+    `;
+    html += elenco
+      .map(ricetta =>
+        creaCardRicetta(ricetta, {
+          inRicettario: statoAzioni.idsRicettario.has(ricetta.id),
+          haRecensione: statoAzioni.idsRecensioni.has(ricetta.id)
+        })
+      )
+      .join("");
+  });
+  contenitore.innerHTML =
+    html || '<p class="text-muted mb-0">Nessuna ricetta disponibile nel catalogo.</p>';
+}
+
+function renderAlphabetIndexBar(gruppi) {
+  const bar = document.getElementById("indiceAlfabeticoBar");
+  if (!bar) return;
+
+  const buttons = LETTERE_ALFABETO.map(lettera => {
+    const count = gruppi.counts?.[lettera] ?? 0;
+    const disabled = count === 0 ? "disabled" : "";
+    return `
+      <button
+        class="btn btn-contorno-accento btn-sm alpha-btn"
+        type="button"
+        data-alpha-letter="${lettera}"
+        ${disabled}
+        aria-label="Vai alla lettera ${lettera}"
+      >
+        ${lettera}
+      </button>
+    `;
+  }).join("");
+
+  const extra =
+    gruppi.counts?.["#"] > 0
+      ? `
+        <button
+          class="btn btn-contorno-accento btn-sm alpha-btn"
+          type="button"
+          data-alpha-letter="#"
+          aria-label="Vai alla sezione Altro"
+        >
+          #
+        </button>
+      `
+      : "";
+
+  bar.classList.remove("d-none");
+  impostaOffsetIndice(bar);
+  bar.innerHTML = `
+    <div class="alpha-index d-flex flex-wrap gap-2 align-items-center">
+      ${buttons}${extra}
+    </div>
+  `;
+}
+
+function attachAlphabetNavHandlers(gruppi) {
+  resetAlphabetNav(false);
+  const buttons = document.querySelectorAll("[data-alpha-letter]");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const lettera = btn.dataset.alphaLetter;
+      const anchorId = lettera === "#" ? "letter-ALTRO" : `letter-${lettera}`;
+      const target = document.getElementById(anchorId);
+      if (!target) return;
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      setLetteraAttiva(lettera);
+    });
+  });
+
+  if (typeof IntersectionObserver !== "undefined") {
+    const separatori = document.querySelectorAll(".alpha-separator");
+    observerLettere = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            if (id === "letter-ALTRO") {
+              setLetteraAttiva("#");
+            } else if (id?.startsWith("letter-")) {
+              setLetteraAttiva(id.replace("letter-", ""));
+            }
+          }
+        });
+      },
+      { rootMargin: "-40% 0px -55% 0px", threshold: 0 }
+    );
+    separatori.forEach(el => observerLettere.observe(el));
+  }
+}
+
+function setLetteraAttiva(lettera) {
+  document.querySelectorAll("[data-alpha-letter]").forEach(btn => {
+    const attiva = btn.dataset.alphaLetter === lettera;
+    btn.classList.toggle("alpha-btn-active", attiva);
+  });
+}
+
+function resetAlphabetNav(pulisci) {
+  if (observerLettere) {
+    observerLettere.disconnect();
+    observerLettere = null;
+  }
+  if (pulisci) {
+    const bar = document.getElementById("indiceAlfabeticoBar");
+    if (bar) {
+      bar.innerHTML = "";
+      bar.classList.add("d-none");
+    }
+  }
+}
+
+function aggiornaLayoutCatalogo(attivo) {
+  const bar = document.getElementById("indiceAlfabeticoBar");
+  if (!bar) return;
+  if (attivo) {
+    bar.classList.remove("d-none");
+    impostaOffsetIndice(bar);
+  } else {
+    bar.classList.add("d-none");
+  }
+}
+
+function impostaOffsetIndice(bar) {
+  const header = document.querySelector(".cc-intestazione");
+  let offset = 12;
+  if (header) {
+    const posizione = window.getComputedStyle(header).position;
+    if (posizione === "fixed" || posizione === "sticky") {
+      offset = header.getBoundingClientRect().height + 12;
+    }
+  }
+  bar.style.setProperty("--alpha-top-offset", `${offset}px`);
+}
+
+function normalizzaLettera(nome) {
+  const prima = String(nome ?? "").trim().charAt(0).toUpperCase();
+  if (LETTERE_ALFABETO.includes(prima)) return prima;
+  return "#";
 }
 
 function mostraSezioneRisultati() {

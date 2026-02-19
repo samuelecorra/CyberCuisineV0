@@ -7,11 +7,7 @@ import {
 } from "../storage.js";
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRecensione } from "../componenti/carte.js";
-import {
-  renderModaleRecensione,
-  inizializzaModaleRecensione,
-  apriModaleRecensione
-} from "../componenti/modale-recensione.js";
+import { apriModaleRecensione } from "../componenti/modale-recensione.js";
 
 export async function inizializzaVistaDettaglioRicetta(idRicetta) {
   const wrapper = document.getElementById("dettaglioRicetta");
@@ -120,7 +116,6 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
         </div>
       </div>
     </div>
-    ${renderModaleRecensione(ricetta)}
   `;
 
   const bottoneRicettario = document.getElementById("bottoneRicettario");
@@ -139,10 +134,8 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
       window.location.hash = "#/accesso";
       return;
     }
-    apriModaleRecensione();
+    apriModaleRecensione(ricetta, () => mostraElencoRecensioni(ricetta.id, ricetta, utente));
   });
-
-  inizializzaModaleRecensione(ricetta, () => mostraElencoRecensioni(ricetta.id, ricetta, utente));
 
   mostraElencoRecensioni(ricetta.id, ricetta, utente);
   impostaRimozioneRecensioni(ricetta.id, ricetta, utente);

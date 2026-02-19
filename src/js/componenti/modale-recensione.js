@@ -10,95 +10,131 @@ let contestoModale = {
   onSalvata: null
 };
 
-export function renderModaleRecensione(ricetta) {
+let modalInstance = null;
+let modalInizializzata = false;
+
+export function apriModaleRecensione(ricetta, onRecensioneSalvata) {
+  if (!ricetta) return;
+  contestoModale = { ricetta, onSalvata: onRecensioneSalvata };
+  const modal = assicuraModale();
+  aggiornaTitolo(ricetta.nome);
+  compilaFormRecensione(modal.querySelector("#formRecensioneModal"), ricetta.id);
+  mostraModale(modal);
+}
+
+function assicuraModale() {
+  let modal = document.getElementById("modalRecensione");
+  if (!modal) {
+    document.body.insertAdjacentHTML("beforeend", templateModaleRecensione());
+    modal = document.getElementById("modalRecensione");
+  }
+  if (!modalInizializzata) {
+    inizializzaEventi(modal);
+    modalInizializzata = true;
+  }
+  return modal;
+}
+
+function templateModaleRecensione() {
   return `
     <div
-      class="cc-modal-backdrop d-none"
+      class="modal fade"
       id="modalRecensione"
+      tabindex="-1"
+      aria-labelledby="modalRecensioneTitolo"
       aria-hidden="true"
-      data-confirm-button="modalRecensioneConferma"
     >
-      <div class="cc-modal cc-modal-large" role="dialog" aria-labelledby="modalRecensioneTitolo" aria-modal="true">
-        <div class="cc-modal-header d-flex justify-content-between align-items-center">
-          <h2 class="h6 mb-0" id="modalRecensioneTitolo">Recensione per "${ricetta.nome}"</h2>
-          <button class="cc-modal-close" type="button" id="modalRecensioneChiudi" aria-label="Chiudi modal">&times;</button>
-        </div>
-        <div class="cc-modal-body">
-          <form id="formRecensioneModal" class="d-flex flex-column gap-3" data-ricetta-id="${ricetta.id}">
-            <div class="row g-3 align-items-end">
-              <div class="col-md-4">
-                <label class="form-label" for="dataRecensione">Data di preparazione</label>
-                <input type="date" class="form-control" id="dataRecensione" required />
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content cc-modal">
+          <div class="modal-header border-0">
+            <h2 class="h6 mb-0" id="modalRecensioneTitolo">Recensione</h2>
+            <button
+              class="cc-modal-close"
+              type="button"
+              aria-label="Chiudi modal"
+              data-bs-dismiss="modal"
+            >&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="formRecensioneModal" class="d-flex flex-column gap-3">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                  <label class="form-label" for="dataRecensione">Data di preparazione</label>
+                  <input type="date" class="form-control" id="dataRecensione" required />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label" for="difficoltaRecensione">Difficolta (1-5)</label>
+                  <select class="form-select" id="difficoltaRecensione" required>
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3" selected>3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label" for="gustoRecensione">Gusto (1-5)</label>
+                  <select class="form-select" id="gustoRecensione" required>
+                    <option value="5">5</option>
+                    <option value="4" selected>4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                  </select>
+                </div>
               </div>
-              <div class="col-md-4">
-                <label class="form-label" for="difficoltaRecensione">Difficolta (1-5)</label>
-                <select class="form-select" id="difficoltaRecensione" required>
-                  <option value="5">5</option>
-                  <option value="4">4</option>
-                  <option value="3" selected>3</option>
-                  <option value="2">2</option>
-                  <option value="1">1</option>
-                </select>
+              <div>
+                <label class="form-label" for="testoRecensione">Commento (opzionale)</label>
+                <textarea class="form-control" id="testoRecensione" rows="4" placeholder="Note, varianti, abbinamenti..."></textarea>
               </div>
-              <div class="col-md-4">
-                <label class="form-label" for="gustoRecensione">Gusto (1-5)</label>
-                <select class="form-select" id="gustoRecensione" required>
-                  <option value="5">5</option>
-                  <option value="4" selected>4</option>
-                  <option value="3">3</option>
-                  <option value="2">2</option>
-                  <option value="1">1</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label class="form-label" for="testoRecensione">Commento (opzionale)</label>
-              <textarea class="form-control" id="testoRecensione" rows="4" placeholder="Note, varianti, abbinamenti..."></textarea>
-            </div>
-          </form>
-        </div>
-        <div class="cc-modal-footer">
-          <button type="button" class="btn btn-contorno-accento" id="modalRecensioneAnnulla">Chiudi</button>
-          <button type="submit" class="btn btn-primary" id="modalRecensioneConferma" form="formRecensioneModal">Salva recensione</button>
+            </form>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-contorno-accento" data-bs-dismiss="modal">Chiudi</button>
+            <button type="submit" class="btn btn-primary" id="modalRecensioneConferma" form="formRecensioneModal">Salva recensione</button>
+          </div>
         </div>
       </div>
     </div>
   `;
 }
 
-export function inizializzaModaleRecensione(ricetta, onRecensioneSalvata) {
-  contestoModale = { ricetta, onSalvata: onRecensioneSalvata };
-  const { backdrop, chiudi, annulla, form } = ottieniElementiModal();
-  if (!backdrop || !form) return;
-
-  form.addEventListener("submit", gestisciInvioRecensione);
-  chiudi?.addEventListener("click", () => chiudiModalRecensione(true));
-  annulla?.addEventListener("click", () => chiudiModalRecensione(true));
-  backdrop?.addEventListener("click", evento => {
-    if (evento.target === backdrop) {
-      chiudiModalRecensione(true);
-    }
-  });
+function inizializzaEventi(modal) {
+  const form = modal.querySelector("#formRecensioneModal");
+  if (form) {
+    form.addEventListener("submit", gestisciInvioRecensione);
+  }
 }
 
-export function apriModaleRecensione() {
-  const { backdrop, form } = ottieniElementiModal();
-  if (!backdrop || !form) return;
-  compilaFormRecensione(form, contestoModale.ricetta?.id);
-  backdrop.classList.remove("d-none");
-  backdrop.setAttribute("aria-hidden", "false");
-  const primoCampo = form.querySelector("input, select, textarea");
-  primoCampo?.focus();
-}
-
-function chiudiModalRecensione(chiediConferma) {
-  const { backdrop, form } = ottieniElementiModal();
-  if (!backdrop || !form) return;
-  if (chiediConferma && formSporco(form) && !window.confirm("Vuoi abbandonare la recensione?")) {
+function mostraModale(modal) {
+  const BootstrapModal = window.bootstrap?.Modal;
+  if (!BootstrapModal) {
+    modal.classList.add("show");
+    modal.style.display = "block";
+    modal.removeAttribute("aria-hidden");
     return;
   }
-  backdrop.classList.add("d-none");
-  backdrop.setAttribute("aria-hidden", "true");
+  if (!modalInstance) {
+    modalInstance = new BootstrapModal(modal, { backdrop: true, keyboard: true });
+  }
+  modalInstance.show();
+}
+
+function nascondiModale(modal) {
+  if (modalInstance) {
+    modalInstance.hide();
+    return;
+  }
+  modal.classList.remove("show");
+  modal.style.display = "none";
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function aggiornaTitolo(nomeRicetta) {
+  const titolo = document.getElementById("modalRecensioneTitolo");
+  if (titolo) {
+    titolo.textContent = nomeRicetta ? `Recensione per "${nomeRicetta}"` : "Recensione";
+  }
 }
 
 function gestisciInvioRecensione(evento) {
@@ -144,8 +180,10 @@ function gestisciInvioRecensione(evento) {
     recensioni.push(datiRecensione);
   }
   salvaRecensioniRicetta(idRicetta, recensioni);
-  salvaSnapshotFormRecensione(form);
-  chiudiModalRecensione(false);
+  const modal = document.getElementById("modalRecensione");
+  if (modal) {
+    nascondiModale(modal);
+  }
   if (typeof contestoModale.onSalvata === "function") {
     contestoModale.onSalvata();
   }
@@ -161,38 +199,4 @@ function compilaFormRecensione(form, idRicetta) {
   form.querySelector("#difficoltaRecensione").value = String(esistente?.difficulty ?? 3);
   form.querySelector("#gustoRecensione").value = String(esistente?.taste ?? 4);
   form.querySelector("#testoRecensione").value = esistente?.commento ?? "";
-  salvaSnapshotFormRecensione(form);
-}
-
-function formSporco(form) {
-  try {
-    const corrente = snapshotFormRecensione(form);
-    const iniziale = form.dataset.initialSnapshot ? JSON.parse(form.dataset.initialSnapshot) : null;
-    if (!iniziale) return false;
-    return JSON.stringify(corrente) !== JSON.stringify(iniziale);
-  } catch {
-    return false;
-  }
-}
-
-function snapshotFormRecensione(form) {
-  return {
-    data: form.querySelector("#dataRecensione")?.value || "",
-    difficolta: form.querySelector("#difficoltaRecensione")?.value || "",
-    gusto: form.querySelector("#gustoRecensione")?.value || "",
-    testo: (form.querySelector("#testoRecensione")?.value || "").trim()
-  };
-}
-
-function salvaSnapshotFormRecensione(form) {
-  form.dataset.initialSnapshot = JSON.stringify(snapshotFormRecensione(form));
-}
-
-function ottieniElementiModal() {
-  return {
-    backdrop: document.getElementById("modalRecensione"),
-    chiudi: document.getElementById("modalRecensioneChiudi"),
-    annulla: document.getElementById("modalRecensioneAnnulla"),
-    form: document.getElementById("formRecensioneModal")
-  };
 }

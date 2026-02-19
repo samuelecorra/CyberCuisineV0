@@ -40,27 +40,23 @@ export function gestisciLogout() {
 }
 
 let modalLogoutElementi = null;
+let modalLogoutInstance = null;
 
 function preparaModalLogout() {
   modalLogoutElementi = {
-    backdrop: document.getElementById("modalLogout"),
+    modal: document.getElementById("modalLogout"),
     annulla: document.getElementById("modalLogoutAnnulla"),
     conferma: document.getElementById("modalLogoutConferma"),
     chiudi: document.getElementById("modalLogoutChiudi")
   };
 
-  if (!modalLogoutElementi.backdrop) {
+  if (!modalLogoutElementi.modal) {
     console.warn("Modal di logout non trovata, il logout avverrà senza conferma.");
     return;
   }
 
   modalLogoutElementi.annulla?.addEventListener("click", chiudiModalLogout);
   modalLogoutElementi.chiudi?.addEventListener("click", chiudiModalLogout);
-  modalLogoutElementi.backdrop.addEventListener("click", evento => {
-    if (evento.target === modalLogoutElementi.backdrop) {
-      chiudiModalLogout();
-    }
-  });
   modalLogoutElementi.conferma?.addEventListener("click", () => {
     chiudiModalLogout();
     gestisciLogout();
@@ -68,19 +64,17 @@ function preparaModalLogout() {
 }
 
 function mostraModalLogout() {
-  if (!modalLogoutElementi?.backdrop) {
+  if (!modalLogoutElementi?.modal) {
     gestisciLogout();
     return;
   }
-  modalLogoutElementi.backdrop.classList.remove("d-none");
-  modalLogoutElementi.backdrop.setAttribute("aria-hidden", "false");
+  mostraBootstrapModal(modalLogoutElementi.modal);
   modalLogoutElementi.conferma?.focus();
 }
 
 function chiudiModalLogout() {
-  if (!modalLogoutElementi?.backdrop) return;
-  modalLogoutElementi.backdrop.classList.add("d-none");
-  modalLogoutElementi.backdrop.setAttribute("aria-hidden", "true");
+  if (!modalLogoutElementi?.modal) return;
+  nascondiBootstrapModal(modalLogoutElementi.modal);
 }
 
 // Evidenziazione nav
@@ -99,4 +93,29 @@ export function aggiornaNavigazioneAttiva(hashDestinazione) {
       link.classList.remove("active");
     }
   });
+}
+
+function mostraBootstrapModal(modal) {
+  const BootstrapModal = window.bootstrap?.Modal;
+  if (!BootstrapModal) {
+    modal.classList.add("show");
+    modal.style.display = "block";
+    modal.removeAttribute("aria-hidden");
+    return;
+  }
+  modalLogoutInstance =
+    modalLogoutInstance ?? BootstrapModal.getOrCreateInstance(modal, { backdrop: true, keyboard: true });
+  modalLogoutInstance.show();
+}
+
+function nascondiBootstrapModal(modal) {
+  const BootstrapModal = window.bootstrap?.Modal;
+  if (!BootstrapModal) {
+    modal.classList.remove("show");
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    return;
+  }
+  const istanza = modalLogoutInstance ?? BootstrapModal.getOrCreateInstance(modal);
+  istanza.hide();
 }

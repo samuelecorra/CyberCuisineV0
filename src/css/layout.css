@@ -1,40 +1,135 @@
 /* Layout e strutture principali: header, navbar, footer, sezioni speciali */
 
+/* ── Header ── */
 .cc-intestazione {
   background: linear-gradient(90deg, rgba(17, 17, 46, 0.95), rgba(27, 10, 38, 0.95));
   border-bottom: 1px solid var(--cc-border);
-  min-height: 64px;
+  position: relative;
+  z-index: 1052;
 }
 
 .navbar {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
-  display: flex;
-  align-items: center;
 }
 
-@media (min-width: 992px) {
-  .cc-intestazione {
-    height: 100px;
-  }
-
-  .cc-intestazione .navbar {
-    height: 100%;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-}
-
+/* ── Nav-link button style ── */
 .navbar-dark .navbar-nav .nav-link {
-  color: var(--cc-muted);
-  transition: color 0.2s ease, border-bottom 0.2s ease;
+  color: var(--cc-text);
+  background-color: transparent;
+  border: 1px solid var(--cc-primary);
+  border-radius: 0.5rem;
+  padding: 0.4rem 1rem;
+  transition: all 0.2s ease;
+  text-align: center;
+  white-space: nowrap;
 }
 
-.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link.active {
+  background-color: var(--cc-accent);
+  border-color: var(--cc-accent);
+  color: #051719;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
 .navbar-dark .navbar-nav .nav-link:hover {
-  color: var(--cc-accent);
+  background-color: var(--cc-primary);
+  border-color: var(--cc-primary);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(179, 18, 255, 0.4);
 }
 
+/* ── Desktop: horizontal spacing ── */
+@media (min-width: 992px) {
+  .navbar-dark .navbar-nav .nav-link {
+    margin: 0 0.25rem;
+  }
+
+  #ccOffcanvasNav {
+    flex-grow: 1;
+  }
+}
+
+/* ── Mobile: offcanvas sidebar ── */
+@media (max-width: 991.98px) {
+  /* Sidebar width: fixed 260px — stable, no fit-content hacks */
+  #ccOffcanvasNav {
+    --bs-offcanvas-width: 260px;
+    background-color: var(--cc-bg-dark);
+    border-left: 1px solid var(--cc-primary);
+    color: var(--cc-text);
+  }
+
+  #ccOffcanvasNav .offcanvas-header {
+    border-bottom: 1px solid var(--cc-border);
+    color: var(--cc-text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .cc-menu-close {
+    background: none;
+    border: 1px solid var(--cc-accent);
+    border-radius: 0.4rem;
+    color: var(--cc-accent);
+    font-size: 1.5rem;
+    line-height: 1;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+  }
+
+  .cc-menu-close:hover,
+  .cc-menu-close:focus {
+    background-color: var(--cc-accent);
+    color: var(--cc-bg-dark);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+  }
+
+  /* Menu: vertical grid, all buttons same width (100% of sidebar) */
+  #ccOffcanvasNav .navbar-nav {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0 0.75rem;
+  }
+
+  /* Each link = full-width button inside the grid */
+  #ccOffcanvasNav .nav-link {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ── Hamburger toggler ── */
+.navbar-toggler {
+  color: #fff;
+  background-color: var(--cc-primary);
+  border: 1px solid var(--cc-primary);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.navbar-toggler:hover,
+.navbar-toggler:focus {
+  background-color: var(--cc-accent);
+  border-color: var(--cc-accent);
+  color: #051719;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+}
+
+.navbar-toggler-icon {
+  filter: invert(82%) sepia(34%) saturate(4481%) hue-rotate(117deg) brightness(101%) contrast(99%);
+}
+
+/* ── Footer ── */
 .cc-piede {
   border-top: 1px solid var(--cc-border);
   background-color: rgba(12, 11, 26, 0.8);
@@ -46,20 +141,11 @@
   background: radial-gradient(circle at top, rgba(179, 18, 255, 0.2), rgba(0, 240, 255, 0.08));
 }
 
-.navbar-toggler {
-  border-color: var(--cc-accent);
-}
-
-.navbar-toggler-icon {
-  filter: invert(82%) sepia(34%) saturate(4481%) hue-rotate(117deg) brightness(101%) contrast(99%);
-}
-
 /* Sezione esplora: layout affiancato tra ricette e lettere */
 .explore-layout {
   align-items: stretch;
 }
 
-/* Colonna principale delle ricette, cresce e scrolla con la pagina */
 .recipes-column {
   min-height: 50vh;
 }

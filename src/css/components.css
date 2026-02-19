@@ -47,6 +47,8 @@
 
 .cc-marchio {
   transition: transform 0.15s ease-out;
+  padding: 0;
+  margin: 0;
 }
 
 .cc-marchio:hover {
@@ -59,7 +61,7 @@
 
 .logo-marchio,
 .testo-marchio {
-  height: clamp(40px, 6vw, 60px);
+  height: clamp(20px, 3vw, 30px);
   width: auto;
   display: block;
 }
@@ -72,7 +74,9 @@
   margin: 0.25rem 0.25rem 0;
   overflow: hidden;
   cursor: pointer;
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 .card-media:hover,
@@ -91,6 +95,75 @@
 .card-media:hover img,
 .card-media:focus-visible img {
   transform: scale(1.05);
+}
+
+/* Esplora: indice alfabetico */
+.alpha-separator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--cc-border);
+  border-radius: 0.75rem;
+  background: rgba(21, 21, 49, 0.6);
+  scroll-margin-top: 110px;
+}
+
+.alpha-title {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cc-accent);
+}
+
+.alpha-btn {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 40px;
+  padding: 0.25rem 0.45rem;
+}
+
+.alpha-btn.alpha-btn-active {
+  background-color: var(--cc-accent);
+  border-color: var(--cc-accent);
+  color: #051719;
+}
+
+.alpha-btn:disabled,
+.alpha-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.alpha-index-bar {
+  position: sticky;
+  top: var(--alpha-top-offset, 90px);
+  z-index: 30;
+  background: rgba(12, 11, 26, 0.88);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--cc-border);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.alpha-index {
+  width: 100%;
+  padding: 0;
+}
+
+/* Ricettario: elementi cliccabili */
+.cc-card-clickable {
+  cursor: pointer;
+}
+
+.cc-card-clickable:focus-visible {
+  outline: 2px solid var(--cc-accent);
+  outline-offset: 2px;
+}
+
+.cc-card-title.cc-card-clickable:hover {
+  text-decoration: underline;
 }
 
 .dropdown-menu {
@@ -112,6 +185,6 @@
 @media (min-width: 992px) {
   .logo-marchio,
   .testo-marchio {
-    height: 90px;
+    height: 45px;
   }
 }
