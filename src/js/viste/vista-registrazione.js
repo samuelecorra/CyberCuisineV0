@@ -122,25 +122,29 @@ async function popolaSelectAree() {
 }
 
 function impostaGestioneDocumentiLegali() {
-  const triggerButtons = document.querySelectorAll("[data-doc-modal]");
-  triggerButtons.forEach(btn => {
+  // Apertura: click sui link "Termini e condizioni" / "Informativa privacy"
+  document.querySelectorAll("[data-doc-modal]").forEach(btn => {
     btn.addEventListener("click", () => {
       const modal = document.getElementById(btn.dataset.docModal);
       apriModalDocumento(modal);
     });
   });
 
-  document.querySelectorAll("[data-close-doc]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const modal = btn.closest(".doc-modal-backdrop");
-      chiudiModalDocumento(modal);
-    });
-  });
-
-  document.querySelectorAll(".doc-modal-backdrop").forEach(modal => {
-    modal.addEventListener("click", event => {
-      if (event.target === modal) {
-        chiudiModalDocumento(modal);
+  // Chiusura via event delegation sul backdrop: cattura sia il click sul backdrop (fuori dalla modale)
+  // sia il click su [data-close-doc] anche DOPO che il pulsante è stato abilitato dinamicamente.
+  // Usare delegation invece di listener diretto evita il problema del pulsante disabled che non
+  // propaga i click nel momento in cui viene registrato il listener.
+  document.querySelectorAll(".doc-modal-backdrop").forEach(backdrop => {
+    backdrop.addEventListener("click", event => {
+      // Click sul pulsante "Ho letto, torna al form" (anche se reso abilitato dopo lo scroll)
+      const btnClose = event.target.closest("[data-close-doc]");
+      if (btnClose && !btnClose.disabled) {
+        chiudiModalDocumento(backdrop);
+        return;
+      }
+      // Click sul backdrop (fuori dal pannello .doc-modal)
+      if (event.target === backdrop) {
+        chiudiModalDocumento(backdrop);
       }
     });
   });
