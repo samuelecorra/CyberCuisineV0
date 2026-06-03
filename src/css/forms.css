@@ -9,7 +9,13 @@ select {
 
 input::placeholder,
 textarea::placeholder {
-  color: rgba(245, 245, 255, 0.6);
+  color: rgba(245, 245, 255, 0.45);
+}
+
+/* Bootstrap .form-text usa --bs-secondary-color che sul tema scuro diventa illeggibile.
+   Forziamo lo stesso colore del testo muted del tema. */
+.form-text {
+  color: var(--cc-muted) !important;
 }
 
 input:focus,
