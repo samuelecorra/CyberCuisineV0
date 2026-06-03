@@ -63,28 +63,39 @@ export function inizializzaVistaRegistrazione() {
       return;
     }
 
+    // HASHING: dalla password in chiaro otteniamo { passwordHash, salt } (vedi auth.js).
+    // La password in chiaro NON viene mai salvata: resta solo in questa variabile locale.
     const { passwordHash, salt } = await creaCredenzialiPassword(password);
     const nuovoUtente = {
-      id: generaId("utente"),
+      id: generaId("utente"), // id univoco "utente_<timestamp>_<random>"
       username: nomeUtente,
       email,
-      passwordHash,
-      salt,
+      passwordHash, // <-- nello storage finisce l'hash...
+      salt, // <-- ...e il salt, mai la password
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       firstName: nome,
       lastName: cognome,
       originCountry: paeseOrigine,
       residenceCountry: paeseResidenza,
-      favoriteDishes: normalizzaPreferiti(piattiPreferitiRaw)
+      favoriteDishes: normalizzaPreferiti(piattiPreferitiRaw) // "piatti preferiti" richiesti dalla specifica
     };
     utenti.push(nuovoUtente);
+    // >>> MOMENTO CHIAVE DELLA REGISTRAZIONE <<<
+    // salvaUtenti riscrive l'intero array nella chiave "users" del Local Storage.
+    // DEVTOOLS: F12 → Application → Local Storage → "users": compare il nuovo oggetto utente
+    // (con passwordHash + salt e senza password). Da qui in poi l'account esiste e può fare login.
     salvaUtenti(utenti);
     mostraSpinnerRegistrazione();
+    // Passaggio di consegne verso la pagina di login tramite SESSION STORAGE: salviamo un messaggio
+    // "usa e getta" che il login leggerà e poi cancellerà (vedi vista-accesso.js).
+    // DEVTOOLS: in Session Storage compare temporaneamente la chiave "cc_post_signup".
     sessionStorage.setItem(
       "cc_post_signup",
       JSON.stringify({ identificatore: email, messaggio: "Account creato, accedi per continuare." })
     );
+    // NB: la registrazione NON effettua il login automatico: l'utente viene portato alla pagina
+    // di accesso per autenticarsi (così il prof vede separati i due flussi: creazione vs login).
     setTimeout(() => {
       nascondiSpinnerRegistrazione();
       window.location.hash = "#/accesso";

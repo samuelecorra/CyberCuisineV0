@@ -1,3 +1,9 @@
+// ============================================================================
+//  MODALE RECENSIONE — inserimento/modifica di una recensione
+// ============================================================================
+// La modale viene costruita UNA volta e iniettata in fondo al <body> (lazy: solo al primo utilizzo).
+// Raccoglie i campi richiesti dalla specifica: data di preparazione, difficoltà 1-5, gusto 1-5
+// (+ commento opzionale). Al salvataggio scrive nella chiave "reviews:<idRicetta>" del Local Storage.
 import {
   ottieniUtenteCorrente,
   ottieniRecensioniRicetta,
@@ -5,6 +11,8 @@ import {
   generaIdRecensione
 } from "../storage.js";
 
+// Contesto condiviso tra apertura e salvataggio: quale ricetta stiamo recensendo e quale callback
+// eseguire dopo il salvataggio (di solito: ri-renderizzare l'elenco recensioni della scheda).
 let contestoModale = {
   ricetta: null,
   onSalvata: null
@@ -155,6 +163,8 @@ function gestisciInvioRecensione(evento) {
     return;
   }
 
+  // Logica "upsert": un utente ha UNA sola recensione per ricetta. Se ne esiste già una sua,
+  // la aggiorniamo (mantenendone id e createdAt originali); altrimenti ne creiamo una nuova.
   const recensioni = ottieniRecensioniRicetta(idRicetta);
   const indiceEsistente = recensioni.findIndex(
     recensione => recensione.idUtente === utente.id
@@ -163,9 +173,9 @@ function gestisciInvioRecensione(evento) {
   const datiRecensione = {
     id: indiceEsistente !== -1 ? recensioni[indiceEsistente].id : generaIdRecensione(),
     userId: utente.id,
-    cookedAt,
-    difficulty,
-    taste,
+    cookedAt, // data di preparazione (input type="date")
+    difficulty, // voto difficoltà 1-5
+    taste, // voto gusto 1-5
     commento,
     createdAt:
       indiceEsistente !== -1
@@ -175,10 +185,13 @@ function gestisciInvioRecensione(evento) {
   };
 
   if (indiceEsistente !== -1) {
-    recensioni[indiceEsistente] = datiRecensione;
+    recensioni[indiceEsistente] = datiRecensione; // aggiorna la recensione esistente
   } else {
-    recensioni.push(datiRecensione);
+    recensioni.push(datiRecensione); // inserisci la nuova recensione
   }
+  // >>> SCRITTURA della recensione nel web storage <<<
+  // DEVTOOLS: F12 → Application → Local Storage → chiave "reviews:<idRicetta>": dopo "Salva recensione"
+  // l'array contiene il nuovo oggetto con cookedAt, difficulty e taste.
   salvaRecensioniRicetta(idRicetta, recensioni);
   const modal = document.getElementById("modalRecensione");
   if (modal) {

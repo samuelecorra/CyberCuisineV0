@@ -1,248 +1,136 @@
-# CyberCuisineV0 – Phase 0 Audit Report
+# CyberCuisine – Audit Finale & Conformità alla Specifica
 
-## Current Status Summary
-- **App type**: Vanilla JS SPA with hash routing (`#/home`, `#/esplora`, `#/ricetta/<id>`) and HTML fragments loaded via `fetch`.
-- **Entry point**: `src/html/index.html` loads `src/js/main.js` (ES modules).
-- **UI stack**: Bootstrap 5 + custom CSS, no JS frameworks or build tools.
-- **Persistence**: `localStorage` for users/recipes/reviews; `sessionStorage` for “remember me” and post‑signup message.
-- **Data source**: TheMealDB REST API. The app **preloads the entire catalog (A–Z) on startup**, normalizes recipes, and stores them in localStorage.
-- **Overall**: Most required screens exist and render. Critical requirement gaps remain in auth security, review schema, and startup/data flow constraints.
+> Documento di riferimento per la discussione orale. Sostituisce il vecchio "Phase 0 Audit Report"
+> (ormai obsoleto: descriveva una versione precedente con password in chiaro, recensioni sotto chiave
+> errata, ricettario dentro l'utente, ecc., tutti aspetti nel frattempo rifattorizzati allo **schema v2**).
 
----
+## 1. Sintesi dello stato
 
-## Feature Coverage Matrix (Requirements vs Current State)
-
-| Required Feature | Status | Evidence / Notes |
-|---|---|---|
-| Registration | **Partial** | Implemented in `vista-registrazione.js`; no password hashing; no “favorite dishes” field. |
-| Login/Logout | **Partial** | Implemented in `vista-accesso.js` + `navbar.js`; stores plaintext password + remembers in `sessionStorage`. |
-| Edit Profile | **Partial** | Implemented in `vista-profilo.js`; password confirmation uses plaintext. |
-| Delete Profile | **Implemented** | `rimuoviUtente` removes user and reviews. |
-| Recipe Search by Name | **Implemented (Local cache)** | `cercaRicettePerNome` filters preloaded cache. |
-| Recipe Search by Ingredient | **Implemented (Local cache)** | `cercaRicettePerIngrediente` filters preloaded cache. |
-| Recipe Search by Initial Letter | **Implemented (Local cache)** | `cercaRicettePerLettera`. |
-| Recipe Detail Page | **Implemented** | `vista-dettaglio-ricetta.js` shows ingredients/instructions + reviews. |
-| Personal Cookbook (add/remove) | **Implemented** | Stored on user object; buttons on cards and detail. |
-| Private Notes per Recipe | **Implemented** | Note field in cookbook view. |
-| Reviews (date cooked + difficulty 1‑5 + taste 1‑5) | **Missing/Partial** | Current schema uses `valutazione` (1‑5) + `difficolta` string; no taste score. |
-| Add Review | **Partial** | Modal adds/updates review; missing required rating structure. |
-| Remove Review | **Missing** | No delete path in UI or storage. |
-| Startup data in web storage | **Partial** | Preload always runs and blocks UI; no cache metadata/TTL; fails offline first load. |
+- **Tipo app**: Single Page Application (SPA) in **vanilla JS** (moduli ES6), **hash routing** (`#/...`), nessun backend.
+- **UI**: **Bootstrap 5** (CDN) + CSS custom modulare. Separazione struttura (HTML5) / presentazione (CSS3) rispettata.
+- **Persistenza**: **web storage** del browser, tutto in **JSON**. `localStorage` per i dati di dominio; `sessionStorage` per due dati temporanei dell'autenticazione.
+- **Sorgente dati**: **TheMealDB REST API**. All'avvio l'**intero catalogo (A–Z)** viene scaricato, normalizzato e memorizzato nel web storage, poi visualizzato (requisito di startup soddisfatto).
+- **Sicurezza**: le password **non sono mai salvate in chiaro** → hash **SHA-256 + salt** (Web Crypto API).
+- **Esito**: tutte le operazioni richieste dalla specifica sono implementate e verificate.
 
 ---
 
-## Data Model Inventory (Current localStorage / sessionStorage)
+## 2. Matrice Requisiti (Specifica PDF → Stato)
 
-### localStorage keys (from code)
-- `ricette_cybercuisine` → **object map** of normalized recipes, keyed by `id`.
-- `utenti_cybercuisine` → **array** of users.
-- `utente_corrente_cybercuisine` → **user object** or `null`.
-- `recensioni_cybercuisine` → **array** of reviews **(initialized but not actually used due to a key mismatch bug)**.
-
-### sessionStorage keys
-- `cc_accesso_ricorda` → `{ identificatore, password }` (plaintext).
-- `cc_post_signup` → `{ identificatore, messaggio }`.
-
-### JSON shape examples (observed in code)
-
-**Recipe cache** (`ricette_cybercuisine`)
-```json
-{
-  "52772": {
-    "id": "52772",
-    "nome": "Teriyaki Chicken Casserole",
-    "categoria": "Chicken",
-    "area": "Japanese",
-    "areaCodice": "Japanese",
-    "istruzioni": "…",
-    "miniatura": "https://…/preview.jpg",
-    "etichette": ["Meat", "Casserole"],
-    "youtube": "https://www.youtube.com/watch?v=…",
-    "fonte": "https://…",
-    "ingredienti": [{ "nome": "Chicken", "quantita": "3 cups" }]
-  }
-}
-```
-
-**Users** (`utenti_cybercuisine`)
-```json
-[
-  {
-    "id": "utente_173377…",
-    "nome": "Mario",
-    "cognome": "Rossi",
-    "nomeUtente": "mrossi",
-    "email": "mario@email.it",
-    "password": "plaintext",
-    "paeseOrigine": "Italian",
-    "paeseResidenza": "British",
-    "ricettario": [{ "idRicetta": "52772", "nota": "Buonissima" }]
-  }
-]
-```
-
-**Current user** (`utente_corrente_cybercuisine`)
-```json
-{
-  "id": "utente_173377…",
-  "nomeUtente": "mrossi",
-  "email": "mario@email.it",
-  "password": "plaintext",
-  "ricettario": []
-}
-```
-
-**Reviews** (expected but bugged)
-```json
-[
-  {
-    "id": "recensione_1733…",
-    "idRicetta": "52772",
-    "idUtente": "utente_173377…",
-    "dataPreparazione": "2026-02-10",
-    "valutazione": 4,
-    "difficolta": "media",
-    "tempoPreparazione": 45,
-    "consigliata": "si",
-    "commento": "Ottima"
-  }
-]
-```
+| Requisito (specifica) | Stato | Dove / Note |
+| --- | --- | --- |
+| Registrazione (username, email, password, **piatti preferiti**) | ✅ | `vista-registrazione.js` + `register.html`; scrive in `users` |
+| Login | ✅ | `vista-accesso.js`; verifica via hash; scrive `session` |
+| Logout | ✅ | `navbar.js` → `gestisciLogout`; azzera `session` |
+| Modifica dati personali | ✅ | `vista-profilo.js`; re-auth con password prima della modifica |
+| Rimozione profilo | ✅ | `rimuoviUtente` (cancella utente + ricettario + recensioni) |
+| Ricerca per **nome** | ✅ | `cercaRicettePerNome` (filtro sulla cache locale) |
+| Ricerca per **ingrediente** | ✅ | `cercaRicettePerIngrediente` |
+| Ricerca per **lettera iniziale** | ✅ | `cercaRicettePerLettera` |
+| Ricerca **sequenziale** | ✅ | "Sfoglia l'intero catalogo" in Esplora (indice A–Z) |
+| Scheda ricetta: **ingredienti, immagini, procedimento** | ✅ | `vista-dettaglio-ricetta.js` |
+| Scheda ricetta: **mostra recensioni utenti** | ✅ | elenco recensioni da `reviews:<idRicetta>` |
+| Ricettario personale creato alla registrazione | ✅ | inizialmente vuoto (`cookbook:<idUtente>`) |
+| Aggiungi/Rimuovi ricetta dal ricettario (pulsante in scheda) | ✅ | `aggiornaRicettario` + pulsanti su card e dettaglio |
+| **Nota privata** per ricetta | ✅ | `notesByRecipeId` nel ricettario, non visibile ad altri |
+| Recensione: **data preparazione + difficoltà 1-5 + gusto 1-5** | ✅ | `modale-recensione.js` (`cookedAt`, `difficulty`, `taste`) |
+| **Inserimento** recensioni | ✅ | salvataggio in `reviews:<idRicetta>` (upsert per utente) |
+| **Rimozione** recensioni | ✅ | `rimuoviRecensione` + pulsante in scheda e in "Le tue recensioni" |
+| Startup: dati scaricati da TheMealDB (JSON) → web storage → visualizzati | ✅ | `precaricaCatalogoCompleto()` chiamata in `main.js` con overlay |
+| Dati in web storage in formato JSON | ✅ | tutte le chiavi sono JSON (`JSON.stringify/parse`) |
+| Separazione HTML5 / CSS3 | ✅ | nessuno stile inline; tutto in `src/css/*` |
+| HTML5 + CSS3 + JavaScript | ✅ | nessun framework JS, nessun build step |
 
 ---
 
-## UI Map (Pages, Components, Navigation)
+## 3. Modello dati nel web storage (schema v2)
 
-### Entry + Layout
-- **`src/html/index.html`**: global layout, navbar, modals, `<main id="app">` as SPA mount.
+### `localStorage` (persistente)
 
-### Fragments / Routes (hash routing)
-- `#/home` → `home.html` + `vista-home.js` (public)
-- `#/home` (logged) → `home.logged.html` + `vista-home-loggata.js`
-- `#/accesso` → `login.html` + `vista-accesso.js`
-- `#/registrazione` → `register.html` + `vista-registrazione.js`
-- `#/profilo` → `profile.html` + `vista-profilo.js` (protected)
-- `#/esplora` → `esplora.html` + `vista-esplora.js`
-- `#/ricettario` → `ricettario.html` + `vista-ricettario.js` (protected)
-- `#/recensioni` → `reviews.html` + `vista-recensioni.js` (protected)
-- `#/ricetta/<id>` → `recipe-detail.html` + `vista-dettaglio-ricetta.js`
+| Chiave | Forma | Scopo |
+| --- | --- | --- |
+| `app:meta` | `{ schemaVersion, lastInitAt, apiCacheInfo:{ recipes:{ strategy, lastFetchAt, ttlHours, complete } } }` | Versione schema + metadati cache |
+| `users` | `[ { id, username, email, passwordHash, salt, createdAt, updatedAt, firstName, lastName, originCountry, residenceCountry, favoriteDishes:[] } ]` | Account registrati |
+| `session` | `{ currentUserId, loginAt }` | Chi è loggato adesso |
+| `recipes:cache` | `{ updatedAt, byId:{ <id>: { id, nome, categoria, area, areaCodice, istruzioni, miniatura, etichette:[], youtube, fonte, ingredienti:[{nome,quantita}] } } }` | Catalogo TheMealDB |
+| `areas:cache` | `{ updatedAt, items:[ { nomeEn, nomeIt, emoji } ] }` | Aree/paesi per le select |
+| `cookbook:<idUtente>` | `{ recipeIds:[], notesByRecipeId:{ <idRicetta>: nota } }` | Ricettario + note private |
+| `reviews:<idRicetta>` | `[ { id, userId, cookedAt, difficulty, taste, commento, createdAt, updatedAt } ]` | Recensioni della ricetta |
 
-### Components
-- `componenti/carte.js` → recipe cards, cookbook cards, review cards.
-- `componenti/azioni-card.js` → cookbook/review actions on recipe cards.
-- `componenti/modale-recensione.js` → review modal (create/edit).
+### `sessionStorage` (temporaneo, muore alla chiusura della scheda)
 
----
-
-## API Usage Map (TheMealDB)
-
-**Base URL**: `https://www.themealdb.com/api/json/v1/1/`
-
-| Endpoint | Usage | Caching |
-|---|---|---|
-| `search.php?f=<letter>` | Preload full catalog A–Z at startup | Stored in `ricette_cybercuisine` |
-| `list.php?a=list` | Fetch areas (countries) for registration/profile | In‑memory cache only (no localStorage) |
-
-**Not used (current)**:
-- `search.php?s=...` (search by name)
-- `filter.php?i=...` (search by ingredient)
-- `lookup.php?i=...` (fetch recipe by id)
-
-**Behavior notes**
-- Startup blocks on `precaricaCatalogoRicette()` (26 fetches) and **always** re-downloads even if cache exists.
-- No cache expiry, schema versioning, or offline‑first fallback beyond empty localStorage.
+| Chiave | Forma | Scopo |
+| --- | --- | --- |
+| `cc_accesso_ricorda` | `{ identificatore }` | "Ricordami": **solo** username/email, **mai** la password |
+| `cc_post_signup` | `{ identificatore, messaggio }` | Messaggio one-shot dalla registrazione al login (poi rimosso) |
 
 ---
 
-## Top 15 Issues (Severity, Impact, Repro, Fix Approach)
+## 4. Mappa API TheMealDB
 
-1. **[High] Reviews stored under wrong key (`undefined`)**
-   - Impact: reviews not visible in expected storage key; breaks data flow demo.
-   - Repro: add review, open DevTools → localStorage shows key `"undefined"`.
-   - Fix: replace `CHIAVI_SALVATAGGIO.REVIEWS` with `.RECENSIONI`, add migration from `"undefined"` to `recensioni_cybercuisine`.
+Base: `https://www.themealdb.com/api/json/v1/1/`
 
-2. **[High] Plaintext password storage + “remember me” stores plaintext**
-   - Impact: violates security requirement; exposes credentials.
-   - Repro: register/login; inspect `utenti_cybercuisine` and `cc_accesso_ricorda`.
-   - Fix: store salted hash (Web Crypto). For “remember me”, store a session token or simply store identifier only.
+| Endpoint | Uso | Cache |
+| --- | --- | --- |
+| `search.php?f=<lettera>` | Scarica il catalogo completo A–Z allo startup (26 fetch in parallelo) | `recipes:cache` |
+| `lookup.php?i=<id>` | Fallback: recupero singola ricetta per id se non in cache | aggiunta a `recipes:cache` |
 
-3. **[High] Reviews missing required schema (difficulty 1‑5 + taste 1‑5)**
-   - Impact: fails exam spec; wrong data model.
-   - Repro: open review modal; only one 1‑5 rating + difficulty string.
-   - Fix: add two 1‑5 fields (difficulty, taste) and update UI/storage/cards.
+I **paesi** selezionabili in registrazione/profilo NON arrivano da `list.php?a=list` (che elenca ~195
+demonimi quasi tutti senza ricette): sono **derivati dalle aree realmente presenti nel catalogo**
+(~37), così ogni scelta produce risultati; vengono poi memorizzati in `areas:cache`.
 
-4. **[High] No review deletion flow**
-   - Impact: fails exam requirement (“inserimento e rimozione di recensioni”).
-   - Repro: no delete control in detail or reviews list.
-   - Fix: add delete action (per review id) and update storage + UI.
-
-5. **[High] Startup blocks on full catalog fetch**
-   - Impact: UI appears “stuck” on slow networks; fails offline first‑load.
-   - Repro: throttle network; page stays blank until all fetches finish.
-   - Fix: render UI immediately from cache, fetch in background, add cache meta.
-
-6. **[Medium] Preload re-downloads entire catalog every load**
-   - Impact: heavy API usage; slow startup; unnecessary network usage.
-   - Repro: reload app; 26 requests always fire.
-   - Fix: check cache meta + TTL before re-fetching.
-
-7. **[Medium] `recuperaRicettaPerId` has no API fallback**
-   - Impact: detail page fails if cache missing/incomplete.
-   - Repro: clear storage; go directly to `#/ricetta/<id>`; recipe not found.
-   - Fix: add `lookup.php?i=` fallback + cache insert.
-
-8. **[Medium] Profile review count is stale**
-   - Impact: profile shows incorrect “Recensioni scritte”.
-   - Repro: add review; profile count remains 0 (uses `utente.recensioni`).
-   - Fix: compute count from reviews storage or store derived count on save.
-
-9. **[Medium] Storage schema not versioned**
-   - Impact: future changes hard to migrate; violates explicit flow requirement.
-   - Repro: none (design).
-   - Fix: add `app:meta` with schema version + migration pipeline.
-
-10. **[Medium] Cookbook stored inside user object (not explicit per‑user key)**
-    - Impact: harder to demo flows; schema not aligned with requested design.
-    - Repro: inspect `utenti_cybercuisine`.
-    - Fix: move to `cookbook:<userId>` and migrate.
-
-11. **[Low/Medium] `home.logged.html` has mismatched tags**
-    - Impact: layout/DOM issues in some browsers.
-    - Repro: validate HTML; inspect DOM structure.
-    - Fix: add missing `</div>` to close container.
-
-12. **[Low] “Remember me” uses sessionStorage (not persistent)**
-    - Impact: user expectation mismatch; data lost on browser restart.
-    - Repro: check “Ricordami”, close browser, reopen → credentials gone.
-    - Fix: store token/identifier in localStorage or remove option.
-
-13. **[Low] Docs mismatch: README path for `api.js`**
-    - Impact: confusion for maintainers.
-    - Repro: README references `src/js/api.js`, actual file is `src/js/gestione-api/api.js`.
-    - Fix: update README or move file.
-
-14. **[Low] Area list only cached in memory**
-    - Impact: extra API call every load; slower on first render of forms.
-    - Repro: open registration/profile; API call each time.
-    - Fix: cache areas in localStorage with TTL.
-
-15. **[Low] Review cards include fields not required (tempo, consigliata)**
-    - Impact: UI drift from spec; extra data not explained.
-    - Repro: open review modal; extra fields present.
-    - Fix: either document as “extra features” or trim to spec.
+Verifica live: il catalogo completo restituisce **~666 ricette**; la ricerca per nome/ingrediente/lettera filtra correttamente sull'intera cache (es. "pizza"→3, "chicken" come ingrediente→98).
 
 ---
 
-## Refactor Opportunities (Low‑Risk First)
+## 5. Flusso di Autenticazione (script per la demo nei DevTools)
 
-1. Fix review key typo + migrate data (`undefined` → `recensioni_cybercuisine`).
-2. Fix HTML tag mismatch in `home.logged.html`.
-3. Add `app:meta` schema version + storage helper layer (load/save/update).
-4. Introduce password hashing via Web Crypto; remove plaintext exposure.
-5. Split cookbook storage into `cookbook:<userId>`.
-6. Add review delete action + update UI cards.
-7. Add taste/difficulty 1‑5 ratings in review modal + cards.
-8. Improve startup pipeline: render from cache, background refresh, TTL.
-9. Add API fallback by ID + search fallback if cache empty.
-10. Update docs/README with correct file paths and new schemas.
+> Apri **F12 → Application → Local Storage / Session Storage** e tieni il pannello aperto.
 
+1. **Registrazione** (`#/registrazione`): compili il form → in `localStorage["users"]` compare il nuovo utente con `passwordHash` + `salt` (niente `password`). In `sessionStorage` appare e poi sparisce `cc_post_signup`.
+2. **Login** (`#/accesso`): la password viene ri-hashata e confrontata con `passwordHash`. Al successo `localStorage["session"].currentUserId` passa da `null` all'id utente e `loginAt` registra il timestamp. La navbar passa a "Ciao &lt;nome&gt;".
+3. **Ricordami**: se spuntato, in `sessionStorage["cc_accesso_ricorda"]` viene salvato **solo** l'identificatore.
+4. **Refresh (F5)**: `session` resta in `localStorage` → resti loggato senza rifare il login (init idempotente in `storage.js`).
+5. **Rotte protette**: con `session` vuota, aprendo `#/ricettario` o `#/recensioni` il router rimanda a `#/accesso`.
+6. **Logout**: `session.currentUserId` torna `null`; `users` e i dati personali **non** vengono toccati.
+
+Tutti i punti chiave sono commentati inline nel codice con il prefisso `DEVTOOLS:` e `>>> MOMENTO CHIAVE <<<`.
+
+---
+
+## 6. Scelte implementative documentate
+
+La specifica chiede di motivare le scelte: ecco le principali.
+
+- **SPA + hash routing senza backend**: requisito di persistenza su web storage → niente server; il routing client-side (`#/...`) evita reload di pagina.
+- **Catalogo completo allo startup con cache TTL (72h)**: rispetta il requisito ("allo startup i dati sono scaricati dalle API e memorizzati nel web storage") ma evita 26 chiamate di rete a ogni reload riusando il web storage finché i dati sono validi.
+- **Ricerca locale sulla cache** (anziché una chiamata API per ogni ricerca): risultati istantanei, funziona anche offline, meno carico sull'API pubblica.
+- **Hashing password SHA-256 + salt** (oltre il minimo richiesto): la password non è mai persistita in chiaro; il salt blocca le rainbow table.
+- **Namespacing delle chiavi** (`cookbook:<idUtente>`, `reviews:<idRicetta>`): separa nettamente le entità nel web storage e semplifica la demo.
+- **Versioning schema + migrazione legacy**: aggiornamenti del formato dati non distruttivi.
+- **Upsert recensione** (una recensione per utente per ricetta): evita duplicati e rende naturale la "modifica".
+- **"Ricordami" in sessionStorage con solo identificatore**: comodità senza esporre credenziali.
+- **Paesi derivati dal catalogo** (non da `list.php?a=list`): si offrono solo le ~37 cucine con ricette reali, ognuna con nome italiano e bandiera.
+- **Webfont bandiere self-hosted** (`Twemoji Country Flags`, `src/assets/fonts/`): Windows non disegna le flag emoji; il font (limitato via `unicode-range` ai soli regional indicator) le rende correttamente su tutti i sistemi senza alterare il resto del testo.
+
+---
+
+## 7. Funzionalità aggiuntive (oltre la specifica)
+
+Consentite dalla specifica ("operazioni e funzionalità aggiuntive possono essere implementate a piacere"):
+
+- Home personalizzata per utenti loggati (ricette per paese di origine/residenza).
+- Aree/paesi tradotti in italiano con emoji bandiera.
+- Anteprima/embed del video YouTube nella scheda ricetta.
+- Indice alfabetico con scroll fluido e lettera attiva nello "Sfoglia tutto".
+- Modali legali (Termini/Privacy) con pulsante abilitato solo dopo lettura completa.
+- Feedback di caricamento con spinner tematico.
+
+---
+
+## 8. Limiti noti (da dichiarare con onestà)
+
+- **Persistenza locale al browser**: i dati vivono nel web storage di quel browser/profilo; non c'è sincronizzazione tra dispositivi (coerente con un progetto senza backend).
+- **Dipendenza dalla rete al primo avvio**: serve connessione per scaricare il catalogo (poi la cache consente la navigazione offline).
+- **TheMealDB free tier**: nomi e istruzioni delle ricette sono in inglese (tradurli a mano per centinaia di ricette non è praticabile); l'app traduce invece le aree/paesi.
+- **Capienza localStorage (~5 MB)**: il catalogo completo (~600+ ricette) occupa qualche MB e rientra nei limiti tipici, ma è un dato da tenere presente.

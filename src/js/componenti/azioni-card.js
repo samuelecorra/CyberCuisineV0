@@ -1,19 +1,30 @@
+// ============================================================================
+//  AZIONI SULLE CARD RICETTA — event delegation globale
+// ============================================================================
+// PATTERN "event delegation": invece di attaccare un listener a ogni pulsante (le card vengono
+// rigenerate di continuo via innerHTML, quindi i listener andrebbero persi), registriamo UN solo
+// listener sul document e capiamo cosa è stato cliccato leggendo gli attributi data-* del bersaglio.
+// Vantaggi: funziona anche per gli elementi creati DOPO, e si registra una sola volta (vedi flag).
 import { ottieniUtenteCorrente, ottieniRecensioni, aggiornaRicettario } from "../storage.js";
 import { apriModaleRecensione } from "./modale-recensione.js";
 
-let listenerRegistrato = false;
+let listenerRegistrato = false; // evita doppie registrazioni (impostaAzioni... è idempotente)
 let modalElementi = null;
-let azioneProgrammata = null;
+let azioneProgrammata = null; // callback da eseguire alla conferma della modale
 
+// Chiamata una volta allo startup (main.js): prepara la modale di conferma e registra i listener globali.
 export function impostaAzioniCarteRicetta() {
   if (listenerRegistrato) return;
   preparaModalConferma();
-  document.addEventListener("click", gestisciClickAzioneRicetta);
-  document.addEventListener("click", gestisciAperturaDettagliDaMedia);
-  document.addEventListener("keydown", gestisciAperturaDettagliDaMedia);
+  document.addEventListener("click", gestisciClickAzioneRicetta); // pulsanti ricettario/recensione
+  document.addEventListener("click", gestisciAperturaDettagliDaMedia); // click sull'immagine → dettaglio
+  document.addEventListener("keydown", gestisciAperturaDettagliDaMedia); // idem da tastiera (Invio/Spazio)
   listenerRegistrato = true;
 }
 
+// Fotografa lo stato dell'utente utile alle card: quali ricette sono già nel ricettario e quali ha
+// già recensito. Usiamo dei Set per avere controlli .has() in tempo costante quando renderizziamo
+// decine di card, così ogni card sa subito se mostrare "Aggiungi" o "Rimuovi", "Scrivi" o "Guarda".
 export function ottieniStatoAzioniUtente() {
   const utente = ottieniUtenteCorrente();
   const idsRicettario = new Set(utente?.ricettario?.map(entry => entry.idRicetta) ?? []);

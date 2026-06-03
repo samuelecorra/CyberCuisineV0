@@ -1,3 +1,8 @@
+// ============================================================================
+//  VISTA RICETTARIO — ricettario personale dell'utente (frammento ricettario.html)
+// ============================================================================
+// Rotta PROTETTA: mostra le ricette salvate dall'utente. Gli id stanno in "cookbook:<idUtente>";
+// per ognuno ripeschiamo i dettagli (cache/API) e renderizziamo una card con pulsanti rimuovi/recensisci.
 import { ottieniUtenteCorrente, aggiornaRicettario } from "../storage.js";
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRicettario } from "../componenti/carte.js";
@@ -5,7 +10,7 @@ import { creaCardRicettario } from "../componenti/carte.js";
 export async function inizializzaVistaRicettario() {
   const utente = ottieniUtenteCorrente();
   if (!utente) {
-    window.location.hash = "#/accesso";
+    window.location.hash = "#/accesso"; // doppia sicurezza: il router protegge già la rotta
     return;
   }
   const elenco = document.getElementById("elencoRicettario");

@@ -27,28 +27,38 @@ Guida di riferimento per comprendere l’intero progetto CyberCuisine: architett
   - Se esiste variante protetta (`frammentoProtetto`), la usa per utenti loggati.
   - Dopo il render richiama l’handler JS della vista (`alCaricamento` o `alCaricamentoProtetto`), evidenzia nav attiva, aggiorna stato auth nav.
 - **Mappa rotte (`rotte.js`)**: associa hash → frammento HTML + init vista. Supporta: home (pubblica/protetta), accesso, registrazione, profilo (protetta), esplora (pubblica, include ricerca), ricettario (protetta), recensioni (protetta), ricetta dettagli.
-- **Entry (`main.js`)**: inizializza storage, navbar auth, precarica alcune ricette di cache, avvia router.
+- **Entry (`main.js`)**: inizializza/migra il web storage, aggancia la navbar auth, **scarica l'intero catalogo TheMealDB nel web storage allo startup** (con overlay di caricamento), poi avvia il router.
 
 ## Stato, storage, persistenza
 
 - **statoApp (`stato.js`)**: stato volatile (cache frammenti, risultati ricerca, catalogo completo per “Esplora”, percorso attivo).
 - **storage.js**:
-  - Serializza su **localStorage**: utenti, utente corrente, ricette salvate, recensioni, cache ricette.
-  - Normalizza utenti (nome, cognome, email, username, password, paesi origine/residenza, conteggi ricette/recensioni).
-  - CRUD ricette memorizzate (ricettario) + note private.
-  - CRUD recensioni per utente/ricetta.
-  - Cache ricette per evitare refetch, adattamento dati API → struttura interna.
-  - Helper per login/logout, validazioni base e contatori.
-- **SessionStorage**: usato per “Ricordami” nel login (autofill credenziali se spuntato).
+  - Serializza su **localStorage** in JSON, con chiavi namespaced: `users` (account), `session`
+    (chi è loggato), `recipes:cache` (catalogo), `areas:cache` (paesi), `cookbook:<idUtente>`
+    (ricettario + note private), `reviews:<idRicetta>` (recensioni), `app:meta` (versione schema).
+  - Normalizza gli utenti (nome, cognome, email, username, paesi, piatti preferiti) e memorizza la
+    password **solo come hash SHA-256 + salt** (`passwordHash`, `salt`): mai in chiaro (vedi `auth.js`).
+  - Login/logout = scrittura/azzeramento di `session.currentUserId` (separato da `users`).
+  - CRUD ricettario (add/remove + note private) e CRUD recensioni (insert/upsert/remove) per ricetta.
+  - Cache ricette con TTL per evitare refetch; adattamento dati API → struttura interna normalizzata.
+  - `inizializzaStorage` è idempotente e include una migrazione una-tantum dallo schema legacy.
+- **SessionStorage**: per il “Ricordami” salva **solo l'identificatore** (username/email, mai la
+  password) in `cc_accesso_ricorda`; usa inoltre `cc_post_signup` come messaggio one-shot
+  registrazione→login. Differenza chiave da localStorage: muore alla chiusura della scheda.
 
 ## API verso TheMealDB (`api.js`)
 
 - Wrapper `interrogaApi` con gestione errori.
 - Ricerca per nome, ingrediente (con fetch dettagli), lettera; lookup per ID.
 - Ricerca per area (paese) con randomizzazione e limite.
-- Gestione aree/paesi: fetch dinamico `list.php?a=list`, traduzione EN→IT, emoji bandiere; caching in modulo.
+- Gestione aree/paesi: **derivate dalle aree realmente presenti nel catalogo** (~37 cucine), non
+  dai ~195 demonimi di `list.php?a=list`; traduzione EN→IT ed emoji bandiera per ciascuna; cache in
+  `areas:cache`. Le bandiere emoji sono rese su tutti i SO grazie al webfont self-hosted
+  `Twemoji Country Flags` (`src/assets/fonts/`), necessario perché Windows non disegna le flag emoji.
 - Normalizzazione ricetta: nome, categoria, area, istruzioni, ingredienti (1–20), etichette, link youtube/fonte, miniatura.
-- Precaricamento ricette “in evidenza” (prima lettera) se cache vuota.
+- **Precaricamento dell'intero catalogo (A–Z) allo startup**: `precaricaCatalogoCompleto()` scarica
+  tutte le lettere in parallelo, indicizza per id e salva in `recipes:cache`; ai riavvii successivi
+  riusa la cache finché valida (TTL 72h). La ricerca lavora poi in locale su questa cache.
 
 ## Componenti UI
 
@@ -64,17 +74,22 @@ Guida di riferimento per comprendere l’intero progetto CyberCuisine: architett
 - **Recensioni (`vista-recensioni.js`, `reviews.html`)**: elenco recensioni dell’utente con card, link a ricetta.
 - **Dettaglio ricetta (`vista-dettaglio-ricetta.js`, `recipe-detail.html`)**: recupera per ID (cache+API), mostra ingredienti/istruzioni, azioni salva/rimuovi/recensisci.
 - **Accesso (`vista-accesso.js`, `login.html`)**: login con “Ricordami” (sessionStorage), link switch registrazione.
-- **Registrazione (`vista-registrazione.js`, `register.html`)**: form con nome/cognome, email, username, password, paesi origine/residenza (select/emoji/traduzioni dinamiche), switch verso login.
+- **Registrazione (`vista-registrazione.js`, `register.html`)**: form con nome/cognome, email, username, password (+ conferma), **piatti preferiti**, paesi origine/residenza (select/emoji/traduzioni dinamiche), accettazione Termini/Privacy, switch verso login.
 - **Profilo (`vista-profilo.js`, `profile.html`)**: card dati utente, contatori ricette/recensioni con link “Vedi”, form di modifica disabilitato finché non si conferma password in modale (modal.css), select paesi analoghe alla registrazione, elimina profilo.
 - **Esplora (`vista-esplora.js`, `esplora.html`)**: sezione “Sfoglia tutto” che carica l’intero catalogo (fetch per ogni lettera con deduplica, gruppi alfabetici, ancore laterali) e blocco “Ricerca ricette” con tre input (nome, ingrediente, lettera) che riusano lo stesso spinner PNG e mostrano risultati in griglia con badge conteggio.
 
 ## Flussi chiave
 
 - **Routing**: click nav → cambia `window.location.hash` → router carica frammento → init vista → aggiorna nav attiva.
-- **Auth**: login salva utente corrente in localStorage; route protette controllano `ottieniUtenteCorrente`; logout pulisce stato e torna home.
+- **Auth**: la registrazione crea l'utente in `users` con hash+salt; il login verifica la password
+  via hash e scrive `session.currentUserId`; le route protette controllano `ottieniUtenteCorrente`
+  (che legge `session`); il refresh mantiene la sessione (localStorage persistente); il logout azzera
+  `session` senza cancellare i dati dell'utente. Tutti i punti sono commentati inline con tag `DEVTOOLS:`.
 - **Persistenza dati dominio**:
   - Ricette da API → normalizzazione → cache locale → eventuale salvataggio in ricettario.
-  - Recensioni: legate a `idRicetta` e utente, salvate in localStorage.
+  - Recensioni: raggruppate per ricetta (`reviews:<idRicetta>`), ognuna con i campi richiesti dalla
+    specifica — data di preparazione (`cookedAt`), difficoltà 1-5 (`difficulty`), gusto 1-5 (`taste`)
+    — più id, autore e commento opzionale. Inserimento/modifica via modale, rimozione dal proprietario.
   - Paesi: fetch dinamico aree, traduzione e emoji; riuso per registrazione/profilo.
 
 ## Requisiti teorici per leggere/manutenere il codice

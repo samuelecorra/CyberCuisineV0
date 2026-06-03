@@ -37,6 +37,9 @@ export function remove(key) {
   localStorage.removeItem(key);
 }
 
+// Costruttori delle chiavi "per entità": ogni utente ha la SUA chiave ricettario e ogni ricetta
+// la SUA chiave recensioni. Namespacing così le entità non si pestano i piedi nel Local Storage.
+// Esempi: "cookbook:utente_1736_42" oppure "reviews:52772".
 export function chiaveRicettarioUtente(idUtente) {
   return `${PREFIX_COOKBOOK}${idUtente}`;
 }
@@ -48,6 +51,14 @@ export function chiaveRecensioniRicetta(idRicetta) {
 // --------------------------
 // Init + migrazioni schema
 // --------------------------
+// Eseguita allo startup (e quindi a OGNI refresh/F5 della pagina). È IDEMPOTENTE: crea le chiavi
+// solo se mancano (vedi i guard `if (!localStorage.getItem(...))`), quindi NON azzera i dati esistenti.
+//
+// >>> FLUSSO DI "REFRESH" (domanda tipica del prof) <<<
+// Quando ricarichi la pagina, "session" è già in Local Storage: questa init non la tocca, perciò
+// ottieniUtenteCorrente() la rilegge e resti LOGGATO senza dover rifare il login. È la differenza
+// pratica tra Local Storage (persistente tra refresh e riaperture) e Session Storage (la chiave
+// "cc_accesso_ricorda" sopravvive al refresh ma muore alla chiusura della scheda).
 export async function inizializzaStorage() {
   await migraSeNecessario();
 
@@ -81,9 +92,12 @@ export async function inizializzaStorage() {
   }
 }
 
+// Migrazione "una tantum": se i metadati non sono allo schema corrente, convertiamo gli eventuali
+// dati di una vecchia versione dell'app al nuovo formato. È trasparente per l'utente e non distrugge
+// nulla: legge le vecchie chiavi, riscrive nei nuovi formati e infine rimuove le vecchie.
 async function migraSeNecessario() {
   const meta = load(CHIAVI_SALVATAGGIO.APP_META, null);
-  if (meta?.schemaVersion === SCHEMA_VERSION) return;
+  if (meta?.schemaVersion === SCHEMA_VERSION) return; // già aggiornato → niente da fare
   await migraLegacy();
 }
 
@@ -245,26 +259,41 @@ function clampVoto(valore) {
 }
 
 // --------------------------
-// Utenti + sessione
+// Utenti + sessione  (cuore dell'autenticazione)
 // --------------------------
+// MODELLO scelto: separiamo "CHI esiste" da "CHI è loggato".
+//   - chiave "users"   → array di TUTTI gli account registrati (persistente).
+//   - chiave "session" → { currentUserId, loginAt } → punta all'utente attualmente loggato.
+// Login = scrivere currentUserId; logout = rimetterlo a null. I dati utente non si toccano.
+
+// Legge l'array utenti dal Local Storage ("users") e lo normalizza (campi coerenti EN/IT).
 export function ottieniUtenti() {
   const utenti = load(CHIAVI_SALVATAGGIO.USERS, []);
   return utenti.map(normalizzaUtente);
 }
 
+// Riscrive l'intero array utenti nel Local Storage ("users") in forma serializzata pulita.
 export function salvaUtenti(utenti) {
   const normalizzati = utenti.map(serializzaUtente);
   save(CHIAVI_SALVATAGGIO.USERS, normalizzati);
 }
 
+// Restituisce l'utente loggato, oppure null. È la funzione che "decide" se sei autenticato:
+// legge "session".currentUserId e cerca l'utente corrispondente in "users".
+// arricchisciConRicettario aggiunge al volo il ricettario (letto da "cookbook:<id>").
+// DEVTOOLS: se in "session" currentUserId è null → questa ritorna null → sei sloggato.
 export function ottieniUtenteCorrente() {
   const sessione = load(CHIAVI_SALVATAGGIO.SESSION, { currentUserId: null });
   if (!sessione?.currentUserId) return null;
   const utente = ottieniUtenti().find(item => item.id === sessione.currentUserId);
-  if (!utente) return null;
+  if (!utente) return null; // sessione che punta a un utente cancellato → trattato come sloggato
   return arricchisciConRicettario(utente);
 }
 
+// Apre o chiude la sessione scrivendo la chiave "session" in Local Storage.
+//   - impostaUtenteCorrente(utente) → LOGIN  (currentUserId = utente.id, loginAt = ora)
+//   - impostaUtenteCorrente(null)   → LOGOUT (currentUserId = null)
+// È IL punto da osservare nei DevTools durante login e logout.
 export function impostaUtenteCorrente(utente) {
   if (!utente) {
     save(CHIAVI_SALVATAGGIO.SESSION, { currentUserId: null, loginAt: null });
@@ -379,8 +408,15 @@ export function ottieniCacheAree() {
   return load(CHIAVI_SALVATAGGIO.AREAS_CACHE, { updatedAt: null, items: [] });
 }
 
+// Salva le aree in "areas:cache". Il flag derivedFromCatalog marca che sono state generate dalla
+// logica attuale (aree distinte del catalogo): permette di invalidare automaticamente una cache
+// vecchia salvata da una versione precedente dell'app (vedi ottieniAreeCucina in api.js).
 export function salvaCacheAree(items) {
-  save(CHIAVI_SALVATAGGIO.AREAS_CACHE, { updatedAt: new Date().toISOString(), items });
+  save(CHIAVI_SALVATAGGIO.AREAS_CACHE, {
+    updatedAt: new Date().toISOString(),
+    items,
+    derivedFromCatalog: true
+  });
 }
 
 export function ottieniMetaApp() {
@@ -414,8 +450,11 @@ export function aggiornaCacheInfoRicette(info) {
 }
 
 // --------------------------
-// Ricettario utente
+// Ricettario utente (macro-scenario "gestione di un ricettario personale")
 // --------------------------
+// Forma salvata in "cookbook:<idUtente>": { recipeIds: [...], notesByRecipeId: { idRicetta: nota } }.
+// Memorizziamo solo gli ID delle ricette (non l'intera ricetta): i dettagli si ripescano dalla
+// cache/API quando servono. Le note sono PRIVATE (vivono solo nel ricettario del singolo utente).
 export function ottieniRicettarioUtente(idUtente) {
   return load(chiaveRicettarioUtente(idUtente), { recipeIds: [], notesByRecipeId: {} });
 }
@@ -424,6 +463,7 @@ export function salvaRicettarioUtente(idUtente, ricettario) {
   save(chiaveRicettarioUtente(idUtente), ricettario);
 }
 
+// Aggancia all'oggetto utente una vista comoda del ricettario ([{ idRicetta, nota }]) usata dalle viste.
 function arricchisciConRicettario(utente) {
   const ricettario = ottieniRicettarioUtente(utente.id);
   const lista = ricettario.recipeIds.map(idRicetta => ({
@@ -433,26 +473,31 @@ function arricchisciConRicettario(utente) {
   return { ...utente, ricettario: lista };
 }
 
+// Aggiunge (aggiungi=true) o rimuove (aggiungi=false) una ricetta dal ricettario dell'utente loggato.
+// È la funzione dietro i pulsanti "Aggiungi/Rimuovi dal ricettario" su card e scheda dettaglio.
+// DEVTOOLS: clicca "Aggiungi al ricettario" → in "cookbook:<tuoId>" l'id compare in recipeIds.
 export function aggiornaRicettario(idRicetta, aggiungi) {
   const utente = ottieniUtenteCorrente();
   if (!utente) {
-    window.location.hash = "#/accesso";
+    window.location.hash = "#/accesso"; // serve essere loggati per avere un ricettario
     return;
   }
   const ricettario = ottieniRicettarioUtente(utente.id);
+  // Copie difensive (spread) per non mutare direttamente l'oggetto letto dallo storage.
   const recipeIds = [...(ricettario.recipeIds ?? [])];
   const notesByRecipeId = { ...(ricettario.notesByRecipeId ?? {}) };
   const indice = recipeIds.indexOf(idRicetta);
   if (aggiungi && indice === -1) {
-    recipeIds.push(idRicetta);
+    recipeIds.push(idRicetta); // aggiungi solo se non già presente (niente duplicati)
   }
   if (!aggiungi && indice !== -1) {
     recipeIds.splice(indice, 1);
-    delete notesByRecipeId[idRicetta];
+    delete notesByRecipeId[idRicetta]; // rimuovendo la ricetta buttiamo anche la sua nota privata
   }
   salvaRicettarioUtente(utente.id, { recipeIds, notesByRecipeId });
 }
 
+// Salva/aggiorna la nota privata testuale di una ricetta presente nel ricettario.
 export function aggiornaNotaRicettario(idRicetta, nota) {
   const utente = ottieniUtenteCorrente();
   if (!utente) return;
@@ -467,8 +512,13 @@ export function aggiornaNotaRicettario(idRicetta, nota) {
 }
 
 // --------------------------
-// Recensioni
+// Recensioni (macro-scenario "recensioni delle ricette")
 // --------------------------
+// Le recensioni sono raggruppate PER RICETTA nella chiave "reviews:<idRicetta>" (array).
+// Schema di una recensione (campi richiesti dalla specifica): data di preparazione (cookedAt),
+// voto difficoltà 1-5 (difficulty), voto gusto 1-5 (taste); più id, userId, commento, timestamp.
+// Internamente i campi sono in inglese; questa funzione li ri-espone anche in italiano (idRicetta,
+// idUtente) perché le viste lavorano con quelle proprietà.
 export function trasformaRecensioneInItaliano(recensione) {
   if (!recensione) return recensione;
   return {
@@ -478,15 +528,18 @@ export function trasformaRecensioneInItaliano(recensione) {
   };
 }
 
+// Raccoglie TUTTE le recensioni di TUTTE le ricette scorrendo le chiavi "reviews:*" del Local Storage.
+// Usata, ad esempio, dalla pagina Recensioni e dal conteggio nel profilo (filtrando per idUtente).
 export function ottieniRecensioni() {
   const elenco = [];
   for (let i = 0; i < localStorage.length; i += 1) {
-    const key = localStorage.key(i);
-    if (!key || !key.startsWith(PREFIX_REVIEWS)) continue;
+    const key = localStorage.key(i); // iteriamo su tutte le chiavi presenti nel Local Storage
+    if (!key || !key.startsWith(PREFIX_REVIEWS)) continue; // teniamo solo quelle "reviews:..."
     const recensioni = load(key, []);
     recensioni.forEach(item => {
       elenco.push(trasformaRecensioneInItaliano({
         ...item,
+        // se manca idRicetta lo ricaviamo dal nome della chiave (es. "reviews:52772" → "52772")
         idRicetta: item.idRicetta ?? key.replace(PREFIX_REVIEWS, "")
       }));
     });
@@ -520,18 +573,24 @@ export function salvaRecensioniRicetta(idRicetta, recensioni) {
   save(chiaveRecensioniRicetta(idRicetta), pulite);
 }
 
+// RIMOZIONE di una recensione (richiesta esplicitamente dalla specifica: "inserimento e rimozione").
+// Filtriamo via la recensione con quell'id; il controllo su idUtente garantisce che un utente possa
+// rimuovere SOLO le proprie recensioni. Restituisce true se qualcosa è stato effettivamente rimosso.
+// DEVTOOLS: clicca "Rimuovi recensione" → l'elemento sparisce dall'array in "reviews:<idRicetta>".
 export function rimuoviRecensione(idRicetta, idRecensione, idUtente) {
   const recensioni = ottieniRecensioniRicetta(idRicetta);
   const filtrate = recensioni.filter(recensione => {
-    if (recensione.id !== idRecensione) return true;
-    if (idUtente && recensione.idUtente !== idUtente) return true;
-    return false;
+    if (recensione.id !== idRecensione) return true; // non è quella da rimuovere → tienila
+    if (idUtente && recensione.idUtente !== idUtente) return true; // non è tua → non puoi rimuoverla
+    return false; // è la tua recensione con quell'id → scartala
   });
-  if (filtrate.length === recensioni.length) return false;
+  if (filtrate.length === recensioni.length) return false; // niente rimosso (id non trovato)
   salvaRecensioniRicetta(idRicetta, filtrate);
   return true;
 }
 
+// "Igienizza" una recensione prima del salvataggio: garantisce id e timestamp, accetta sia i nomi
+// inglesi sia quelli italiani in ingresso, e forza i voti nell'intervallo 1-5 (clampVoto).
 function normalizzaRecensionePerStorage(recensione) {
   const now = new Date().toISOString();
   const createdAt = recensione.createdAt ?? now;
@@ -539,9 +598,9 @@ function normalizzaRecensionePerStorage(recensione) {
   return {
     id: recensione.id ?? generaIdRecensione(),
     userId: recensione.userId ?? recensione.idUtente,
-    cookedAt: recensione.cookedAt ?? recensione.dataPreparazione ?? null,
-    difficulty: clampVoto(recensione.difficulty ?? recensione.difficolta ?? 3),
-    taste: clampVoto(recensione.taste ?? recensione.valutazione ?? recensione.gusto ?? 3),
+    cookedAt: recensione.cookedAt ?? recensione.dataPreparazione ?? null, // data di preparazione
+    difficulty: clampVoto(recensione.difficulty ?? recensione.difficolta ?? 3), // voto difficoltà 1-5
+    taste: clampVoto(recensione.taste ?? recensione.valutazione ?? recensione.gusto ?? 3), // voto gusto 1-5
     commento: recensione.commento?.trim() || "",
     createdAt,
     updatedAt

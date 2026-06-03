@@ -1,11 +1,19 @@
+// ============================================================================
+//  NAVBAR + STATO DI AUTENTICAZIONE
+// ============================================================================
+// La navbar è il "termometro" visivo della sessione: mostra "Registrati / Accedi" se non sei
+// loggato, oppure il menu "Ciao <nome>" con Profilo e Logout se lo sei. Lo stato vero risiede
+// nel web storage (Local Storage → chiave "session"); qui lo leggiamo e adattiamo l'interfaccia.
 import { ottieniUtenteCorrente, ottieniUtenti, impostaUtenteCorrente } from "./storage.js";
 
-// Gestione link autenticazione
+// Aggancia gli eventi della navbar legati all'auth e prepara la modale di conferma logout.
+// Chiamata una volta sola allo startup (da main.js).
 export function impostaEventiAuthNav() {
   const linkAutenticazione = document.getElementById("ccLinkAccesso");
   if (!linkAutenticazione) return;
   const logoutTrigger = document.getElementById("ccLogoutTrigger");
   preparaModalLogout();
+  // Il click su "Logout" non disconnette subito: apre prima la modale di conferma.
   logoutTrigger?.addEventListener("click", event => {
     event.preventDefault();
     mostraModalLogout();
@@ -13,18 +21,24 @@ export function impostaEventiAuthNav() {
   aggiornaStatoAuthNav();
 }
 
+// Sincronizza l'aspetto della navbar con lo stato di login. Viene richiamata dopo login, logout
+// e a ogni cambio di rotta (dal router), così la navbar è sempre coerente con la sessione.
 export function aggiornaStatoAuthNav() {
   const linkAutenticazione = document.getElementById("ccLinkAccesso");
   const menuUtente = document.getElementById("ccUserMenu");
   const salutoUtente = document.getElementById("ccUserGreeting");
   if (!linkAutenticazione || !menuUtente || !salutoUtente) return;
+  // ottieniUtenteCorrente legge "session".currentUserId e recupera l'utente da "users".
   const utente = ottieniUtenteCorrente();
   if (utente) {
+    // Loggato: nascondi il link Accedi, mostra il menu utente con il saluto personalizzato.
     linkAutenticazione.classList.add("d-none");
     menuUtente.classList.remove("d-none");
     const nomePreferito = (utente.nome ?? utente.nomeUtente ?? "Chef").trim() || "Chef";
     salutoUtente.textContent = `Ciao ${nomePreferito}`;
   } else {
+    // Non loggato: il link punta alla registrazione se non esiste ancora nessun utente,
+    // altrimenti direttamente al login (piccola comodità per chi è già registrato).
     const ciSonoUtenti = ottieniUtenti().length > 0;
     linkAutenticazione.classList.remove("d-none");
     linkAutenticazione.href = ciSonoUtenti ? "#/accesso" : "#/registrazione";
@@ -33,10 +47,15 @@ export function aggiornaStatoAuthNav() {
   }
 }
 
+// >>> MOMENTO CHIAVE DEL LOGOUT <<<
+// impostaUtenteCorrente(null) riscrive "session" come { currentUserId: null, loginAt: null }.
+// DEVTOOLS: F12 → Application → Local Storage → chiave "session": dopo il logout currentUserId
+// torna a null. NB: l'array "users" NON viene toccato (l'account resta registrato), e nemmeno
+// il ricettario/recensioni: il logout chiude solo la sessione, non cancella i dati dell'utente.
 export function gestisciLogout() {
   impostaUtenteCorrente(null);
-  aggiornaStatoAuthNav();
-  window.location.hash = "#/home";
+  aggiornaStatoAuthNav(); // la navbar torna a "Registrati / Accedi"
+  window.location.hash = "#/home"; // torniamo alla home pubblica
 }
 
 let modalLogoutElementi = null;

@@ -1,3 +1,12 @@
+// ============================================================================
+//  COMPONENTI "CARD" — generatori di markup riutilizzabili (template string)
+// ============================================================================
+// Queste funzioni NON toccano il DOM: restituiscono solo stringhe HTML che le viste poi inseriscono
+// con innerHTML. Centralizzare qui i template evita di duplicare la stessa struttura in più viste e
+// tiene coerente l'aspetto delle card in tutta l'app (home, esplora, ricettario, recensioni).
+
+// Card ricetta usata in home ed esplora. `stato` dice se la ricetta è già nel ricettario dell'utente
+// e se l'utente l'ha già recensita, così i pulsanti mostrano l'etichetta giusta (Aggiungi/Rimuovi, ecc.).
 export function creaCardRicetta(ricetta, stato = {}) {
   const { inRicettario = false, haRecensione = false } = stato;
   const cookbookMode = inRicettario ? "remove" : "add";
@@ -103,6 +112,8 @@ export function creaCardRicettario(ricetta) {
     `;
 }
 
+// Card recensione: mostra autore, ricetta, data di preparazione e i due voti 1-5 (difficoltà/gusto),
+// più l'eventuale commento. `opzioni.mostraRimuovi` aggiunge il pulsante di rimozione (solo al proprietario).
 export function creaCardRecensione(recensione, ricetta, autore = "Utente", opzioni = {}) {
   const difficolta = formattaVoto(recensione.difficulty ?? recensione.difficolta);
   const gusto = formattaVoto(recensione.taste ?? recensione.valutazione ?? recensione.gusto);
@@ -131,12 +142,16 @@ export function creaCardRecensione(recensione, ricetta, autore = "Utente", opzio
     `;
 }
 
+// Formatta un voto numerico come "n/5"; se assente/non valido mostra "N/D".
 function formattaVoto(valore) {
   const numero = Number(valore);
   if (!numero || Number.isNaN(numero)) return "N/D";
   return `${numero}/5`;
 }
 
+// Esegue l'escape dei caratteri speciali prima di inserire il nome della ricetta dentro un ATTRIBUTO
+// HTML (es. data-ricetta-nome="..."). Evita che un nome con virgolette o < > rompa il markup
+// generato dalle template string. Piccola buona pratica anche se i dati arrivano da TheMealDB.
 function escapeHtmlAttribute(valore = "") {
   return String(valore)
     .replace(/&/g, "&amp;")

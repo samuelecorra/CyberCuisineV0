@@ -166,6 +166,18 @@
   text-decoration: underline;
 }
 
+/* Dettaglio ricetta: sottotitolo categoria/area e separatori accentati.
+   Queste classi sostituiscono gli style="" inline, mantenendo la separazione
+   tra struttura (HTML) e presentazione (CSS) richiesta dalla specifica. */
+.cc-ricetta-sottotitolo {
+  font-size: 1.05rem;
+}
+
+.cc-hr-accento {
+  border-color: var(--cc-accent);
+  opacity: 1;
+}
+
 .dropdown-menu {
   background-color: var(--cc-panel);
   border: 1px solid var(--cc-border);

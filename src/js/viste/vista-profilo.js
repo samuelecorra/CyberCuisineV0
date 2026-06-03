@@ -39,6 +39,9 @@ export function inizializzaVistaProfilo() {
     mostraModalPassword();
   });
 
+  // RE-AUTENTICAZIONE: prima di sbloccare i campi del profilo richiediamo di nuovo la password
+  // (verificata via hash, come al login). È una piccola difesa contro modifiche da parte di chi
+  // trovasse la sessione aperta su un dispositivo non sorvegliato.
   confermaModal?.addEventListener("click", async () => {
     const pwd = campoPasswordModal.value;
     const ok = await verificaPassword(pwd, utente);
@@ -71,11 +74,15 @@ export function inizializzaVistaProfilo() {
         mostraAvviso(avvisoErroreProfilo, "La password deve contenere almeno 6 caratteri.");
         return;
       }
+      // Cambio password: rigeneriamo hash+salt. DEVTOOLS: in "users" i campi passwordHash e salt
+      // di questo utente cambiano valore dopo il salvataggio (la vecchia password non è più valida).
       const credenziali = await creaCredenzialiPassword(nuovaPassword);
       profiloAggiornato.passwordHash = credenziali.passwordHash;
       profiloAggiornato.salt = credenziali.salt;
     }
     profiloAggiornato.updatedAt = new Date().toISOString();
+    // salvaUtente aggiorna l'utente dentro "users" e, se è l'utente loggato, ri-sincronizza "session".
+    // DEVTOOLS: modifica un campo (es. email) e salva → vedi il valore cambiare in Local Storage "users".
     salvaUtente(profiloAggiornato);
     mostraInfoProfilo(profiloAggiornato);
     mostraAvviso(avvisoSuccessoProfilo, "Profilo aggiornato con successo.", "success");
@@ -85,6 +92,10 @@ export function inizializzaVistaProfilo() {
     document.getElementById("passwordProfilo").value = "";
   });
 
+  // RIMOZIONE PROFILO (richiesta esplicitamente dalla specifica). rimuoviUtente cancella in cascata
+  // dal web storage: l'utente da "users", il suo ricettario ("cookbook:<id>") e tutte le sue
+  // recensioni ("reviews:<idRicetta>"); poi gestisciLogout azzera "session".
+  // DEVTOOLS: dopo la conferma, in Local Storage spariscono l'utente da "users" e la sua chiave cookbook.
   bottoneElimina?.addEventListener("click", () => {
     const confermaEliminazione = confirm("Sei sicuro di voler eliminare il profilo?");
     if (!confermaEliminazione) return;

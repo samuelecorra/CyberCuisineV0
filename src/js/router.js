@@ -50,7 +50,10 @@ export async function gestisciCambioRoute() {
     return; // E terminiamo l'esecuzione della funzione
   }
 
-  // Ma se la rotta esiste, possiamo procedere: vediamo se l'utente è autenticato o meno
+  // Ma se la rotta esiste, possiamo procedere: vediamo se l'utente è autenticato o meno.
+  // ottieniUtenteCorrente() legge la chiave "session" dal Local Storage: è qui che il router
+  // "controlla il badge d'accesso" a ogni navigazione (DEVTOOLS: svuota "session" e prova ad
+  // aprire #/ricettario → vieni rispedito al login, prova del funzionamento delle rotte protette).
   const utente = ottieniUtenteCorrente();
 
   if (configurazionePercorso.protetta && !utente) {

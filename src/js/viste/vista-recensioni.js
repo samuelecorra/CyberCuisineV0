@@ -1,3 +1,9 @@
+// ============================================================================
+//  VISTA RECENSIONI — tutte le recensioni scritte dall'utente (frammento reviews.html)
+// ============================================================================
+// Rotta PROTETTA: raccoglie da tutte le chiavi "reviews:*" le recensioni il cui userId è quello
+// dell'utente loggato, ne mostra le card e consente di rimuoverle. È una vista "aggregata" comoda
+// per l'utente (le stesse recensioni sono visibili anche nella scheda della singola ricetta).
 import {
   ottieniUtenteCorrente,
   ottieniRecensioni,

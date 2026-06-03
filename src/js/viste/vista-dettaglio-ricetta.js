@@ -1,3 +1,10 @@
+// ============================================================================
+//  VISTA DETTAGLIO RICETTA — scheda completa + recensioni (frammento recipe-detail.html)
+// ============================================================================
+// Realizza la "scheda di ogni ricetta, comprensiva delle eventuali recensioni" richiesta dalla
+// specifica: immagine, categoria/area, ingredienti, procedimento, (eventuale) video, e l'elenco di
+// TUTTE le recensioni degli utenti per questa ricetta. Da qui si aggiunge/rimuove dal ricettario e
+// si apre la modale per scrivere/aggiornare la propria recensione (e rimuovere le proprie).
 import {
   ottieniUtenteCorrente,
   ottieniRecensioniRicetta,
@@ -9,6 +16,7 @@ import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRecensione } from "../componenti/carte.js";
 import { apriModaleRecensione } from "../componenti/modale-recensione.js";
 
+// idRicetta arriva dal router come parametro dinamico estratto dall'hash (#/ricetta/<id>).
 export async function inizializzaVistaDettaglioRicetta(idRicetta) {
   const wrapper = document.getElementById("dettaglioRicetta");
   if (!idRicetta || !wrapper) {
@@ -80,7 +88,7 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
               }
             </div>
             <div class="col-lg-7">
-              <p class="text-uppercase testo-accento mb-2 fw-semibold" style="font-size: 1.05rem;">${ricetta.categoria} - ${ricetta.area}</p>
+              <p class="text-uppercase testo-accento mb-2 fw-semibold cc-ricetta-sottotitolo">${ricetta.categoria} - ${ricetta.area}</p>
               <h1 class="h2 mb-3">${ricetta.nome}</h1>
               ${badgeEtichette ? `<div class="d-flex flex-wrap gap-2 mb-3">${badgeEtichette}</div>` : ""}
               <div class="d-flex align-items-center gap-2 small mb-4">
@@ -91,14 +99,14 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
                     : "N/D"
                 }</span>
               </div>
-              <hr class="my-3" style="border-color: var(--cc-accent); opacity: 1;" />
+              <hr class="my-3 cc-hr-accento" />
               <div class="mb-4">
                 <h2 class="h5 text-uppercase">Ingredienti</h2>
                 <ul class="row row-cols-1 row-cols-md-2 list-unstyled small mb-0">
                   ${ingredientiHtml}
                 </ul>
               </div>
-              <hr class="my-3" style="border-color: var(--cc-accent); opacity: 1;" />
+              <hr class="my-3 cc-hr-accento" />
               <div>
                 <h2 class="h5 text-uppercase">Istruzioni</h2>
                 ${istruzioniHtml}

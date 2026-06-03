@@ -1,3 +1,11 @@
+// ============================================================================
+//  VISTA ESPLORA — ricerca ricette + sfoglia catalogo completo (frammento esplora.html)
+// ============================================================================
+// Realizza il macro-scenario "ricerca di ricette culinarie". Due modalità:
+//   - RICERCA mirata (per nome / ingrediente / lettera iniziale) → mostra i risultati filtrati;
+//   - SFOGLIA TUTTO → mostra l'intero catalogo raggruppato per lettera con un indice alfabetico
+//     laterale (ancore + scroll fluido) e un IntersectionObserver che evidenzia la lettera corrente.
+// Entrambe le modalità leggono dalla cache locale del catalogo (già scaricato allo startup).
 import {
   cercaRicettePerLettera,
   cercaRicettePerNome,
@@ -10,7 +18,7 @@ import { ottieniStatoAzioniUtente } from "../componenti/azioni-card.js";
 
 const DURATA_INTERMEZZO_MS = 2000; // Piccolo delay per permettere allo spinner di essere percepito
 const LETTERE_ALFABETO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-let observerLettere = null;
+let observerLettere = null; // IntersectionObserver per evidenziare la lettera attiva durante lo scroll
 
 export function inizializzaVistaEsplora() {
   if (statoApp.risultatiRicerca.length > 0) {
@@ -54,6 +62,7 @@ async function gestisciRicerca(tipoSelezionato) {
   mostraSpinnerCatalogo();
   await attendiIntermezzo();
 
+  // Dispatch in base alla modalità scelta nella select: ogni ramo filtra la cache locale del catalogo.
   let risultati = [];
   try {
     if (tipo === "nome") {

@@ -1,4 +1,19 @@
 /* Regole base condivise tra tutte le viste */
+
+/* --- Font bandiere (fix multipiattaforma) ---
+   Windows NON include i glifi delle bandiere nei suoi font emoji (Segoe UI Emoji disegna le coppie
+   di "regional indicator" come due lettere, es. IT, invece della bandiera 🇮🇹). Carichiamo quindi un
+   font dedicato (Twemoji Country Flags) che contiene SOLO i glifi bandiera. Con `unicode-range`
+   limitato all'intervallo dei regional indicator (U+1F1E6–U+1F1FF), questo font interviene
+   ESCLUSIVAMENTE sui caratteri bandiera: tutto il resto del testo continua a usare i font normali.
+   Risultato: le bandiere si vedono uguali su Windows, macOS e Linux. */
+@font-face {
+  font-family: "Twemoji Country Flags";
+  src: url("../assets/fonts/TwemojiCountryFlags.woff2") format("woff2");
+  unicode-range: U+1F1E6-1F1FF;
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -9,7 +24,11 @@ body {
 }
 
 body {
-  font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* "Twemoji Country Flags" è primo SOLO per i glifi bandiera (vedi @font-face sopra, unicode-range);
+     per tutto il resto del testo vale "Space Grotesk". Bootstrap fa ereditare il font ai controlli
+     di form (select/option), quindi le bandiere appaiono correttamente anche nei menu a tendina. */
+  font-family: "Twemoji Country Flags", "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   background-color: var(--cc-bg-dark);
   color: var(--cc-text);
   display: flex;

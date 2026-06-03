@@ -31,79 +31,74 @@ export async function interrogaApi(endpoint) {
 // per le varie operazioni che ci servono nell'app, in modo da mantenere il codice
 // organizzato e modulare.
 
+// L'intero catalogo di TheMealDB si ricostruisce interrogando l'endpoint search.php?f=<lettera>
+// per ogni lettera dell'alfabeto (A-Z): ogni chiamata restituisce tutte le ricette il cui nome
+// inizia con quella lettera. Unendo i 26 risultati otteniamo il catalogo completo (~300 ricette).
 const LETTERE_CATALOGO = "abcdefghijklmnopqrstuvwxyz".split("");
-const LETTERE_SEED = ["a", "b", "c"];
+
+// TTL (Time To Live) della cache del catalogo, in ore.
+// La specifica (PDF, pag. 3) chiede che ALLO STARTUP i dati siano scaricati dalle API e
+// memorizzati nel web storage. Noi li scarichiamo una volta, li salviamo in localStorage
+// (chiave "recipes:cache") e li riusiamo ai riavvii successivi finché non scadono: dopo 72h il
+// prossimo avvio riscarica il catalogo aggiornato. È una scelta implementativa documentata che
+// evita 26 chiamate di rete a ogni reload pur restando fedele al requisito di startup.
 const TTL_CACHE_ORE = 72;
 
 // --------------------------
-// Precaricamento catalogo (seed + refresh)
+// Precaricamento del catalogo COMPLETO (invocato allo STARTUP da main.js)
 // --------------------------
-export async function precaricaCatalogoRicette() {
-  const cache = ottieniCacheRicette();
-  const infoCache = ottieniMetaApp()?.apiCacheInfo?.recipes ?? {};
-
-  if (Object.keys(cache).length > 0) {
-    if (cacheScaduta(infoCache.lastFetchAt, infoCache.ttlHours ?? TTL_CACHE_ORE)) {
-      aggiornaCatalogoInBackground(infoCache.complete ? LETTERE_CATALOGO : LETTERE_SEED, {
-        complete: Boolean(infoCache.complete)
-      });
-    }
-    return ordinaRicette(Object.values(cache));
-  }
-
-  try {
-    const ricette = await scaricaRicettePerLettere(LETTERE_SEED);
-    const dizionario = indicizzaRicette(ricette);
-    salvaCacheRicette(dizionario);
-    aggiornaCacheInfoRicette({
-      strategy: "letters",
-      seedLetters: LETTERE_SEED,
-      lastFetchAt: new Date().toISOString(),
-      ttlHours: TTL_CACHE_ORE,
-      complete: false
-    });
-    return ordinaRicette(Object.values(dizionario));
-  } catch (errore) {
-    console.error("Impossibile precaricare il catalogo base", errore);
-    return ordinaRicette(ottieniCatalogoLocale());
-  }
-}
-
+// Requisito di specifica (PDF, pag. 3): «Allo startup dell'applicazione, tutti i dati necessari
+// (in formato JSON) devono essere scaricati dalle API di TheMealDB, memorizzati nel web storage,
+// e visualizzati nell'applicazione web.» Questa funzione realizza esattamente quel flusso:
+//   1) se in localStorage esiste già un catalogo completo e non scaduto, lo riusa (zero rete);
+//   2) altrimenti scarica A-Z dalle API, normalizza, indicizza per id e salva in "recipes:cache".
+// È usata sia all'avvio (main.js) sia dal pulsante "Sfoglia l'intero catalogo" (vista Esplora).
 export async function precaricaCatalogoCompleto() {
   const cache = ottieniCacheRicette();
   const infoCache = ottieniMetaApp()?.apiCacheInfo?.recipes ?? {};
-  if (
+  const cacheValida =
     Object.keys(cache).length > 0 &&
     infoCache.complete &&
-    !cacheScaduta(infoCache.lastFetchAt, infoCache.ttlHours ?? TTL_CACHE_ORE)
-  ) {
+    !cacheScaduta(infoCache.lastFetchAt, infoCache.ttlHours ?? TTL_CACHE_ORE);
+
+  // DEVTOOLS (per la demo): F12 → Application → Local Storage → chiave "recipes:cache".
+  // Al PRIMISSIMO avvio è vuota ({ updatedAt:null, byId:{} }); dopo questa funzione contiene
+  // l'intero catalogo dentro byId. La ricerca per nome/ingrediente/lettera lavora su questa cache.
+  if (cacheValida) {
     return ordinaRicette(Object.values(cache));
   }
+
   try {
-    const ricette = await scaricaRicettePerLettere(LETTERE_CATALOGO);
+    const ricette = await scaricaRicettePerLettere(LETTERE_CATALOGO); // 26 fetch in parallelo
     const dizionario = indicizzaRicette(ricette);
-    salvaCacheRicette(dizionario);
+    salvaCacheRicette(dizionario); // <-- SCRITTURA nel web storage (localStorage "recipes:cache")
     aggiornaCacheInfoRicette({
-      strategy: "letters",
-      seedLetters: LETTERE_SEED,
+      strategy: "full",
       lastFetchAt: new Date().toISOString(),
       ttlHours: TTL_CACHE_ORE,
       complete: true
     });
     return ordinaRicette(Object.values(dizionario));
   } catch (errore) {
+    // Se la rete fallisce (es. offline al primo avvio) restituiamo ciò che è già in cache:
+    // l'app resta navigabile anche senza catalogo completo.
     console.error("Impossibile precaricare l'intero catalogo", errore);
     return ordinaRicette(ottieniCatalogoLocale());
   }
 }
 
+// Scarica le ricette per un insieme di lettere e le unisce in un unico array normalizzato.
+// Promise.all parallelizza le richieste: 26 chiamate concorrenti invece che sequenziali (più veloce).
 async function scaricaRicettePerLettere(lettere) {
   const risposte = await Promise.all(
     lettere.map(lettera => interrogaApi(`search.php?f=${encodeURIComponent(lettera)}`))
   );
+  // flatMap: ogni risposta è un array di ricette; le "appiattiamo" in un'unica lista.
   return risposte.flatMap(dati => normalizzaElencoRicette(dati.meals));
 }
 
+// Trasforma un array di ricette in un dizionario { id: ricetta } per lookup O(1) per id
+// e per deduplica automatica (stesso id => stessa chiave => una sola voce).
 function indicizzaRicette(ricette) {
   const dizionario = {};
   ricette.forEach(ricetta => {
@@ -114,6 +109,7 @@ function indicizzaRicette(ricette) {
   return dizionario;
 }
 
+// Determina se la cache è scaduta confrontando il timestamp dell'ultimo fetch con il TTL.
 function cacheScaduta(lastFetchAt, ttlHours) {
   if (!lastFetchAt) return true;
   const last = new Date(lastFetchAt).getTime();
@@ -121,26 +117,6 @@ function cacheScaduta(lastFetchAt, ttlHours) {
   const ms = Date.now() - last;
   const ttlMs = (ttlHours ?? TTL_CACHE_ORE) * 60 * 60 * 1000;
   return ms > ttlMs;
-}
-
-function aggiornaCatalogoInBackground(lettere, info = {}) {
-  (async () => {
-    try {
-      const ricette = await scaricaRicettePerLettere(lettere);
-      const nuovi = indicizzaRicette(ricette);
-      const cacheAttuale = ottieniCacheRicette();
-      salvaCacheRicette({ ...cacheAttuale, ...nuovi });
-      aggiornaCacheInfoRicette({
-        strategy: "letters",
-        seedLetters: LETTERE_SEED,
-        lastFetchAt: new Date().toISOString(),
-        ttlHours: TTL_CACHE_ORE,
-        complete: Boolean(info.complete)
-      });
-    } catch (errore) {
-      console.warn("Aggiornamento catalogo in background fallito", errore);
-    }
-  })();
 }
 
 function ottieniCatalogoLocale() {
@@ -157,8 +133,13 @@ function normalizzaTermine(valore) {
 }
 
 // --------------------------
-// Ricerca locale sui dati prefetchati
+// Ricerca LOCALE sui dati già scaricati (macro-scenario "ricerca di ricette culinarie")
 // --------------------------
+// SCELTA IMPLEMENTATIVA: poiché allo startup l'intero catalogo è già in localStorage, la ricerca
+// non rifà chiamate di rete ma FILTRA la cache locale → risultati istantanei e funzionamento offline.
+// La specifica chiede ricerca per nome del piatto, ingredienti o lettera iniziale: ecco le tre funzioni.
+
+// Ricerca per NOME: match "contiene" (case-insensitive) sul nome del piatto.
 export async function cercaRicettePerNome(nome) {
   const termine = normalizzaTermine(nome);
   if (!termine) return [];
@@ -167,6 +148,7 @@ export async function cercaRicettePerNome(nome) {
   );
 }
 
+// Ricerca per LETTERA INIZIALE: confronta solo il primo carattere del nome.
 export async function cercaRicettePerLettera(lettera) {
   const iniziale = normalizzaTermine(lettera).charAt(0);
   if (!iniziale) return [];
@@ -175,6 +157,7 @@ export async function cercaRicettePerLettera(lettera) {
   );
 }
 
+// Ricerca per INGREDIENTE: vera se almeno un ingrediente della ricetta contiene il termine.
 export async function cercaRicettePerIngrediente(ingrediente) {
   const termine = normalizzaTermine(ingrediente);
   if (!termine) return [];
@@ -185,17 +168,20 @@ export async function cercaRicettePerIngrediente(ingrediente) {
   );
 }
 
+// Recupera una ricetta per id. Prima guarda la cache locale (caso normale, dato che il catalogo è
+// precaricato); se per qualche motivo manca (cache svuotata, link diretto a #/ricetta/<id>) fa da
+// FALLBACK la chiamata lookup.php?i=<id> all'API e memorizza il risultato in cache per le volte dopo.
 export async function recuperaRicettaPerId(id) {
   if (!id) return null;
   const cache = ottieniCacheRicette();
   if (cache?.[id]) {
-    return cache[id];
+    return cache[id]; // hit di cache: nessuna rete
   }
   try {
     const dati = await interrogaApi(`lookup.php?i=${encodeURIComponent(id)}`);
     const ricetta = normalizzaElencoRicette(dati.meals)[0] ?? null;
     if (ricetta?.id) {
-      salvaCacheRicette({ ...cache, [ricetta.id]: ricetta });
+      salvaCacheRicette({ ...cache, [ricetta.id]: ricetta }); // aggiungiamo la ricetta alla cache
       aggiornaCacheInfoRicette({ lastFetchAt: new Date().toISOString() });
     }
     return ricetta;
@@ -219,42 +205,45 @@ export function ottieniCatalogoOrdinato() {
 }
 
 // --------------------------
-// Aree (dinamiche da TheMealDB)
+// Aree/paesi selezionabili (registrazione e profilo)
 // --------------------------
-// Dopo aver definito le funzioni per le ricette, definiamo qui le funzioni
-// per ottenere le aree di cucina disponibili nell'API. Queste aree sono
-// dinamiche e possono cambiare man mano che chi gestisce TheMealDB aggiorna i dati,
-// quindi le recuperiamo direttamente dall'API e le memorizziamo in cache per performance.
-let cacheAree = null; // Cache in-memory per le aree di cucina inizialmente vuota
+// SCELTA IMPLEMENTATIVA IMPORTANTE: NON usiamo l'endpoint list.php?a=list, che restituisce ~195
+// demonimi (es. "Afghan", "Caymanian") quasi tutti SENZA ricette nel catalogo. Ricaviamo invece le
+// aree dalle ricette EFFETTIVAMENTE scaricate (~37 cucine reali). Vantaggi:
+//   - ogni paese selezionabile produce davvero risultati nella "home loggata";
+//   - niente lunghe liste di voci inutili con la bandiera "globo" di fallback;
+//   - ogni area ha bandiera (emoji) + nome tradotto in italiano (vedi mappe in fondo al file).
+let cacheAree = null; // cache in-memory per la sessione corrente (evita di ricalcolare a ogni form)
 
 export async function ottieniAreeCucina() {
   if (cacheAree) {
-    return cacheAree; // Se la cache è già popolata, la restituiamo direttamente
+    return cacheAree; // già calcolate in questa sessione
   }
+  // Riusiamo la cache su localStorage SOLO se generata con questa logica (flag derivedFromCatalog):
+  // così un'eventuale vecchia cache (i 195 paesi della versione precedente) viene rigenerata da sola.
   const cacheLocale = ottieniCacheAree();
-  if (cacheLocale?.items?.length) {
+  if (cacheLocale?.derivedFromCatalog && cacheLocale.items?.length) {
     cacheAree = cacheLocale.items;
     return cacheAree;
   }
-  // Se invece la cache è vuota (prima chiamata), interroghiamo l'API
-  const dati = await interrogaApi("list.php?a=list"); // Endpoint per ottenere le aree di cucina
-  const aree = (dati.meals ?? []) // dati.meals è un array di oggetti con proprietà strArea, ovvero il nome in inglese dell'area:
-    // A questo array applichiamo prima ?? che è un operatore di coalescenza nullish per assicurarci che
-    // in caso di risposta vuota o nulla otteniamo un array vuoto invece di null o undefined.
-
-    .map(item => item.strArea?.trim()) // Dopodiché mappiamo l'array per estrarre solo i nomi delle aree, usando ?. per sicurezza
-    .filter(Boolean) // Filtriamo per rimuovere eventuali valori null, undefined o stringhe vuote
-    .map(nomeEn => ({
-      // Dopodiché trasformiamo ogni nome in un oggetto con nomeEn, nomeIt ed emoji:
-      nomeEn,
-      nomeIt: traduciAreaEnIt(nomeEn),
-      emoji: emojiPerArea(nomeEn)
-    }))
-    .sort((a, b) => a.nomeIt.localeCompare(b.nomeIt, "it")); // Infine ordiniamo l'elenco in ordine alfabetico basato sul nome in italiano, così
-  // da non dover sopportare la fastidiosa e incoerente organizzazione data da TheMealDB, che è casuale e non localizzata.
+  const aree = areeDalCatalogo();
   cacheAree = aree;
-  salvaCacheAree(aree);
+  salvaCacheAree(aree); // memorizza in "areas:cache" con il flag derivedFromCatalog
   return aree;
+}
+
+// Estrae le aree DISTINTE presenti nel catalogo locale e le arricchisce con nome italiano ed emoji
+// bandiera, ordinandole alfabeticamente per nome italiano (localeCompare con locale "it").
+function areeDalCatalogo() {
+  const catalogo = ottieniCatalogoLocale();
+  const codici = [...new Set(catalogo.map(ricetta => ricetta.areaCodice).filter(Boolean))];
+  return codici
+    .map(nomeEn => ({
+      nomeEn, // codice/area originale di TheMealDB (usato per filtrare le ricette)
+      nomeIt: traduciAreaEnIt(nomeEn), // etichetta localizzata mostrata all'utente
+      emoji: emojiPerArea(nomeEn) // bandiera (resa correttamente grazie al webfont, vedi base.css)
+    }))
+    .sort((a, b) => a.nomeIt.localeCompare(b.nomeIt, "it"));
 }
 
 // Queste due funzioni sono usate nella soprastante ottieniAreeCucina per arricchire
@@ -307,7 +296,17 @@ const EMOJI_AREE = {
   ukrainian: "🇺🇦",
   uruguayan: "🇺🇾",
   australian: "🇦🇺",
-  venezulan: "🇻🇪"
+  venezulan: "🇻🇪",
+  // TheMealDB è incoerente: per alcune cucine usa il nome del PAESE invece dell'aggettivo.
+  // Aggiungiamo queste forme così tutte le ~37 aree reali del catalogo hanno bandiera e traduzione.
+  argentina: "🇦🇷",
+  france: "🇫🇷",
+  india: "🇮🇳",
+  netherlands: "🇳🇱",
+  norway: "🇳🇴",
+  slovakia: "🇸🇰",
+  "united states": "🇺🇸",
+  venezuela: "🇻🇪"
 };
 
 const TRADUZIONI_AREE = {
@@ -347,7 +346,16 @@ const TRADUZIONI_AREE = {
   ukrainian: "Ucraina",
   uruguayan: "Uruguay",
   australian: "Australia",
-  venezulan: "Venezuela"
+  venezulan: "Venezuela",
+  // Forme "nome del paese" usate da TheMealDB per alcune cucine (vedi nota in EMOJI_AREE).
+  argentina: "Argentina",
+  france: "Francia",
+  india: "India",
+  netherlands: "Paesi Bassi",
+  norway: "Norvegia",
+  slovakia: "Slovacchia",
+  "united states": "Stati Uniti",
+  venezuela: "Venezuela"
 };
 
 // Funzione per accorpare sia emoji che traduzione in un'unica stringa descrittiva - usata in fase di registrazione utente
