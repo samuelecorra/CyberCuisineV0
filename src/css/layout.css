@@ -69,29 +69,7 @@
     align-items: center;
   }
 
-  .cc-menu-close {
-    background: none;
-    border: 1px solid var(--cc-accent);
-    border-radius: 0.4rem;
-    color: var(--cc-accent);
-    font-size: 1.5rem;
-    line-height: 1;
-    width: 2rem;
-    height: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    padding: 0;
-  }
-
-  .cc-menu-close:hover,
-  .cc-menu-close:focus {
-    background-color: var(--cc-accent);
-    color: var(--cc-bg-dark);
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
-  }
+  /* .cc-menu-close: stile unificato in modal.css (.cc-btn-chiudi) */
 
   /* Menu: vertical grid, all buttons same width (100% of sidebar) */
   #ccOffcanvasNav .navbar-nav {

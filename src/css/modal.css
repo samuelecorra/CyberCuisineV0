@@ -46,9 +46,43 @@
   justify-content: flex-end;
 }
 
-.cc-modal-close {
-  background: none;
-  border: none;
-  color: var(--cc-text);
+/* ── Pulsante di chiusura unificato (.cc-btn-chiudi) ──
+   Usato su tutte le modali Bootstrap, la doc-modal dei documenti legali e
+   il menu offcanvas mobile. Componente riutilizzabile: fondo rosso, × bianca,
+   forma quadrata con bordi arrotondati, effetto hover più scuro. */
+.cc-btn-chiudi,
+.cc-modal-close,
+.cc-menu-close,
+.doc-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background-color: #c0392b;
+  border: 2px solid #e74c3c;
+  border-radius: 0.4rem;
+  color: #ffffff;
   font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.cc-btn-chiudi:hover,
+.cc-btn-chiudi:focus,
+.cc-modal-close:hover,
+.cc-modal-close:focus,
+.cc-menu-close:hover,
+.cc-menu-close:focus,
+.doc-modal__close:hover,
+.doc-modal__close:focus {
+  background-color: #e74c3c;
+  border-color: #ff6b6b;
+  color: #ffffff;
+  transform: scale(1.08);
+  box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
+  outline: none;
 }

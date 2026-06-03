@@ -84,12 +84,7 @@ select option {
   line-height: 1.6;
 }
 
-.doc-modal__close {
-  background: none;
-  border: none;
-  color: var(--cc-text);
-  font-size: 1.3rem;
-}
+/* .doc-modal__close: stile unificato in modal.css (.cc-btn-chiudi) */
 
 .piadina-spinner-backdrop {
   position: fixed;
