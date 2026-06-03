@@ -47,13 +47,16 @@
 }
 
 /* ── Pulsante di chiusura unificato (.cc-btn-chiudi) ──
-   Usato su tutte le modali Bootstrap, la doc-modal dei documenti legali e
-   il menu offcanvas mobile. Componente riutilizzabile: fondo rosso, × bianca,
-   forma quadrata con bordi arrotondati, effetto hover più scuro. */
+   Posizionato in absolute nell'angolo in alto a destra del contenitore modale
+   (il .modal-content / .cc-modal ha position: relative impostato sotto).
+   Rimane visibile anche quando il modal-header è ridotto a sola etichetta. */
 .cc-btn-chiudi,
 .cc-modal-close,
 .cc-menu-close,
 .doc-modal__close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -68,7 +71,14 @@
   line-height: 1;
   cursor: pointer;
   flex-shrink: 0;
+  z-index: 10;
   transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+/* Il contenitore deve essere position:relative per ancorare l'absolute del pulsante */
+.cc-modal,
+.doc-modal {
+  position: relative;
 }
 
 .cc-btn-chiudi:hover,
