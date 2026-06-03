@@ -100,7 +100,11 @@ export function creaCardRicettario(ricetta) {
                                 >
                                   Scrivi recensione
                                 </button>
-                                <button class="btn btn-danger" data-rimuovi-ricetta="${ricetta.id}">
+                                <button
+                                  class="btn btn-danger"
+                                  data-rimuovi-ricetta="${ricetta.id}"
+                                  data-rimuovi-nome="${nomeRicettaAttr}"
+                                >
                                   Rimuovi dal ricettario
                                 </button>
                             </div>

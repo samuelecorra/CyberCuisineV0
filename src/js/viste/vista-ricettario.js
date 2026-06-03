@@ -6,6 +6,7 @@
 import { ottieniUtenteCorrente, aggiornaRicettario } from "../storage.js";
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRicettario } from "../componenti/carte.js";
+import { mostraModalConfermaRicettario } from "../componenti/azioni-card.js";
 
 export async function inizializzaVistaRicettario() {
   const utente = ottieniUtenteCorrente();
@@ -34,12 +35,17 @@ export async function inizializzaVistaRicettario() {
   elenco.innerHTML = ricetteValide.map(ricetta => creaCardRicettario(ricetta)).join("");
 
   elenco.onclick = event => {
-    const target = event.target;
-    if (target.matches("[data-rimuovi-ricetta]")) {
-      const idRicetta = target.dataset.rimuoviRicetta;
-      aggiornaRicettario(idRicetta, false);
-      inizializzaVistaRicettario();
-    }
+    const target = event.target.closest("[data-rimuovi-ricetta]");
+    if (!target) return;
+    const idRicetta = target.dataset.rimuoviRicetta;
+    const nomeRicetta = target.dataset.rimuoviNome || "questa ricetta";
+    mostraModalConfermaRicettario(
+      `Vuoi rimuovere "${nomeRicetta}" dal tuo ricettario?`,
+      async () => {
+        await aggiornaRicettario(idRicetta, false);
+        inizializzaVistaRicettario();
+      }
+    );
   };
 
   elenco.onchange = null;

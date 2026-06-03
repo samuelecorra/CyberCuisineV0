@@ -143,6 +143,11 @@ function preparaModalConferma() {
   });
 }
 
+// Variante pubblica riutilizzabile dalla vista ricettario: stessa modale, titolo fisso rimozione.
+export function mostraModalConfermaRicettario(messaggio, onConfirm) {
+  mostraModalConferma("Rimuovi dal ricettario", messaggio, onConfirm);
+}
+
 function mostraModalConferma(titolo, messaggio, onConfirm) {
   if (!modalElementi?.modal) {
     onConfirm?.();
