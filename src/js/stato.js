@@ -8,5 +8,6 @@ export const statoApp = {
   risultatiRicerca: [], // ultimi risultati di ricerca in Esplora (per ripristinarli tornando sulla vista)
   catalogoCompleto: [], // riferimento al catalogo ordinato (comodità; la fonte di verità è "recipes:cache")
   percorsoAttivo: "#/home", // hash della rotta attualmente mostrata
-  modalitaEsplora: "search" // "search" (risultati ricerca) oppure "catalogo" (sfoglia tutto)
+  modalitaEsplora: "search", // "search" (risultati ricerca) oppure "catalogo" (sfoglia tutto)
+  highlightRecensioneId: null // id ricetta di cui evidenziare la card recensione all'apertura di #/recensioni
 };

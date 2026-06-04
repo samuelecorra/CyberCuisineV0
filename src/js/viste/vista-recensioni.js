@@ -12,6 +12,7 @@ import {
 } from "../storage.js";
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRecensione } from "../componenti/carte.js";
+import { statoApp } from "../stato.js";
 
 export async function inizializzaVistaRecensioni() {
   const utente = ottieniUtenteCorrente();
@@ -35,6 +36,24 @@ export async function inizializzaVistaRecensioni() {
     })
   );
   contenitoreRecensioni.innerHTML = schedeRecensioni.join("");
+
+  // Se arriviamo qui da "Guarda la tua recensione", highlightRecensioneId è valorizzato:
+  // scorriamo fino alla card corrispondente e la evidenziamo con un glow intermittente.
+  const idDaEvidenziare = statoApp.highlightRecensioneId;
+  statoApp.highlightRecensioneId = null; // consumiamo il valore, non deve ripetersi ai refresh
+  if (idDaEvidenziare) {
+    // Piccolo delay per lasciar completare il paint del DOM prima dello scroll
+    setTimeout(() => {
+      const card = contenitoreRecensioni.querySelector(
+        `[data-card-ricetta-id="${CSS.escape(idDaEvidenziare)}"]`
+      );
+      if (!card) return;
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.classList.add("cc-recensione-highlight");
+      // Rimuoviamo la classe dopo 3s (durata dell'animazione CSS)
+      setTimeout(() => card.classList.remove("cc-recensione-highlight"), 3000);
+    }, 120);
+  }
 
   contenitoreRecensioni.addEventListener("click", event => {
     const target = event.target.closest("[data-rimuovi-recensione]");

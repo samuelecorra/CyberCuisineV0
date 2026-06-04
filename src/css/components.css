@@ -1,4 +1,33 @@
 /* Componenti riutilizzabili: card, bottoni, badge, ecc. */
+
+/* Glow intermittente sulla card recensione raggiunta via "Guarda la tua recensione".
+   Anima solo `opacity` su un ::before con il glow statico: opacity è compositor-only
+   e non innesca repaint, a differenza di box-shadow animato direttamente. */
+@keyframes cc-highlight-fade {
+  0%   { opacity: 0; }
+  30%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.cc-recensione-highlight > .card {
+  position: relative;
+  z-index: 0;
+}
+
+.cc-recensione-highlight > .card::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  box-shadow:
+    0 0 16px 4px rgba(0, 240, 255, 0.7),
+    0 0 30px 8px rgba(179, 18, 255, 0.4);
+  pointer-events: none;
+  z-index: -1;
+  animation: cc-highlight-fade 1s ease-in-out 3;
+  animation-fill-mode: forwards;
+}
 .card {
   background-color: var(--cc-panel);
   border: 1px solid var(--cc-border);

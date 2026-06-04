@@ -7,6 +7,7 @@
 // Vantaggi: funziona anche per gli elementi creati DOPO, e si registra una sola volta (vedi flag).
 import { ottieniUtenteCorrente, ottieniRecensioni, aggiornaRicettario } from "../storage.js";
 import { apriModaleRecensione } from "./modale-recensione.js";
+import { statoApp } from "../stato.js";
 
 let listenerRegistrato = false; // evita doppie registrazioni (impostaAzioni... è idempotente)
 let modalElementi = null;
@@ -99,10 +100,17 @@ function gestisciClickAzioneRicetta(evento) {
     const titolo = modalita === "view" ? "Guarda la tua recensione" : "Scrivi recensione";
     const messaggio =
       modalita === "view"
-        ? `Vuoi aprire la scheda di "${ricettaNome}" per rileggere la tua recensione?`
+        ? `Vuoi andare alle tue recensioni per rileggere quella di "${ricettaNome}"?`
         : `Vuoi aprire la scheda di "${ricettaNome}" per scrivere una recensione?`;
     mostraModalConferma(titolo, messaggio, () => {
-      window.location.hash = `#/ricetta/${ricettaId}`;
+      if (modalita === "view") {
+        // Segna quale recensione evidenziare nello stato in-memory, poi naviga a #/recensioni.
+        // La vista-recensioni.js legge questo valore dopo il render e fa autoscroll + highlight.
+        statoApp.highlightRecensioneId = ricettaId;
+        window.location.hash = "#/recensioni";
+      } else {
+        window.location.hash = `#/ricetta/${ricettaId}`;
+      }
     });
   }
 }

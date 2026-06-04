@@ -128,7 +128,7 @@ export function creaCardRecensione(recensione, ricetta, autore = "Utente", opzio
     ? `<button class="btn btn-danger mt-2" data-rimuovi-recensione="${recensione.id}" data-ricetta-id="${recensione.idRicetta}">Rimuovi recensione</button>`
     : "";
   return `
-        <div class="col-md-6">
+        <div class="col-md-6" data-card-ricetta-id="${recensione.idRicetta ?? ""}">
             <div class="card card-bagliore h-100">
                 <div class="card-body">
                     <p class="small testo-accento mb-1">${autore}</p>
