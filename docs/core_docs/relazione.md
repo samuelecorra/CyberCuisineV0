@@ -61,6 +61,34 @@ Il terzo macro-scenario richiede la possibilità di aggiungere e rimuovere ricet
 
 L'ultimo macro-scenario richiede che ogni utente possa recensire qualsiasi ricetta specificando: data di preparazione, voto da 1 a 5 per la difficoltà e voto da 1 a 5 per il gusto. L'implementazione usa un pattern **upsert**: un utente ha al massimo una recensione per ricetta; se esiste già, il salvataggio la aggiorna anziché crearne una duplicata. Le recensioni sono raggruppate per ricetta nella chiave `reviews:<idRicetta>` e sono visibili a tutti gli utenti nella scheda della ricetta. Solo il proprietario vede il pulsante di rimozione. L'inserimento e la modifica avvengono tramite la stessa modale (precompilata con i valori esistenti se già recensita), la rimozione richiede conferma esplicita.
 
+### 2.5 Matrice di conformità ai requisiti
+
+La tabella seguente mostra in modo immediato la corrispondenza tra ogni requisito della specifica del docente e la sua implementazione nell'applicazione.
+
+| Requisito (specifica) | Stato | Dove / Note |
+| --- | --- | --- |
+| Registrazione (username, email, password, **piatti preferiti**) | ✅ | `vista-registrazione.js` + `register.html`; scrive in `users` |
+| Login | ✅ | `vista-accesso.js`; verifica via hash; scrive `session` |
+| Logout | ✅ | `navbar.js` → `gestisciLogout`; azzera `session` |
+| Modifica dati personali | ✅ | `vista-profilo.js`; re-auth con password prima della modifica |
+| Rimozione profilo | ✅ | `rimuoviUtente` (cancella utente + ricettario + recensioni) |
+| Ricerca per **nome** | ✅ | `cercaRicettePerNome` (filtro sulla cache locale) |
+| Ricerca per **ingrediente** | ✅ | `cercaRicettePerIngrediente` |
+| Ricerca per **lettera iniziale** | ✅ | `cercaRicettePerLettera` |
+| Ricerca **sequenziale** (sfoglia tutto) | ✅ | "Sfoglia l'intero catalogo" in Esplora, indice A–Z |
+| Scheda ricetta: **ingredienti, immagini, procedimento** | ✅ | `vista-dettaglio-ricetta.js` |
+| Scheda ricetta: **mostra recensioni utenti** | ✅ | elenco recensioni da `reviews:<idRicetta>` |
+| Ricettario personale creato alla registrazione | ✅ | inizialmente vuoto (`cookbook:<idUtente>`) |
+| Aggiungi/Rimuovi ricetta dal ricettario | ✅ | `aggiornaRicettario` + pulsanti su card e dettaglio |
+| **Nota privata** per ricetta (non visibile ad altri) | ✅ | `notesByRecipeId` nel ricettario |
+| Recensione: **data preparazione + difficoltà 1–5 + gusto 1–5** | ✅ | `modale-recensione.js` (`cookedAt`, `difficulty`, `taste`) |
+| **Inserimento** recensioni | ✅ | salvataggio in `reviews:<idRicetta>` (upsert per utente) |
+| **Rimozione** recensioni | ✅ | `rimuoviRecensione` + pulsante in scheda e in "Le tue recensioni" |
+| Startup: dati scaricati da TheMealDB → web storage → visualizzati | ✅ | `precaricaCatalogoCompleto()` in `main.js` con overlay |
+| Dati in web storage in formato JSON | ✅ | tutte le chiavi serializzate con `JSON.stringify/parse` |
+| Separazione struttura HTML5 / presentazione CSS3 | ✅ | nessuno stile inline; tutto in `src/css/*` |
+| Implementazione in HTML5 + CSS3 + JavaScript | ✅ | nessun framework JS, nessun build step |
+
 ---
 
 ## 3. Architettura dell'applicazione
@@ -401,7 +429,51 @@ Questa sezione raccoglie le principali decisioni tecniche, con le motivazioni, c
 
 ---
 
-## 12. Conclusioni
+## 12. Guida alla demo nei DevTools (flusso di autenticazione)
+
+Questa sezione è pensata per essere consultata durante la discussione orale. Aprire **F12 → Application → Local Storage / Session Storage** e tenere il pannello aperto mentre si eseguono le operazioni seguenti.
+
+1. **Registrazione** (`#/registrazione`): compilare il form e inviare. In `localStorage["users"]` compare il nuovo oggetto utente con `passwordHash` e `salt` — il campo `password` è assente. In `sessionStorage` appare temporaneamente `cc_post_signup` e poi sparisce non appena la pagina di login la legge.
+2. **Login** (`#/accesso`): inserire le credenziali. La password viene ri-hashata in locale e confrontata con `passwordHash`. Al successo `localStorage["session"].currentUserId` passa da `null` all'id utente e `loginAt` registra il timestamp ISO. La navbar cambia da "Registrati / Accedi" a "Ciao \<nome\>".
+3. **"Ricordami"**: se la casella è spuntata, in `sessionStorage["cc_accesso_ricorda"]` viene salvato **solo l'identificatore** — mai la password.
+4. **Refresh (F5)**: `session` è in localStorage, persistente tra reload. `inizializzaStorage` è idempotente e non sovrascrive le chiavi esistenti: si rimane loggati senza rifare il login.
+5. **Rotte protette**: svuotare `session` dal pannello Application e navigare a `#/ricettario` — il router rileva l'assenza di sessione e redirige a `#/accesso`.
+6. **Aggiunta al ricettario**: cliccare "Aggiungi al ricettario" su una ricetta. In `localStorage["cookbook:<idUtente>"]` l'id della ricetta compare in `recipeIds`.
+7. **Inserimento recensione**: compilare la modale. In `localStorage["reviews:<idRicetta>"]` appare l'oggetto con `cookedAt`, `difficulty` e `taste`.
+8. **Logout**: `session.currentUserId` torna `null`. L'array `users`, il ricettario e le recensioni restano intatti.
+
+Tutti questi punti sono annotati nel codice con il tag `DEVTOOLS:` e `>>> MOMENTO CHIAVE <<<` per facilitarne la localizzazione durante la sessione.
+
+---
+
+## 13. Funzionalità aggiuntive (oltre la specifica)
+
+La specifica consente esplicitamente di implementare funzionalità extra. Le seguenti sono state aggiunte per migliorare l'esperienza utente senza deviare dai requisiti richiesti:
+
+- **Home personalizzata per utenti loggati**: la vista `home.logged.html` mostra fino a 4 ricette casuali per il paese di origine e 4 per il paese di residenza dell'utente, ricavate dalla cache locale filtrando per area. Se i due paesi coincidono, viene mostrata un'unica sezione.
+- **Aree/paesi tradotti in italiano con emoji bandiera**: tutte le 37 cucine presenti nel catalogo sono accompagnate dal nome italiano e dalla bandiera del paese, resa correttamente su tutti i sistemi operativi grazie al webfont Twemoji Country Flags.
+- **Anteprima e player YouTube inline**: nella scheda dettaglio, se TheMealDB fornisce un link video, viene mostrata l'anteprima del thumbnail; al click si sostituisce con il player embed senza lasciare la pagina.
+- **Indice alfabetico interattivo**: nella modalità "Sfoglia tutto" di Esplora, un indice sticky con le lettere A–Z permette di saltare direttamente alla sezione desiderata; la lettera corrente si evidenzia automaticamente durante lo scroll tramite `IntersectionObserver`.
+- **Modali legali con lettura obbligatoria**: i documenti "Termini e condizioni" e "Informativa sulla privacy" si aprono in modali dedicate; il pulsante di chiusura rimane disabilitato finché non si raggiunge il fondo del documento, garantendo che l'utente li abbia effettivamente letti.
+- **Modale di conferma per azioni distruttive**: aggiunta, rimozione dal ricettario, rimozione recensione e logout passano tutti per una modale di conferma, prevenendo operazioni accidentali.
+- **Feedback di caricamento con spinner tematico**: un overlay a tutto schermo (con animazione della "piadina rotante") copre la pagina durante il download del catalogo iniziale; spinner inline compaiono nelle viste Esplora, Login e Registrazione durante le operazioni asincrone.
+- **Navbar sticky**: la barra di navigazione rimane sempre visibile in cima alla pagina durante lo scroll.
+
+---
+
+## 14. Limiti noti
+
+È buona pratica dichiarare con onestà i limiti dell'implementazione, anche in un contesto didattico.
+
+- **Persistenza locale al browser**: i dati vivono nel web storage di quel browser e profilo specifico. Non c'è sincronizzazione tra dispositivi diversi, il che è coerente con l'assenza di backend richiesta dalla specifica.
+- **Dipendenza dalla rete al primo avvio**: il primo caricamento richiede una connessione attiva per scaricare il catalogo da TheMealDB. Ai riavvii successivi la cache in localStorage permette la navigazione anche offline.
+- **Contenuto in inglese**: nomi, istruzioni e categorie delle ricette provengono direttamente da TheMealDB in inglese e non vengono tradotte (farlo manualmente per oltre 600 ricette non è praticabile). L'app traduce invece le aree geografiche, che sono un insieme finito e gestibile.
+- **Capienza del localStorage (~5 MB)**: il catalogo completo occupa diversi MB; sui browser moderni il limite è in genere 5–10 MB, sufficiente per questa applicazione, ma è un parametro da tenere a mente se il catalogo TheMealDB crescesse significativamente.
+- **Sicurezza lato client**: in assenza di backend, un utente tecnicamente esperto potrebbe manipolare il localStorage direttamente. Questo esula completamente dagli obiettivi e dai vincoli del corso; l'implementazione adottata (hashing SHA-256 + salt) è la più robusta possibile entro i limiti imposti dalla specifica.
+
+---
+
+## 15. Conclusioni
 
 CyberCuisine è una dimostrazione pratica di come sia possibile realizzare un'applicazione web completa e funzionale usando esclusivamente le tecnologie native della piattaforma web, senza framework, senza build step e senza backend. L'architettura SPA con hash routing, la persistenza strutturata nel web storage, l'integrazione con un'API REST esterna e la gestione sicura delle credenziali mostrano una comprensione concreta e applicata dei principi fondamentali dello sviluppo web moderno.
 
