@@ -15,6 +15,7 @@ import {
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRecensione } from "../componenti/carte.js";
 import { apriModaleRecensione } from "../componenti/modale-recensione.js";
+import { mostraModalConfermaGenerica } from "../componenti/azioni-card.js";
 
 // idRicetta arriva dal router come parametro dinamico estratto dall'hash (#/ricetta/<id>).
 export async function inizializzaVistaDettaglioRicetta(idRicetta) {
@@ -164,12 +165,21 @@ export function mostraElencoRecensioni(idRicetta, ricettaCorrente, utente) {
     return;
   }
   const utenti = ottieniUtenti();
-  const schede = recensioni
+  // La recensione dell'utente loggato appare sempre per prima
+  const ordinate = utente
+    ? [...recensioni].sort((a, b) => {
+        if (a.idUtente === utente.id) return -1;
+        if (b.idUtente === utente.id) return 1;
+        return 0;
+      })
+    : recensioni;
+  const schede = ordinate
     .map(recensione => {
-      const ricettaFittizia = ricettaCorrente ?? { id: idRicetta, nome: "Ricetta" };
       const autore = utenti.find(u => u.id === recensione.idUtente)?.nomeUtente ?? "Utente";
-      return creaCardRecensione(recensione, ricettaFittizia, autore, {
-        mostraRimuovi: utente && recensione.idUtente === utente.id
+      return creaCardRecensione(recensione, ricettaCorrente, autore, {
+        mostraRimuovi: utente && recensione.idUtente === utente.id,
+        nascondiNome: true, // siamo già nella pagina della ricetta: il titolo è ridondante
+        nascondiVaiAllaRicetta: true // stesso motivo
       });
     })
     .join("");
@@ -185,12 +195,15 @@ function impostaRimozioneRecensioni(idRicetta, ricettaCorrente, utente) {
     const idRecensione = target.dataset.rimuoviRecensione;
     const recipeId = target.dataset.ricettaId || idRicetta;
     if (!idRecensione || !recipeId) return;
-    const conferma = window.confirm("Vuoi rimuovere questa recensione?");
-    if (!conferma) return;
-    const ok = rimuoviRecensione(recipeId, idRecensione, utente.id);
-    if (ok) {
-      inizializzaVistaDettaglioRicetta(recipeId);
-    }
+    // Modale custom invece di window.confirm (alert nativo non integrato nella UI)
+    mostraModalConfermaGenerica(
+      "Rimuovi recensione",
+      "Sei sicuro di voler rimuovere la tua recensione? L'operazione non è reversibile.",
+      () => {
+        const ok = rimuoviRecensione(recipeId, idRecensione, utente.id);
+        if (ok) inizializzaVistaDettaglioRicetta(recipeId);
+      }
+    );
   });
 }
 

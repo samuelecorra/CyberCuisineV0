@@ -127,20 +127,27 @@ export function creaCardRecensione(recensione, ricetta, autore = "Utente", opzio
   const pulsanteRimuovi = opzioni.mostraRimuovi
     ? `<button class="btn btn-danger" data-rimuovi-recensione="${recensione.id}" data-ricetta-id="${recensione.idRicetta}">Rimuovi recensione</button>`
     : "";
+  // nascondiNome: nella scheda ricetta il titolo è già visibile, ripeterlo in ogni card è rumore
+  const nomeHtml = opzioni.nascondiNome
+    ? ""
+    : `<h3 class="h5">${ricetta?.nome ?? "Ricetta"}</h3>`;
+  // nascondiVaiAllaRicetta: nella scheda ricetta il link è ridondante, si è già lì
+  const vaiAllaRicettaHtml = opzioni.nascondiVaiAllaRicetta
+    ? ""
+    : `<a class="btn btn-contorno-accento" href="#/ricetta/${recensione.idRicetta}">Vai alla ricetta</a>`;
+  // Se non ci sono pulsanti da mostrare evitiamo il div vuoto
+  const haAzioni = vaiAllaRicettaHtml || pulsanteRimuovi;
   return `
         <div class="col-md-6" data-card-ricetta-id="${recensione.idRicetta ?? ""}">
             <div class="card card-bagliore h-100">
                 <div class="card-body d-flex flex-column">
                     <p class="small testo-accento mb-1">${autore}</p>
-                    <h3 class="h5">${ricetta?.nome ?? "Ricetta"}</h3>
+                    ${nomeHtml}
                     <p class="text-muted">Preparata il ${dataPreparazione}</p>
                     <p class="mb-1">Difficolta: <strong>${difficolta}</strong></p>
                     <p class="mb-1">Gusto: <strong>${gusto}</strong></p>
                     <p class="small text-muted">${recensione.commento || "Nessun commento."}</p>
-                    <div class="mt-auto d-flex align-items-center gap-2 flex-wrap">
-                      <a class="btn btn-contorno-accento" href="#/ricetta/${recensione.idRicetta}">Vai alla ricetta</a>
-                      ${pulsanteRimuovi}
-                    </div>
+                    ${haAzioni ? `<div class="mt-auto d-flex align-items-center gap-2 flex-wrap">${vaiAllaRicettaHtml}${pulsanteRimuovi}</div>` : ""}
                 </div>
             </div>
         </div>

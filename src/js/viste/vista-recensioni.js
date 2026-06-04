@@ -13,6 +13,7 @@ import {
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRecensione } from "../componenti/carte.js";
 import { statoApp } from "../stato.js";
+import { mostraModalConfermaGenerica } from "../componenti/azioni-card.js";
 
 export async function inizializzaVistaRecensioni() {
   const utente = ottieniUtenteCorrente();
@@ -61,9 +62,13 @@ export async function inizializzaVistaRecensioni() {
     const idRecensione = target.dataset.rimuoviRecensione;
     const idRicetta = target.dataset.ricettaId;
     if (!idRecensione || !idRicetta) return;
-    const conferma = window.confirm("Vuoi rimuovere questa recensione?");
-    if (!conferma) return;
-    rimuoviRecensione(idRicetta, idRecensione, utente.id);
-    inizializzaVistaRecensioni();
+    mostraModalConfermaGenerica(
+      "Rimuovi recensione",
+      "Sei sicuro di voler rimuovere questa recensione? L'operazione non è reversibile.",
+      () => {
+        rimuoviRecensione(idRicetta, idRecensione, utente.id);
+        inizializzaVistaRecensioni();
+      }
+    );
   });
 }

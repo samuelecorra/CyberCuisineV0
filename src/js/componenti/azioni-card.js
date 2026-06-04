@@ -156,6 +156,12 @@ export function mostraModalConfermaRicettario(messaggio, onConfirm) {
   mostraModalConferma("Rimuovi dal ricettario", messaggio, onConfirm);
 }
 
+// Variante generica: espone la modale di conferma custom a qualsiasi modulo,
+// evitando window.confirm() (alert nativo del browser, non integrato nella UI).
+export function mostraModalConfermaGenerica(titolo, messaggio, onConfirm) {
+  mostraModalConferma(titolo, messaggio, onConfirm);
+}
+
 function mostraModalConferma(titolo, messaggio, onConfirm) {
   if (!modalElementi?.modal) {
     onConfirm?.();
