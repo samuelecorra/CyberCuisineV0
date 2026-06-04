@@ -265,9 +265,15 @@ Tutte e tre le modalità filtrano la cache locale, senza chiamate di rete. Il ri
 
 Il ricettario mostra le ricette salvate dall'utente. Per ciascuna viene recuperata la scheda completa (dalla cache o via `lookup.php?i=<id>` come fallback) e renderizzata una card con immagine, categoria, area, pulsante di recensione e pulsante di rimozione. Sia l'aggiunta che la rimozione passano per una modale di conferma che mostra il nome della ricetta, evitando azioni accidentali. Le note private si modificano direttamente sulla card del ricettario.
 
+Il pulsante recensione è contestuale: mostra "Scrivi recensione" se l'utente non ha ancora recensito la ricetta, "Modifica recensione" se ne esiste già una — calcolato in tempo reale leggendo `reviews:*` dal localStorage ad ogni render.
+
 ### 6.8 Recensioni
 
-Dalla scheda dettaglio di qualsiasi ricetta, l'utente loggato può aprire la modale di recensione. Se ha già recensito quella ricetta, la modale si apre precompilata con i valori esistenti (comportamento upsert). I campi richiesti dalla specifica sono: data di preparazione (`<input type="date">`), difficoltà 1–5 (select), gusto 1–5 (select); il commento testuale è opzionale. Dopo il salvataggio la lista recensioni della scheda si aggiorna. Dalla pagina "Le tue recensioni" (rotta `#/recensioni`) l'utente può vedere tutte le proprie recensioni e rimuoverle previo conferma.
+Dalla scheda dettaglio di qualsiasi ricetta, l'utente loggato può aprire la modale di recensione. Se ha già recensito quella ricetta, la modale si apre precompilata con i valori esistenti (comportamento upsert). I campi richiesti dalla specifica sono: data di preparazione (`<input type="date">`), difficoltà 1–5 (select), gusto 1–5 (select); il commento testuale è opzionale. Dopo il salvataggio la vista si aggiorna immediatamente senza reload (re-render live): il pulsante passa da "Scrivi recensione" a "Vedi la tua recensione" all'istante.
+
+Nella scheda ricetta l'elenco delle recensioni è ottimizzato per il contesto: il nome del piatto e il pulsante "Vai alla ricetta" sono omessi (ridondanti, si è già nella sua pagina); la recensione dell'utente loggato appare sempre per prima. La rimozione apre la modale di conferma custom (non `window.confirm`).
+
+Dalla pagina "Le tue recensioni" (`#/recensioni`) l'utente vede tutte le proprie recensioni con accesso rapido alla ricetta corrispondente. Cliccando "Guarda la tua recensione" da qualsiasi card dell'app, l'app naviga a `#/recensioni`, fa autoscroll alla card corrispondente e la evidenzia con un glow intermittente ciano/viola per 3 secondi — così l'utente la identifica immediatamente anche in una lista lunga.
 
 ---
 
@@ -279,9 +285,15 @@ La Web Crypto API (`crypto.subtle.digest`) è l'API crittografica nativa dei bro
 
 L'uso del salt per ogni utente è fondamentale: anche se due utenti scegliessero la stessa password, i loro hash sarebbero completamente diversi. Questo rende inefficaci gli attacchi con **rainbow table** (tabelle precostruite di hash noti). In un contesto didattico senza backend, questo rappresenta il massimo livello di sicurezza raggiungibile lato client.
 
-### 7.2 Limiti consapevoli
+### 7.2 Cifratura AES-GCM per gli account ricordati
 
-È importante essere onesti sui limiti di questo approccio: non esiste un backend che validi le richieste, quindi un utente tecnicamente capace potrebbe manipolare il localStorage direttamente. Tuttavia questo esula completamente dagli obiettivi didattici del corso, che richiede esplicitamente la persistenza su web storage senza backend. L'implementazione scelta è la più robusta possibile entro questi vincoli.
+La funzione "Ricordami" utilizza un meccanismo più sofisticato del semplice salvataggio dell'identificatore: quando l'utente fa login con la casella spuntata, la password in chiaro viene **cifrata con AES-256-GCM** (Web Crypto API) prima di essere scritta in `localStorage["cc_remembered_accounts"]`. La chiave AES è derivata direttamente dal `passwordHash` SHA-256 dell'utente (già presente in `users`), che è di 32 byte — la dimensione esatta richiesta da AES-256. Per ogni salvataggio viene generato un IV casuale da 12 byte (standard AES-GCM).
+
+In DevTools la voce `encryptedPassword` appare come un blob Base64 opaco, mai come testo leggibile. Al successivo accesso alla pagina di login, dopo 2 secondi appare un picker con gli account ricordati: selezionandone uno, l'app decifra la password on-the-fly (leggendo il `passwordHash` da `users`) e la inserisce con un effetto typewriter nel campo password. Se la decifratura fallisce (es. l'account è stato eliminato e ricreato, cambiando l'hash), il focus passa semplicemente al campo password per la digitazione manuale.
+
+### 7.3 Limiti consapevoli
+
+È importante essere onesti sui limiti di questo approccio: non esiste un backend che validi le richieste, quindi un utente tecnicamente capace potrebbe manipolare il localStorage direttamente. Tuttavia questo esula completamente dagli obiettivi didattici del corso, che richiede esplicitamente la persistenza su web storage senza backend. L'implementazione scelta è la più robusta possibile entro questi vincoli. Nota: la password cifrata in `cc_remembered_accounts` può essere decifrata da chi ha già accesso al localStorage (perché la chiave è il `passwordHash` presente nello stesso storage) — ma non è comunque mai in chiaro a un'ispezione diretta.
 
 ---
 
@@ -309,7 +321,16 @@ I pulsanti sulle card ricetta (aggiungi/rimuovi dal ricettario, scrivi/guarda re
 
 ### 8.4 Modali di conferma
 
-Tutte le azioni potenzialmente distruttive (aggiunta/rimozione dal ricettario, logout, eliminazione profilo, rimozione recensione) passano per una modale di conferma prima di essere eseguite. La modale è definita una sola volta in `index.html` e viene riutilizzata per tutte le azioni, aggiornandone titolo e messaggio di volta in volta. Questo previene errori accidentali e migliora significativamente l'esperienza utente.
+Tutte le azioni potenzialmente distruttive (aggiunta/rimozione dal ricettario, logout, eliminazione profilo, rimozione recensione) passano per una modale di conferma prima di essere eseguite. La modale è definita una sola volta in `index.html` e viene riutilizzata per tutte le azioni tramite la funzione `mostraModalConfermaGenerica(titolo, messaggio, onConfirm)` esportata da `azioni-card.js` — eliminando completamente `window.confirm()` dall'intera applicazione (alert nativo del browser, non integrato nella UI). Aggiornandone titolo e messaggio di volta in volta, un singolo componente copre tutti i casi d'uso.
+
+### 8.5 UX di validazione form
+
+La validazione dei form segue pattern professionali consolidati (GitHub, Stripe, Airbnb):
+
+- **Scroll automatico all'errore**: `mostraAvviso(elemento, messaggio, "danger")` fa automaticamente `scrollIntoView` sull'alert; l'utente non deve scorrere manualmente per trovare il messaggio di errore anche in form lunghi come la registrazione.
+- **Glow rosso sui campi invalidi**: la funzione riutilizzabile `evidenziaFieldInvalidi(campi)` aggiunge la classe `.cc-campo-invalido` (animazione CSS con bordo e glow rosso) a ogni campo non compilato. La classe si auto-rimuove al primo `input` dell'utente su quel campo.
+- **Fix autofill browser**: Chrome/Edge colorano i campi auto-completati con sfondo chiaro ignorando il CSS. Il fix industry-standard (`-webkit-box-shadow: inset` + `transition: background-color 5000s`) forza il tema scuro anche sui campi compilati automaticamente.
+- **Checkbox legali bloccati**: i checkbox "Ho letto e accetto Termini" e "Ho letto e accetto Privacy" partono `disabled` e diventano abilitati (e auto-spuntati) solo dopo aver aperto la modale corrispondente e cliccato il pulsante "Ho letto, torna al form" — che a sua volta si sblocca solo dopo aver scrollato tutto il documento. Il bypass manuale è fisicamente impossibile.
 
 ### 8.5 Feedback di caricamento
 
@@ -375,8 +396,8 @@ Prima della presentazione, verificare il corretto funzionamento dei seguenti sce
 - [ ] Registrazione con tutti i campi compila correttamente `users` in localStorage (verificare in DevTools: nessun campo `password`, solo `passwordHash` e `salt`).
 - [ ] Accettazione Termini e Privacy: il pulsante "Ho letto, torna al form" si abilita solo dopo aver scrollato tutto il documento.
 - [ ] Login con username e con email funzionano entrambi.
-- [ ] "Ricordami" scrive solo l'identificatore in sessionStorage.
-- [ ] Refresh della pagina: si rimane loggati (sessionStorage `cc_accesso_ricorda`, localStorage `session`).
+- [ ] "Ricordami" scrive `{ username, displayName, encryptedPassword, iv }` in `localStorage["cc_remembered_accounts"]` — nessun campo in chiaro.
+- [ ] Refresh della pagina: si rimane loggati (localStorage `session` è persistente).
 - [ ] Logout: `session.currentUserId` torna `null`, l'utente è rimosso dalla navbar.
 
 **Rotte protette:**
@@ -425,7 +446,10 @@ Questa sezione raccoglie le principali decisioni tecniche, con le motivazioni, c
 - **Webfont bandiere self-hosted** (Twemoji Country Flags): risolve il mancato rendering delle flag emoji su Windows, con impatto nullo sulle altre parti del testo grazie a `unicode-range`.
 - **Event delegation globale** per le card: i listener sopravvivono alla ricreazione delle card via innerHTML.
 - **Modali di conferma** per le azioni distruttive: prevengono eliminazioni/rimozioni accidentali.
-- **"Ricordami" in sessionStorage con solo identificatore**: comodità di prefill senza esporre credenziali; muore alla chiusura della scheda.
+- **"Ricordami" con AES-GCM**: la password viene cifrata (chiave = `passwordHash` SHA-256, IV casuale) prima di scrivere in `localStorage["cc_remembered_accounts"]`. In DevTools si vede solo un blob Base64; la decifratura avviene on-the-fly al momento del login. La vecchia `cc_accesso_ricorda` in sessionStorage è stata rimpiazzata da questo schema.
+- **Account picker con typewriter**: al secondo accesso compare una modale con gli account ricordati (avatar con iniziali, nome, username). Selezionandone uno, i campi username e password si compilano con un effetto typewriter (30–50ms per carattere), rendendo il flusso visivamente intuitivo.
+- **mostraModalConfermaGenerica** esportata da `azioni-card.js`: unico punto di ingresso per le modali di conferma in tutta l'app, elimina ogni `window.confirm()` nativo.
+- **Re-render live post-recensione**: dopo il salvataggio di una recensione dalla scheda ricetta, la vista si aggiorna completamente senza reload (la ricetta è in cache → istantaneo), aggiornando pulsanti e lista in tempo reale.
 
 ---
 
@@ -435,8 +459,9 @@ Questa sezione è pensata per essere consultata durante la discussione orale. Ap
 
 1. **Registrazione** (`#/registrazione`): compilare il form e inviare. In `localStorage["users"]` compare il nuovo oggetto utente con `passwordHash` e `salt` — il campo `password` è assente. In `sessionStorage` appare temporaneamente `cc_post_signup` e poi sparisce non appena la pagina di login la legge.
 2. **Login** (`#/accesso`): inserire le credenziali. La password viene ri-hashata in locale e confrontata con `passwordHash`. Al successo `localStorage["session"].currentUserId` passa da `null` all'id utente e `loginAt` registra il timestamp ISO. La navbar cambia da "Registrati / Accedi" a "Ciao \<nome\>".
-3. **"Ricordami"**: se la casella è spuntata, in `sessionStorage["cc_accesso_ricorda"]` viene salvato **solo l'identificatore** — mai la password.
+3. **"Ricordami"**: se la casella è spuntata, la password viene cifrata AES-GCM e salvata in `localStorage["cc_remembered_accounts"]` insieme a username e nome visualizzato. In DevTools si vede il campo `encryptedPassword` come blob Base64 — mai la password in chiaro. Al prossimo accesso compare il picker degli account ricordati.
 4. **Refresh (F5)**: `session` è in localStorage, persistente tra reload. `inizializzaStorage` è idempotente e non sovrascrive le chiavi esistenti: si rimane loggati senza rifare il login.
+4b. **Account picker**: dopo il logout, riaprire la pagina di login — dopo 2 secondi appare la modale con gli account ricordati. Selezionandone uno, i campi username e password si compilano con effetto typewriter. Ispezionare `localStorage["cc_remembered_accounts"]`: si vede `encryptedPassword` (blob Base64), mai la password in chiaro.
 5. **Rotte protette**: svuotare `session` dal pannello Application e navigare a `#/ricettario` — il router rileva l'assenza di sessione e redirige a `#/accesso`.
 6. **Aggiunta al ricettario**: cliccare "Aggiungi al ricettario" su una ricetta. In `localStorage["cookbook:<idUtente>"]` l'id della ricetta compare in `recipeIds`.
 7. **Inserimento recensione**: compilare la modale. In `localStorage["reviews:<idRicetta>"]` appare l'oggetto con `cookedAt`, `difficulty` e `taste`.
@@ -454,10 +479,14 @@ La specifica consente esplicitamente di implementare funzionalità extra. Le seg
 - **Aree/paesi tradotti in italiano con emoji bandiera**: tutte le 37 cucine presenti nel catalogo sono accompagnate dal nome italiano e dalla bandiera del paese, resa correttamente su tutti i sistemi operativi grazie al webfont Twemoji Country Flags.
 - **Anteprima e player YouTube inline**: nella scheda dettaglio, se TheMealDB fornisce un link video, viene mostrata l'anteprima del thumbnail; al click si sostituisce con il player embed senza lasciare la pagina.
 - **Indice alfabetico interattivo**: nella modalità "Sfoglia tutto" di Esplora, un indice sticky con le lettere A–Z permette di saltare direttamente alla sezione desiderata; la lettera corrente si evidenzia automaticamente durante lo scroll tramite `IntersectionObserver`.
-- **Modali legali con lettura obbligatoria**: i documenti "Termini e condizioni" e "Informativa sulla privacy" si aprono in modali dedicate; il pulsante di chiusura rimane disabilitato finché non si raggiunge il fondo del documento, garantendo che l'utente li abbia effettivamente letti.
-- **Modale di conferma per azioni distruttive**: aggiunta, rimozione dal ricettario, rimozione recensione e logout passano tutti per una modale di conferma, prevenendo operazioni accidentali.
-- **Feedback di caricamento con spinner tematico**: un overlay a tutto schermo (con animazione della "piadina rotante") copre la pagina durante il download del catalogo iniziale; spinner inline compaiono nelle viste Esplora, Login e Registrazione durante le operazioni asincrone.
+- **Modali legali con lettura obbligatoria e checkbox bloccati**: i documenti "Termini e condizioni" e "Informativa sulla privacy" si aprono in modali dedicate; il pulsante "Ho letto, torna al form" si abilita solo dopo aver scrollato tutto il documento; i relativi checkbox partono `disabled` e si abilitano (auto-spuntandosi) solo alla chiusura confermata — il bypass è fisicamente impossibile.
+- **Modale di conferma per azioni distruttive**: aggiunta, rimozione dal ricettario, rimozione recensione e logout passano tutti per una modale di conferma custom — nessun `window.confirm()` nativo nell'app.
+- **Feedback di caricamento con spinner tematico**: un overlay a tutto schermo copre la pagina durante il download del catalogo; spinner inline compaiono nelle viste Esplora, Login e Registrazione durante le operazioni asincrone.
 - **Navbar sticky**: la barra di navigazione rimane sempre visibile in cima alla pagina durante lo scroll.
+- **Account picker "Ricordami" con AES-GCM e typewriter**: al secondo accesso una modale mostra gli account ricordati (avatar con iniziali); selezionandone uno i campi si compilano con effetto typewriter; la password è cifrata AES-256-GCM in localStorage, mai in chiaro.
+- **Glow highlight su card recensione**: cliccando "Guarda la tua recensione" la SPA naviga a `#/recensioni`, fa autoscroll alla card corrispondente e la fa pulsare con un glow ciano/viola per 3 secondi.
+- **Validazione form avanzata**: scroll automatico all'alert di errore, glow rosso animato sui campi invalidi (si auto-rimuove al primo `input`), fix del colore sfondo su campi compilati automaticamente dal browser.
+- **Pulsante chiusura unificato**: tutte le "×" dell'app (modali Bootstrap, doc-modali, offcanvas mobile) usano un unico componente CSS (rosso, bordi arrotondati, posizionato `absolute` top-right).
 
 ---
 
