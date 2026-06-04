@@ -58,8 +58,9 @@ export function creaCardRicetta(ricetta, stato = {}) {
     `;
 }
 
-export function creaCardRicettario(ricetta) {
+export function creaCardRicettario(ricetta, { haRecensione = false } = {}) {
   const nomeRicettaAttr = escapeHtmlAttribute(ricetta.nome ?? "");
+  const reviewLabel = haRecensione ? "Modifica recensione" : "Scrivi recensione";
   return `
         <div class="col-md-6">
             <div class="card card-bagliore h-100">
@@ -98,7 +99,7 @@ export function creaCardRicettario(ricetta) {
                                   data-ricetta-id="${ricetta.id}"
                                   data-ricetta-nome="${nomeRicettaAttr}"
                                 >
-                                  Scrivi recensione
+                                  ${reviewLabel}
                                 </button>
                                 <button
                                   class="btn btn-danger"

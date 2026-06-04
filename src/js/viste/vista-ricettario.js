@@ -3,7 +3,7 @@
 // ============================================================================
 // Rotta PROTETTA: mostra le ricette salvate dall'utente. Gli id stanno in "cookbook:<idUtente>";
 // per ognuno ripeschiamo i dettagli (cache/API) e renderizziamo una card con pulsanti rimuovi/recensisci.
-import { ottieniUtenteCorrente, aggiornaRicettario } from "../storage.js";
+import { ottieniUtenteCorrente, aggiornaRicettario, ottieniRecensioni } from "../storage.js";
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRicettario } from "../componenti/carte.js";
 import { mostraModalConfermaRicettario } from "../componenti/azioni-card.js";
@@ -32,7 +32,16 @@ export async function inizializzaVistaRicettario() {
     return;
   }
 
-  elenco.innerHTML = ricetteValide.map(ricetta => creaCardRicettario(ricetta)).join("");
+  // Costruiamo un Set degli id ricette che l'utente ha già recensito, per adattare il label del pulsante.
+  const idsRecensiti = new Set(
+    ottieniRecensioni()
+      .filter(r => r.idUtente === utente.id)
+      .map(r => r.idRicetta)
+  );
+
+  elenco.innerHTML = ricetteValide
+    .map(ricetta => creaCardRicettario(ricetta, { haRecensione: idsRecensiti.has(ricetta.id) }))
+    .join("");
 
   elenco.onclick = event => {
     const target = event.target.closest("[data-rimuovi-ricetta]");

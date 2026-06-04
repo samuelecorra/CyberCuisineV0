@@ -44,6 +44,8 @@ footer {
   flex: 1 0 auto;
   width: 100%;
   padding-bottom: 2rem;
+  padding-left: 4rem;
+  padding-right: 4rem;
 }
 
 h1,
