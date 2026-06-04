@@ -34,7 +34,7 @@
             >
           </div>
 
-          <button type="submit" class="btn btn-primary w-100">Entra in CyberCuisine</button>
+          <button type="submit" class="btn btn-primary w-100" id="bottoneAccediLogin">Accedi</button>
         </form>
 
         <div class="text-center my-3 text-muted">
@@ -47,6 +47,42 @@
     </div>
   </div>
 </section>
+
+<!-- Modal account ricordati -->
+<div
+  class="modal fade"
+  id="modalAccountRicordati"
+  tabindex="-1"
+  aria-labelledby="modalAccountRicordatiTitolo"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered cc-remember-dialog">
+    <div class="modal-content cc-modal cc-remember-modal">
+      <div class="modal-header cc-modal-header">
+        <div>
+          <h2 class="h5 mb-1" id="modalAccountRicordatiTitolo">Bentornato su CyberCuisine</h2>
+          <p class="mb-0 text-muted small">Seleziona un account salvato per compilare il login.</p>
+        </div>
+        <button
+          class="cc-modal-close"
+          type="button"
+          aria-label="Chiudi modale account"
+          data-bs-dismiss="modal"
+        >
+          &times;
+        </button>
+      </div>
+      <div class="modal-body cc-modal-body pt-0">
+        <div
+          class="list-group cc-remember-list"
+          id="listaAccountRicordati"
+          role="listbox"
+          aria-label="Elenco account ricordati"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Spinner accesso -->
 <div class="piadina-spinner-backdrop d-none" id="loginSpinner" aria-hidden="true">

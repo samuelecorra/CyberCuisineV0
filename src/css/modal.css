@@ -96,3 +96,117 @@
   box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
   outline: none;
 }
+
+.cc-remember-dialog {
+  max-width: 560px;
+  transform: scale(0.95);
+  transition: transform 0.26s ease, opacity 0.26s ease;
+}
+
+.modal.show .cc-remember-dialog {
+  transform: scale(1);
+}
+
+.cc-remember-modal {
+  background:
+    radial-gradient(circle at top right, rgba(179, 18, 255, 0.2), transparent 42%),
+    radial-gradient(circle at bottom left, rgba(0, 240, 255, 0.16), transparent 45%),
+    var(--cc-panel);
+}
+
+.cc-remember-modal .cc-modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.cc-remember-modal .cc-modal-header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.cc-remember-modal .cc-modal-close {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.cc-remember-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.cc-remember-account {
+  width: 100%;
+  border: 1px solid var(--cc-border);
+  border-radius: 0.75rem;
+  background: rgba(12, 11, 26, 0.85);
+  color: var(--cc-text);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.cc-remember-account:hover,
+.cc-remember-account:focus-visible {
+  color: var(--cc-text);
+  border-color: var(--cc-accent);
+  background: rgba(21, 21, 49, 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 0.2rem rgba(0, 240, 255, 0.12);
+}
+
+.cc-remember-account.is-selected {
+  border-color: var(--cc-primary);
+  box-shadow: 0 0 22px rgba(179, 18, 255, 0.3);
+}
+
+.cc-remember-avatar {
+  width: 2.55rem;
+  height: 2.55rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--cc-primary), #6327ff);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+}
+
+.cc-remember-meta {
+  min-width: 0;
+}
+
+.cc-remember-identifier,
+.cc-remember-display {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-remember-identifier {
+  color: var(--cc-text);
+  font-weight: 600;
+}
+
+.cc-remember-display {
+  color: var(--cc-muted);
+  font-size: 0.88rem;
+}
