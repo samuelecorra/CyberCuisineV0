@@ -85,16 +85,20 @@
                 Informativa privacy
               </button>
             </div>
+            <!-- I checkbox partono disabled: vengono sbloccati e auto-spuntati solo dopo
+                 aver aperto la modale corrispondente e scrollato fino al pulsante "Ho letto". -->
             <div class="form-check mt-3">
-              <input class="form-check-input" type="checkbox" id="accettaTermini" />
-              <label class="form-check-label" for="accettaTermini">
+              <input class="form-check-input" type="checkbox" id="accettaTermini" disabled />
+              <label class="form-check-label cc-label-bloccata" for="accettaTermini">
                 Ho letto e accetto i Termini e condizioni.
+                <span class="cc-hint-sblocco">(apri e leggi il documento per sbloccare)</span>
               </label>
             </div>
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="accettaPrivacy" />
-              <label class="form-check-label" for="accettaPrivacy">
+              <input class="form-check-input" type="checkbox" id="accettaPrivacy" disabled />
+              <label class="form-check-label cc-label-bloccata" for="accettaPrivacy">
                 Ho letto e accetto l'Informativa sulla privacy.
+                <span class="cc-hint-sblocco">(apri e leggi il documento per sbloccare)</span>
               </label>
             </div>
           </div>

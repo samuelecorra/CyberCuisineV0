@@ -12,6 +12,27 @@ textarea::placeholder {
   color: rgba(245, 245, 255, 0.45) !important;
 }
 
+/* Checkbox bloccati finché il documento legale non è stato letto.
+   .cc-hint-sblocco sparisce non appena il checkbox viene abilitato (via JS). */
+.cc-label-bloccata {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.cc-hint-sblocco {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--cc-muted);
+  font-style: italic;
+}
+
+/* Una volta che il checkbox è abilitato, ripristiniamo l'aspetto normale */
+#accettaTermini:not(:disabled) ~ label.cc-label-bloccata,
+#accettaPrivacy:not(:disabled) ~ label.cc-label-bloccata {
+  cursor: pointer;
+  opacity: 1;
+}
+
 /* Bootstrap .form-text usa --bs-secondary-color che sul tema scuro diventa illeggibile.
    Forziamo lo stesso colore del testo muted del tema. */
 .form-text {

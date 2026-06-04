@@ -148,18 +148,39 @@ function impostaGestioneDocumentiLegali() {
   // propaga i click nel momento in cui viene registrato il listener.
   document.querySelectorAll(".doc-modal-backdrop").forEach(backdrop => {
     backdrop.addEventListener("click", event => {
-      // Click sul pulsante "Ho letto, torna al form" (anche se reso abilitato dopo lo scroll)
       const btnClose = event.target.closest("[data-close-doc]");
       if (btnClose && !btnClose.disabled) {
+        // Chiusura CONFERMATA via "Ho letto, torna al form":
+        // sblocchiamo e spuntiamo il checkbox corrispondente a questa modale.
+        abilitaCheckboxDopoLettura(backdrop.id);
         chiudiModalDocumento(backdrop);
         return;
       }
-      // Click sul backdrop (fuori dal pannello .doc-modal)
+      // Click sul backdrop (fuori dal pannello) → chiude ma NON sblocca il checkbox:
+      // l'utente non ha confermato la lettura cliccando il pulsante.
       if (event.target === backdrop) {
         chiudiModalDocumento(backdrop);
       }
     });
   });
+}
+
+// Sblocca e auto-spunta il checkbox corrispondente alla modale appena letta.
+// Rimuove anche l'hint "apri e leggi il documento per sbloccare" perché non serve più.
+function abilitaCheckboxDopoLettura(modalId) {
+  const mappa = {
+    modalTermini: "accettaTermini",
+    modalPrivacy: "accettaPrivacy"
+  };
+  const checkboxId = mappa[modalId];
+  if (!checkboxId) return;
+  const checkbox = document.getElementById(checkboxId);
+  if (!checkbox) return;
+  checkbox.disabled = false;
+  checkbox.checked = true;
+  // Nascondiamo l'hint testuale ora che il documento è stato letto
+  const hint = checkbox.closest(".form-check")?.querySelector(".cc-hint-sblocco");
+  if (hint) hint.remove();
 }
 
 function apriModalDocumento(modal) {
