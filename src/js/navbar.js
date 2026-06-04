@@ -55,7 +55,16 @@ export function aggiornaStatoAuthNav() {
 export function gestisciLogout() {
   impostaUtenteCorrente(null);
   aggiornaStatoAuthNav(); // la navbar torna a "Registrati / Accedi"
-  window.location.hash = "#/home"; // torniamo alla home pubblica
+
+  // Se l'utente era già su #/home (home loggata), impostare di nuovo lo stesso hash NON emette
+  // l'evento hashchange (il browser ignora l'assegnazione se il valore non cambia), quindi il
+  // router non si re-esegue e la home loggata resterebbe in DOM. Soluzione: dispatchiamo
+  // manualmente un HashChangeEvent dopo l'assegnazione per forzare il re-render in ogni caso.
+  const eraSuHome = window.location.hash === "#/home" || window.location.hash === "";
+  window.location.hash = "#/home";
+  if (eraSuHome) {
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+  }
 }
 
 let modalLogoutElementi = null;
