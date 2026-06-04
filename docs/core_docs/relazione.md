@@ -33,7 +33,7 @@ Il formato **Markdown** (`.md`) è oggi lo standard de facto per la documentazio
 
 ## 1. Introduzione e obiettivo del progetto
 
-CyberCuisine è un'applicazione web sviluppata come progetto d'esame per il corso di **Programmazione Web e Mobile** dell'Università degli Studi di Milano (A.A. 2024/2025). L'obiettivo è realizzare una **Piattaforma per la Gestione di Ricette di Cucina (PGRC)**: un portale web dove un utente registrato può esplorare un vasto catalogo di ricette culinarie, costruire il proprio ricettario personale, aggiungere note private e lasciare recensioni strutturate sui piatti provati.
+CyberCuisine è un'applicazione web molto minimale sviluppata come progetto d'esame per il corso di **Programmazione Web e Mobile** dell'Università degli Studi di Milano (A.A. 2024/2025). L'obiettivo è realizzare una **Piattaforma per la Gestione di Ricette di Cucina (PGRC)**: un portale web dove un utente registrato può esplorare un vasto catalogo di ricette culinarie, costruire il proprio ricettario personale, aggiungere note private e lasciare recensioni strutturate sui piatti provati.
 
 Il progetto è stato sviluppato interamente in **tecnologie web standard** — HTML5, CSS3 e JavaScript vanilla — senza l'ausilio di framework JS (niente React, Vue o Angular), senza backend e senza database server-side. Tutta la persistenza dei dati avviene nel **web storage del browser** (localStorage e sessionStorage), in formato JSON. I dati delle ricette vengono recuperati in tempo reale dalle **API REST pubbliche di TheMealDB** e successivamente memorizzati in locale per garantire navigazione veloce e funzionamento parziale anche offline.
 

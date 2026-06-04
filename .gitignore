@@ -141,3 +141,6 @@ vite.config.ts.timestamp-*
 # Note personali e credenziali di test (mai versionare)
 PROMEMORIA_CREDENZIALI.txt
 *credenziali*.txt
+
+# Obsidian — cartella di configurazione locale dell'editor, non va in repo
+.obsidian/
