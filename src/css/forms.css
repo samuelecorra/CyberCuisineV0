@@ -5,11 +5,46 @@ select {
   background-color: rgba(255, 255, 255, 0.05) !important;
   border-color: var(--cc-border) !important;
   color: var(--cc-text) !important;
+  /* color-scheme: dark → il browser renderizza i widget NATIVI (calendario date picker,
+     dropdown select aperto) in modalità scura: sfondo scuro, testo chiaro.
+     accent-color → il ciano della palette diventa il colore di selezione/highlight
+     nei controlli nativi (data selezionata nel calendario, opzione evidenziata). */
+  color-scheme: dark;
+  accent-color: var(--cc-accent);
 }
 
 input::placeholder,
 textarea::placeholder {
   color: rgba(245, 245, 255, 0.45) !important;
+}
+
+/* Select: sostituisce la freccia stock del browser con una freccia ciano SVG inline.
+   Sovrascriviamo la variabile CSS Bootstrap --bs-form-select-bg-img invece di usare
+   !important su background-image, così il meccanismo di Bootstrap resta intatto. */
+.form-select,
+select {
+  --bs-form-select-bg-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2300f0ff' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-image: var(--bs-form-select-bg-img, none) !important;
+}
+
+/* Opzione selezionata nella dropdown aperta: gradient trick per sovrascrivere il blu di sistema. */
+select option:checked,
+select option:focus {
+  background: linear-gradient(var(--cc-primary), var(--cc-primary));
+  color: #fff;
+}
+
+/* Icona calendario del date picker: filtro CSS per colorarla col ciano della palette.
+   Il calendario popup usa color-scheme:dark (impostato sopra) quindi sfondo scuro+ciano. */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(2) sepia(1) hue-rotate(175deg) saturate(4);
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 2px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  filter: invert(1) brightness(3) sepia(1) hue-rotate(175deg) saturate(6);
 }
 
 /* Checkbox bloccati finché il documento legale non è stato letto.
