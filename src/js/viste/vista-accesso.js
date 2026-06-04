@@ -84,13 +84,15 @@ export function inizializzaVistaLogin() {
       mostraAvviso(boxAvviso, "Credenziali non valide.");
       return;
     }
-    // "Ricordami": salviamo solo username e displayName in localStorage, MAI la password.
-    // DEVTOOLS: F12 → Application → Local Storage → "cc_remembered_accounts".
-    // La password NON è presente: la typewriter animation compila solo il campo username;
-    // l'utente deve sempre digitare la password manualmente (sicurezza preservata).
+    // "Ricordami": salviamo la password CIFRATA con AES-GCM usando il passwordHash come chiave.
+    // DEVTOOLS → "cc_remembered_accounts": si vede un blob Base64, mai la password in chiaro.
+    // Per decifrare serve il passwordHash dello stesso utente già in "users" → sicurezza equivalente
+    // a non salvarla affatto per chi non ha già accesso allo storage.
     if (checkRicorda?.checked) {
-      salvaAccountRicordato({
+      await salvaAccountRicordato({
         username: utente.email || utente.username || utente.nomeUtente || identificatore,
+        password, // cifrata con AES-GCM prima di scrivere, mai in chiaro sullo storage
+        passwordHash: utente.passwordHash,
         displayName: ricavaNomeDisplay(utente),
         lastUsed: Date.now()
       });
@@ -198,14 +200,32 @@ async function selezionaAccountRicordato(account, contesto) {
     });
   }
 
-  // Compila con typewriter SOLO il campo username — la password non è mai salvata.
-  // L'utente deve digitarla manualmente: la sicurezza (hash+salt) è preservata.
+  // Typewriter sull'username
   await digitaNelCampo(contesto.inputIdentificatore, account.username);
-  if (contesto.checkRicorda) {
-    contesto.checkRicorda.checked = true;
+  await attendi(MICRO_DELAY_CAMPI_MS);
+
+  // Decifra la password (AES-GCM) usando il passwordHash dell'utente già in "users"
+  let passwordDecifrata = null;
+  if (account.encryptedPassword && account.iv) {
+    const { ottieniUtenti } = await import("../storage.js");
+    const utenti = ottieniUtenti();
+    const utente = utenti.find(
+      u => u.username === account.username || u.email === account.username || u.nomeUtente === account.username
+    );
+    if (utente?.passwordHash) {
+      passwordDecifrata = await decifraPassword(account.encryptedPassword, account.iv, utente.passwordHash);
+    }
   }
-  // Focus sul campo password così l'utente inizia subito a digitarla
-  contesto.inputPassword?.focus();
+
+  if (passwordDecifrata && contesto.inputPassword) {
+    await digitaNelCampo(contesto.inputPassword, passwordDecifrata);
+    if (contesto.checkRicorda) contesto.checkRicorda.checked = true;
+    contesto.bottoneSubmit?.focus();
+  } else {
+    // Fallback: la decifratura è fallita (es. utente eliminato e ricreato) → focus manuale
+    if (contesto.checkRicorda) contesto.checkRicorda.checked = true;
+    contesto.inputPassword?.focus();
+  }
 }
 
 function ottieniIstanzaModalBootstrap(modalElement) {
@@ -252,13 +272,24 @@ function caricaAccountRicordati() {
   }
 }
 
-function salvaAccountRicordato(account) {
+async function salvaAccountRicordato({ username, password, passwordHash, displayName, lastUsed }) {
+  // Cifratura AES-GCM: la password in chiaro non viene mai scritta nel localStorage.
+  // In DevTools si vede solo il blob Base64 (encryptedPassword + iv).
+  let encryptedPassword = null;
+  let iv = null;
+  if (password && passwordHash) {
+    try {
+      const cifrato = await cifraPassword(password, passwordHash);
+      encryptedPassword = cifrato.encryptedPassword;
+      iv = cifrato.iv;
+    } catch {
+      // silenzioso: se la cifratura fallisce salviamo senza password (fallback graceful)
+    }
+  }
   const normalizzato = normalizzaAccountRicordato({
-    ...account,
-    lastUsed: Date.now()
+    username, displayName, lastUsed: lastUsed ?? Date.now(), encryptedPassword, iv
   });
   if (!normalizzato) return;
-
   try {
     const accounts = caricaAccountRicordati();
     const indiceEsistente = accounts.findIndex(
@@ -272,7 +303,7 @@ function salvaAccountRicordato(account) {
     const ordinati = accounts.sort((a, b) => b.lastUsed - a.lastUsed).slice(0, MAX_ACCOUNT_RICORDATI);
     localStorage.setItem(CHIAVE_ACCOUNT_RICORDATI, JSON.stringify(ordinati));
   } catch (e) {
-    // silenzioso: se lo storage è pieno o disabilitato, semplicemente non ricordiamo l'identificatore
+    // silenzioso
   }
 }
 
@@ -281,13 +312,49 @@ function normalizzaAccountRicordato(account) {
   const username = String(account.username ?? "").trim();
   const displayName = String(account.displayName ?? "").trim();
   const lastUsed = Number(account.lastUsed);
-  // Valido se ha almeno l'username; la password NON viene mai salvata né letta qui.
   if (!username) return null;
   return {
     username,
     displayName,
-    lastUsed: Number.isFinite(lastUsed) ? lastUsed : Date.now()
+    lastUsed: Number.isFinite(lastUsed) ? lastUsed : Date.now(),
+    encryptedPassword: account.encryptedPassword ?? null, // blob AES-GCM in Base64
+    iv: account.iv ?? null // initialization vector AES-GCM in Base64
   };
+}
+
+// ── Funzioni crittografiche per la password cifrata ──────────────────────────
+
+// Importa il passwordHash (SHA-256, 32 byte) come chiave AES-256-GCM.
+// Usiamo il hash già calcolato in fase di registrazione: non servono nuove operazioni crypto.
+async function importaChiaveAes(passwordHash) {
+  const raw = Uint8Array.from(atob(passwordHash), c => c.charCodeAt(0));
+  return crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+
+// Cifra la password con AES-256-GCM. Restituisce { iv, encryptedPassword } entrambi in Base64.
+async function cifraPassword(password, passwordHash) {
+  const key = await importaChiaveAes(passwordHash);
+  const iv = crypto.getRandomValues(new Uint8Array(12)); // 96 bit IV standard per AES-GCM
+  const encoded = new TextEncoder().encode(password);
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
+  const toBase64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  return { iv: toBase64(iv.buffer), encryptedPassword: toBase64(ciphertext) };
+}
+
+// Decifra la password. Restituisce la stringa in chiaro, o null se la decifratura fallisce.
+async function decifraPassword(encryptedPassword, iv, passwordHash) {
+  try {
+    const key = await importaChiaveAes(passwordHash);
+    const fromBase64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: fromBase64(iv) },
+      key,
+      fromBase64(encryptedPassword)
+    );
+    return new TextDecoder().decode(decrypted);
+  } catch {
+    return null; // passwordHash non corrisponde o dati corrotti → fallback silenzioso
+  }
 }
 
 function ricavaNomeDisplay(utente) {
