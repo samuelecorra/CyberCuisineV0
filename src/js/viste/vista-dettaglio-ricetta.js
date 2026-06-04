@@ -142,7 +142,10 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
       window.location.hash = "#/accesso";
       return;
     }
-    apriModaleRecensione(ricetta, () => mostraElencoRecensioni(ricetta.id, ricetta, utente));
+    // Dopo il salvataggio re-inizializziamo l'intera vista: la ricetta è in cache quindi
+    // è istantaneo, e garantisce che il pulsante aggiorni il testo live (Scrivi → Vedi)
+    // senza aspettare un reload manuale da parte dell'utente.
+    apriModaleRecensione(ricetta, () => inizializzaVistaDettaglioRicetta(ricetta.id));
   });
 
   mostraElencoRecensioni(ricetta.id, ricetta, utente);
