@@ -465,7 +465,7 @@ Questa sezione è pensata per essere consultata durante la discussione orale. Ap
 5. **Rotte protette**: svuotare `session` dal pannello Application e navigare a `#/ricettario` — il router rileva l'assenza di sessione e redirige a `#/accesso`.
 6. **Aggiunta al ricettario**: cliccare "Aggiungi al ricettario" su una ricetta. In `localStorage["cookbook:<idUtente>"]` l'id della ricetta compare in `recipeIds`.
 7. **Inserimento recensione**: compilare la modale. In `localStorage["reviews:<idRicetta>"]` appare l'oggetto con `cookedAt`, `difficulty` e `taste`.
-8. **Logout**: `session.currentUserId` torna `null`. L'array `users`, il ricettario e le recensioni restano intatti.
+8. **Logout**: `session.currentUserId` torna `null`. L'array `users`, il ricettario e le recensioni restano intatti. La home pubblica viene mostrata immediatamente senza reload: se l'utente era già su `#/home` (home loggata), impostare lo stesso hash non emette `hashchange` — viene dispatchiato manualmente un `HashChangeEvent` per forzare il router a re-renderizzare la vista pubblica.
 
 Tutti questi punti sono annotati nel codice con il tag `DEVTOOLS:` e `>>> MOMENTO CHIAVE <<<` per facilitarne la localizzazione durante la sessione.
 
