@@ -84,12 +84,13 @@ export function inizializzaVistaLogin() {
       mostraAvviso(boxAvviso, "Credenziali non valide.");
       return;
     }
-    // "Ricordami": scriviamo SOLO l'identificatore (mai la password) in Session Storage.
-    // DEVTOOLS: spunta la casella e fai login → compare la chiave "cc_accesso_ricorda".
+    // "Ricordami": salviamo solo username e displayName in localStorage, MAI la password.
+    // DEVTOOLS: F12 → Application → Local Storage → "cc_remembered_accounts".
+    // La password NON è presente: la typewriter animation compila solo il campo username;
+    // l'utente deve sempre digitare la password manualmente (sicurezza preservata).
     if (checkRicorda?.checked) {
       salvaAccountRicordato({
         username: utente.email || utente.username || utente.nomeUtente || identificatore,
-        password,
         displayName: ricavaNomeDisplay(utente),
         lastUsed: Date.now()
       });
@@ -188,7 +189,7 @@ function popolaListaAccountRicordati(accounts, contesto) {
 
 async function selezionaAccountRicordato(account, contesto) {
   const modal = ottieniIstanzaModalBootstrap(contesto.modalAccount);
-  if (!contesto.modalAccount || !contesto.inputIdentificatore || !contesto.inputPassword) return;
+  if (!contesto.modalAccount || !contesto.inputIdentificatore) return;
 
   if (modal) {
     await new Promise(resolve => {
@@ -197,13 +198,14 @@ async function selezionaAccountRicordato(account, contesto) {
     });
   }
 
+  // Compila con typewriter SOLO il campo username — la password non è mai salvata.
+  // L'utente deve digitarla manualmente: la sicurezza (hash+salt) è preservata.
   await digitaNelCampo(contesto.inputIdentificatore, account.username);
-  await attendi(MICRO_DELAY_CAMPI_MS);
-  await digitaNelCampo(contesto.inputPassword, account.password);
   if (contesto.checkRicorda) {
     contesto.checkRicorda.checked = true;
   }
-  contesto.bottoneSubmit?.focus();
+  // Focus sul campo password così l'utente inizia subito a digitarla
+  contesto.inputPassword?.focus();
 }
 
 function ottieniIstanzaModalBootstrap(modalElement) {
@@ -277,13 +279,12 @@ function salvaAccountRicordato(account) {
 function normalizzaAccountRicordato(account) {
   if (!account || typeof account !== "object") return null;
   const username = String(account.username ?? "").trim();
-  const password = String(account.password ?? "");
   const displayName = String(account.displayName ?? "").trim();
   const lastUsed = Number(account.lastUsed);
-  if (!username || !password) return null;
+  // Valido se ha almeno l'username; la password NON viene mai salvata né letta qui.
+  if (!username) return null;
   return {
     username,
-    password,
     displayName,
     lastUsed: Number.isFinite(lastUsed) ? lastUsed : Date.now()
   };
