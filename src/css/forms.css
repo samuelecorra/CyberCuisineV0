@@ -18,6 +18,35 @@ textarea::placeholder {
   color: var(--cc-muted) !important;
 }
 
+/* Fix autofill browser: Chrome/Edge colorano i campi compilati automaticamente con un
+   sfondo azzurro/bianco che ignora il nostro CSS. Il trucco industry-standard è usare
+   un inset box-shadow enorme che "copre" il colore di autofill, e una transition con
+   delay altissimo per bloccare la transizione del background nativa del browser. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.05) inset !important;
+  -webkit-text-fill-color: var(--cc-text) !important;
+  caret-color: var(--cc-text);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Campo di form invalido: glow rosso usato dalla funzione evidenziaFieldInvalidi() in ui.js.
+   Componente riutilizzabile — si auto-rimuove al primo input dell'utente (vedi ui.js).
+   Usa box-shadow statico dopo l'animazione di attrazione iniziale. */
+@keyframes cc-campo-pulse {
+  0%   { box-shadow: 0 0 0 2px transparent; }
+  50%  { box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.9), 0 0 14px rgba(231, 76, 60, 0.55); }
+  100% { box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.6); }
+}
+
+.cc-campo-invalido {
+  border-color: #e74c3c !important;
+  animation: cc-campo-pulse 0.45s ease-out forwards;
+}
+
 input:focus,
 textarea:focus,
 select:focus {

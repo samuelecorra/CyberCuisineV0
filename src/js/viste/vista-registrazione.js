@@ -1,5 +1,5 @@
 import { ottieniUtenteCorrente, ottieniUtenti, salvaUtenti } from "../storage.js";
-import { mostraAvviso, generaId } from "../ui.js";
+import { mostraAvviso, generaId, evidenziaFieldInvalidi } from "../ui.js";
 import { ottieniAreeCucina } from "../gestione-api/api.js";
 import { creaCredenzialiPassword } from "../auth.js";
 
@@ -38,14 +38,26 @@ export function inizializzaVistaRegistrazione() {
     const accettaPrivacy = document.getElementById("accettaPrivacy").checked;
 
     if (!nome || !cognome || !nomeUtente || !email || !password) {
+      evidenziaFieldInvalidi([
+        !nome     && document.getElementById("nomeRegistrazione"),
+        !cognome  && document.getElementById("cognomeRegistrazione"),
+        !nomeUtente && document.getElementById("usernameRegistrazione"),
+        !email    && document.getElementById("emailRegistrazione"),
+        !password && document.getElementById("passwordRegistrazione")
+      ]);
       mostraAvviso(boxAvviso, "Compila tutti i campi obbligatori.");
       return;
     }
     if (password.length < 6) {
+      evidenziaFieldInvalidi([document.getElementById("passwordRegistrazione")]);
       mostraAvviso(boxAvviso, "La password deve contenere almeno 6 caratteri.");
       return;
     }
     if (password !== confermaPassword) {
+      evidenziaFieldInvalidi([
+        document.getElementById("passwordRegistrazione"),
+        document.getElementById("confermaPasswordRegistrazione")
+      ]);
       mostraAvviso(boxAvviso, "Le password non coincidono.");
       return;
     }

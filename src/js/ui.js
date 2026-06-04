@@ -23,3 +23,20 @@ export function mostraAvviso(elemento, messaggio, tipo = "danger") {
 export function generaId(prefisso) {
   return `${prefisso}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 }
+
+// Evidenzia i campi di form invalidi con un glow rosso (classe CSS .cc-campo-invalido).
+// La classe si auto-rimuove non appena l'utente inizia a digitare/selezionare nel campo,
+// così il feedback sparisce senza che l'utente debba fare nulla di esplicito.
+// Componente riutilizzabile: accetta un array di elementi DOM (filtra i falsy automaticamente).
+export function evidenziaFieldInvalidi(campi) {
+  campi.filter(Boolean).forEach(campo => {
+    campo.classList.add("cc-campo-invalido");
+    const rimuovi = () => {
+      campo.classList.remove("cc-campo-invalido");
+      campo.removeEventListener("input", rimuovi);
+      campo.removeEventListener("change", rimuovi);
+    };
+    campo.addEventListener("input", rimuovi);
+    campo.addEventListener("change", rimuovi);
+  });
+}
