@@ -167,7 +167,7 @@ export function creaCardRecensione(recensione, ricetta, autore = "Utente", opzio
                     <p class="small testo-accento mb-1">${autore}</p>
                     ${nomeHtml}
                     <p class="text-muted">Preparata il ${dataPreparazione}</p>
-                    <p class="mb-1">Difficolta: <strong>${difficolta}</strong></p>
+                    <p class="mb-1">Difficoltà: <strong>${difficolta}</strong></p>
                     <p class="mb-1">Gusto: <strong>${gusto}</strong></p>
                     <p class="small text-muted">${recensione.commento || "Nessun commento."}</p>
                     ${haAzioni ? `<div class="mt-auto d-flex align-items-center gap-2 flex-wrap">${vaiAllaRicettaHtml}${pulsanteRimuovi}</div>` : ""}

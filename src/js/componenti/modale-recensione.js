@@ -71,7 +71,7 @@ function templateModaleRecensione() {
                   <input type="date" class="form-control" id="dataRecensione" required />
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label" for="difficoltaRecensione">Difficolta (1-5)</label>
+                  <label class="form-label" for="difficoltaRecensione">Difficoltà (1-5)</label>
                   <select class="form-select" id="difficoltaRecensione" required>
                     <option value="5">5</option>
                     <option value="4">4</option>

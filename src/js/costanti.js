@@ -10,7 +10,8 @@
 //   2. Vai sulla scheda "Application" (Chrome/Edge) oppure "Archiviazione" (Firefox).
 //   3. Nel pannello a sinistra apri "Local Storage" → l'origine del sito (es. http://127.0.0.1:5500).
 //   4. Vedrai le chiavi elencate sotto (users, session, recipes:cache, ...).
-//   5. "Session Storage" (sempre a sinistra) contiene invece le due chiavi temporanee dell'auth.
+//   5. "Session Storage" (sempre a sinistra) contiene invece la chiave temporanea "cc_post_signup"
+//      (messaggio one-shot registrazione→login), visibile solo subito dopo una registrazione.
 //   Suggerimento: tieni il pannello aperto e clicca le chiavi MENTRE esegui login/logout per
 //   vedere i valori cambiare in tempo reale (a volte serve ricliccare la chiave per rinfrescare).
 
