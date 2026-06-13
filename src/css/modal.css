@@ -46,14 +46,14 @@
   justify-content: flex-end;
 }
 
-/* ── Pulsante di chiusura unificato (.cc-btn-chiudi) ──
+/* ── Pulsante di chiusura unificato (.cc-modal-close / .cc-menu-close) ──
    Posizionato in absolute nell'angolo in alto a destra del contenitore modale
    (il .modal-content / .cc-modal ha position: relative impostato sotto).
-   Rimane visibile anche quando il modal-header è ridotto a sola etichetta. */
-.cc-btn-chiudi,
+   Rimane visibile anche quando il modal-header è ridotto a sola etichetta.
+   Stesso stile per la × delle modali Bootstrap (.cc-modal-close) e per quella
+   del menu offcanvas mobile (.cc-menu-close). */
 .cc-modal-close,
-.cc-menu-close,
-.doc-modal__close {
+.cc-menu-close {
   position: absolute;
   top: 0.6rem;
   right: 0.6rem;
@@ -81,14 +81,10 @@
   position: relative;
 }
 
-.cc-btn-chiudi:hover,
-.cc-btn-chiudi:focus,
 .cc-modal-close:hover,
 .cc-modal-close:focus,
 .cc-menu-close:hover,
-.cc-menu-close:focus,
-.doc-modal__close:hover,
-.doc-modal__close:focus {
+.cc-menu-close:focus {
   background-color: #e74c3c;
   border-color: #ff6b6b;
   color: #ffffff;

@@ -169,7 +169,8 @@ select option {
   line-height: 1.6;
 }
 
-/* .doc-modal__close: stile unificato in modal.css (.cc-btn-chiudi) */
+/* Nota: le doc-modal (Termini/Privacy) non hanno un pulsante "×": si chiudono con il
+   pulsante "Ho letto, torna al form" o cliccando sul backdrop (vedi vista-registrazione.js). */
 
 .piadina-spinner-backdrop {
   position: fixed;

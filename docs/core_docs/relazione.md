@@ -273,7 +273,7 @@ Il pulsante recensione è contestuale: mostra "Scrivi recensione" se l'utente no
 
 ### 6.8 Recensioni
 
-Dalla scheda dettaglio di qualsiasi ricetta, l'utente loggato può aprire la modale di recensione. Se ha già recensito quella ricetta, la modale si apre precompilata con i valori esistenti (comportamento upsert). I campi richiesti dalla specifica sono: data di preparazione (`<input type="date">`), difficoltà 1–5 (select), gusto 1–5 (select); il commento testuale è opzionale. Dopo il salvataggio la vista si aggiorna immediatamente senza reload (re-render live): il pulsante passa da "Scrivi recensione" a "Vedi la tua recensione" all'istante.
+Dalla scheda dettaglio di qualsiasi ricetta, l'utente loggato può aprire la modale di recensione. Se ha già recensito quella ricetta, la modale si apre precompilata con i valori esistenti (comportamento upsert). I campi richiesti dalla specifica sono: data di preparazione (`<input type="date">`), difficoltà 1–5 (select), gusto 1–5 (select); il commento testuale è opzionale. Dopo il salvataggio la vista si aggiorna immediatamente senza reload (re-render live): il pulsante passa da "Scrivi recensione" a "Modifica recensione" all'istante.
 
 Nella scheda ricetta l'elenco delle recensioni è ottimizzato per il contesto: il nome del piatto e il pulsante "Vai alla ricetta" sono omessi (ridondanti, si è già nella sua pagina); la recensione dell'utente loggato appare sempre per prima. La rimozione apre la modale di conferma custom (non `window.confirm`).
 

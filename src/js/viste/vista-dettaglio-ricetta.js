@@ -72,7 +72,7 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
                   ${inRicettario ? "Rimuovi dal ricettario" : "Aggiungi al ricettario"}
                 </button>
                 <button class="btn btn-contorno-accento flex-fill fw-semibold fs-6" id="bottoneRecensione">
-                  ${recensioneUtente ? "Vedi la tua recensione" : "Scrivi recensione"}
+                  ${recensioneUtente ? "Modifica recensione" : "Scrivi recensione"}
                 </button>
               </div>
               ${
@@ -144,7 +144,7 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
       return;
     }
     // Dopo il salvataggio re-inizializziamo l'intera vista: la ricetta è in cache quindi
-    // è istantaneo, e garantisce che il pulsante aggiorni il testo live (Scrivi → Vedi)
+    // è istantaneo, e garantisce che il pulsante aggiorni il testo live (Scrivi → Modifica)
     // senza aspettare un reload manuale da parte dell'utente.
     apriModaleRecensione(ricetta, () => inizializzaVistaDettaglioRicetta(ricetta.id));
   });

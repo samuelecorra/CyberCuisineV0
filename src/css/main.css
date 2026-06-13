@@ -1,8 +1,0 @@
-@import "./theme.css";
-@import "./base.css";
-@import "./layout.css";
-@import "./components.css";
-@import "./forms.css";
-@import "./utilities.css";
-
-/* Fallback aggregator: keep this file as the single import surface so legacy pages can keep linking to main.css */

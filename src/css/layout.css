@@ -69,7 +69,7 @@
     align-items: center;
   }
 
-  /* .cc-menu-close: stile unificato in modal.css (.cc-btn-chiudi) */
+  /* .cc-menu-close: stile unificato in modal.css (gruppo .cc-modal-close / .cc-menu-close) */
 
   /* Menu: vertical grid, all buttons same width (100% of sidebar) */
   #ccOffcanvasNav .navbar-nav {
@@ -118,48 +118,4 @@
 .sezione-eroe {
   border-radius: 1rem;
   background: radial-gradient(circle at top, rgba(179, 18, 255, 0.2), rgba(0, 240, 255, 0.08));
-}
-
-/* Sezione esplora: layout affiancato tra ricette e lettere */
-.explore-layout {
-  align-items: stretch;
-}
-
-.recipes-column {
-  min-height: 50vh;
-}
-
-.explore-letters {
-  display: flex;
-  align-self: stretch;
-}
-
-.letters-panel {
-  width: 100%;
-  min-height: 100%;
-}
-
-.letters-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-}
-
-.letters-list button {
-  width: 100%;
-}
-
-@media (min-width: 992px) {
-  .explore-letters {
-    flex: 0 0 220px;
-    max-width: 220px;
-  }
-}
-
-@media (max-width: 991.98px) {
-  .explore-letters {
-    max-width: 420px;
-    margin-left: auto;
-    margin-right: auto;
-  }
 }
