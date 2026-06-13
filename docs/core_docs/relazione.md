@@ -265,7 +265,9 @@ Tutte e tre le modalità filtrano la cache locale, senza chiamate di rete. Il ri
 
 ### 6.7 Ricettario personale
 
-Il ricettario mostra le ricette salvate dall'utente. Per ciascuna viene recuperata la scheda completa (dalla cache o via `lookup.php?i=<id>` come fallback) e renderizzata una card con immagine, categoria, area, pulsante di recensione e pulsante di rimozione. Sia l'aggiunta che la rimozione passano per una modale di conferma che mostra il nome della ricetta, evitando azioni accidentali. Le note private si modificano direttamente sulla card del ricettario.
+Il ricettario mostra le ricette salvate dall'utente. Per ciascuna viene recuperata la scheda completa (dalla cache o via `lookup.php?i=<id>` come fallback) e renderizzata una card con immagine, categoria, area, **campo nota privata**, pulsante di recensione e pulsante di rimozione. Sia l'aggiunta che la rimozione passano per una modale di conferma che mostra il nome della ricetta, evitando azioni accidentali.
+
+La **nota privata** richiesta dalla specifica è gestita direttamente sulla card: una `textarea` precompilata con l'eventuale nota già salvata e un pulsante "Salva nota". Al salvataggio, `aggiornaNotaRicettario(idRicetta, testo)` scrive il testo in `cookbook:<idUtente>.notesByRecipeId[idRicetta]`; un indicatore "Nota salvata ✓" conferma l'operazione. La nota è **privata** per costruzione: vive solo nel ricettario del singolo utente e non compare mai nelle recensioni pubbliche della ricetta. Il testo viene sottoposto a escape prima di essere reiniettato nella `textarea`, così una nota contenente caratteri come `<` o `</textarea>` non rompe il markup.
 
 Il pulsante recensione è contestuale: mostra "Scrivi recensione" se l'utente non ha ancora recensito la ricetta, "Modifica recensione" se ne esiste già una — calcolato in tempo reale leggendo `reviews:*` dal localStorage ad ogni render.
 

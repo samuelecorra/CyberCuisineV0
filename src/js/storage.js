@@ -401,10 +401,6 @@ export function salvaCacheRicette(cacheById, info = {}) {
   save(CHIAVI_SALVATAGGIO.RECIPES_CACHE, { updatedAt, byId: cacheById });
 }
 
-export function ottieniMetaRicette() {
-  return load(CHIAVI_SALVATAGGIO.RECIPES_CACHE, { updatedAt: null, byId: {} });
-}
-
 export function ottieniCacheAree() {
   return load(CHIAVI_SALVATAGGIO.AREAS_CACHE, { updatedAt: null, items: [] });
 }
@@ -426,10 +422,6 @@ export function ottieniMetaApp() {
     lastInitAt: null,
     apiCacheInfo: {}
   });
-}
-
-export function salvaMetaApp(meta) {
-  save(CHIAVI_SALVATAGGIO.APP_META, meta);
 }
 
 export function aggiornaMetaApp(updater) {
@@ -553,20 +545,6 @@ export function ottieniRecensioniRicetta(idRicetta) {
   return recensioni.map(recensione =>
     trasformaRecensioneInItaliano({ ...recensione, idRicetta })
   );
-}
-
-export function salvaRecensioni(recensioni) {
-  const grouped = new Map();
-  recensioni.forEach(recensione => {
-    const idRicetta = recensione.idRicetta ?? recensione.recipeId;
-    if (!idRicetta) return;
-    const lista = grouped.get(idRicetta) ?? [];
-    lista.push(recensione);
-    grouped.set(idRicetta, lista);
-  });
-  grouped.forEach((lista, idRicetta) => {
-    salvaRecensioniRicetta(idRicetta, lista);
-  });
 }
 
 export function salvaRecensioniRicetta(idRicetta, recensioni) {

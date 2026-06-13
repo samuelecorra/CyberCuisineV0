@@ -58,8 +58,13 @@ export function creaCardRicetta(ricetta, stato = {}) {
     `;
 }
 
-export function creaCardRicettario(ricetta, { haRecensione = false } = {}) {
+// `nota` è la nota PRIVATA dell'utente per questa ricetta (letta da cookbook:<id>.notesByRecipeId).
+// La pre-carichiamo nella textarea: l'utente può modificarla e salvarla (vedi vista-ricettario.js).
+// Va sottoposta a escape perché è testo libero dell'utente: senza, un `</textarea>` digitato nella
+// nota chiuderebbe il campo e romperebbe il markup generato dalla template string.
+export function creaCardRicettario(ricetta, { haRecensione = false, nota = "" } = {}) {
   const nomeRicettaAttr = escapeHtmlAttribute(ricetta.nome ?? "");
+  const notaText = escapeHtmlAttribute(nota ?? "");
   const reviewLabel = haRecensione ? "Modifica recensione" : "Scrivi recensione";
   return `
         <div class="col-md-6">
@@ -90,6 +95,24 @@ export function creaCardRicettario(ricetta, { haRecensione = false } = {}) {
                               ${ricetta.nome}
                             </h3>
                             <p class="text-muted mb-2">${ricetta.categoria} - ${ricetta.area}</p>
+                            <div class="cc-nota-ricettario mb-3">
+                                <label class="form-label small text-muted mb-1" for="nota-${ricetta.id}">
+                                  Nota privata
+                                </label>
+                                <textarea
+                                  class="form-control form-control-sm"
+                                  id="nota-${ricetta.id}"
+                                  data-nota-ricetta="${ricetta.id}"
+                                  rows="2"
+                                  placeholder="Annotazioni visibili solo a te (varianti, abbinamenti...)"
+                                >${notaText}</textarea>
+                                <div class="d-flex align-items-center gap-2 mt-2">
+                                  <button class="btn btn-sm btn-contorno-accento" type="button" data-salva-nota="${ricetta.id}">
+                                    Salva nota
+                                  </button>
+                                  <span class="small testo-accento d-none" data-nota-feedback="${ricetta.id}">Nota salvata ✓</span>
+                                </div>
+                            </div>
                             <div class="mt-auto d-flex gap-2">
                                 <button
                                   class="btn btn-contorno-accento btn-azione-ricetta"
