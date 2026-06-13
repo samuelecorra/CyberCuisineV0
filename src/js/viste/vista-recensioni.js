@@ -56,19 +56,28 @@ export async function inizializzaVistaRecensioni() {
     }, 120);
   }
 
-  contenitoreRecensioni.addEventListener("click", event => {
+  // Event delegation sul contenitore: un solo handler intercetta i click su tutti i pulsanti
+  // "Rimuovi recensione" (anche quelli rigenerati a ogni render). Usiamo l'ASSEGNAZIONE onclick
+  // e NON addEventListener: questa funzione si auto-richiama dopo ogni rimozione (vedi sotto), ma
+  // il nodo #elencoRecensioni NON viene ricreato (cambiamo solo il suo innerHTML), quindi più
+  // addEventListener si accumulerebbero sullo stesso nodo a ogni passata. onclick invece SOSTITUISCE
+  // sempre l'handler precedente → resta sempre uno solo (stesso pattern di vista-ricettario.js).
+  contenitoreRecensioni.onclick = event => {
     const target = event.target.closest("[data-rimuovi-recensione]");
     if (!target) return;
     const idRecensione = target.dataset.rimuoviRecensione;
     const idRicetta = target.dataset.ricettaId;
     if (!idRecensione || !idRicetta) return;
+    // Modale di conferma custom (no window.confirm nativo) coerente con il resto dell'app.
     mostraModalConfermaGenerica(
       "Rimuovi recensione",
       "Sei sicuro di voler rimuovere questa recensione? L'operazione non è reversibile.",
       () => {
+        // rimuoviRecensione filtra via la recensione da "reviews:<idRicetta>"; il terzo argomento
+        // (utente.id) garantisce che si possa rimuovere SOLO la propria. Poi ri-renderizziamo la lista.
         rimuoviRecensione(idRicetta, idRecensione, utente.id);
         inizializzaVistaRecensioni();
       }
     );
-  });
+  };
 }

@@ -144,3 +144,6 @@ PROMEMORIA_CREDENZIALI.txt
 
 # Obsidian — cartella di configurazione locale dell'editor, non va in repo
 .obsidian/
+
+# Materiale di preparazione personale alla discussione orale — non va consegnato/versionato
+docs/core_docs/possibili_domande.md

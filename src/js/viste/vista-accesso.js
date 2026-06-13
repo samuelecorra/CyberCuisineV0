@@ -5,9 +5,14 @@
 // Flusso completo del web storage durante il login:
 //   1) leggiamo l'array "users" (Local Storage) e cerchiamo l'utente per username/email;
 //   2) verifichiamo la password tramite HASH (auth.js), non in chiaro;
-//   3) se "Ricordami" è spuntato salviamo l'identificatore in Session Storage ("cc_accesso_ricorda");
+//   3) se "Ricordami" è spuntato salviamo l'account in Local Storage ("cc_remembered_accounts")
+//      con la password CIFRATA AES-GCM (mai in chiaro); vedi salvaAccountRicordato più sotto;
 //   4) impostaUtenteCorrente() scrive in Local Storage la chiave "session" → { currentUserId, loginAt }.
 // Da quel momento l'utente risulta loggato in tutta l'app.
+//
+// NOTA STORICA: una versione precedente salvava il solo identificatore in Session Storage sotto la
+// chiave "cc_accesso_ricorda". Quella chiave NON viene più scritta: oggi viene solo RIMOSSA come
+// pulizia legacy (vedi pulisciPrefillLegacy). Il "Ricordami" attuale vive in "cc_remembered_accounts".
 
 import { ottieniUtenteCorrente, ottieniUtenti, impostaUtenteCorrente } from "../storage.js";
 import { mostraAvviso } from "../ui.js";
@@ -114,6 +119,10 @@ export function inizializzaVistaLogin() {
   });
 }
 
+// Pulisce eventuali residui di prefill di una versione precedente dell'app. In particolare rimuove
+// la chiave legacy "cc_accesso_ricorda" dal Session Storage (oggi non più usata: il "Ricordami"
+// vive in "cc_remembered_accounts" su Local Storage). Salvo il caso post-registrazione, svuota
+// anche i campi del form per non lasciare credenziali precompilate da sessioni precedenti.
 function pulisciPrefillLegacy({
   inputIdentificatore,
   inputPassword,
@@ -121,7 +130,7 @@ function pulisciPrefillLegacy({
   conservaCompilazione = false
 }) {
   try {
-    sessionStorage.removeItem("cc_accesso_ricorda");
+    sessionStorage.removeItem("cc_accesso_ricorda"); // chiave legacy: solo rimozione, mai scrittura
   } catch (e) {
     // silenzioso
   }

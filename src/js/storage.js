@@ -57,8 +57,9 @@ export function chiaveRecensioniRicetta(idRicetta) {
 // >>> FLUSSO DI "REFRESH" (domanda tipica del prof) <<<
 // Quando ricarichi la pagina, "session" è già in Local Storage: questa init non la tocca, perciò
 // ottieniUtenteCorrente() la rilegge e resti LOGGATO senza dover rifare il login. È la differenza
-// pratica tra Local Storage (persistente tra refresh e riaperture) e Session Storage (la chiave
-// "cc_accesso_ricorda" sopravvive al refresh ma muore alla chiusura della scheda).
+// pratica tra Local Storage (persistente tra refresh e riaperture del browser) e Session Storage:
+// la chiave temporanea "cc_post_signup" (messaggio registrazione→login) sopravvive a un eventuale
+// refresh ma muore alla chiusura della scheda, mentre "session" su Local Storage resta sempre.
 export async function inizializzaStorage() {
   await migraSeNecessario();
 

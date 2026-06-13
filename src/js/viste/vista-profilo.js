@@ -8,6 +8,7 @@ import { mostraAvviso } from "../ui.js";
 import { gestisciLogout } from "../navbar.js";
 import { ottieniAreeCucina } from "../gestione-api/api.js";
 import { creaCredenzialiPassword, verificaPassword } from "../auth.js";
+import { mostraModalConfermaGenerica } from "../componenti/azioni-card.js";
 
 export function inizializzaVistaProfilo() {
   const utente = ottieniUtenteCorrente();
@@ -92,15 +93,26 @@ export function inizializzaVistaProfilo() {
     document.getElementById("passwordProfilo").value = "";
   });
 
-  // RIMOZIONE PROFILO (richiesta esplicitamente dalla specifica). rimuoviUtente cancella in cascata
-  // dal web storage: l'utente da "users", il suo ricettario ("cookbook:<id>") e tutte le sue
-  // recensioni ("reviews:<idRicetta>"); poi gestisciLogout azzera "session".
-  // DEVTOOLS: dopo la conferma, in Local Storage spariscono l'utente da "users" e la sua chiave cookbook.
+  // RIMOZIONE PROFILO (richiesta esplicitamente dalla specifica: "rimozione del profilo").
+  // Usiamo la STESSA modale di conferma custom impiegata da ricettario/recensioni/logout
+  // (mostraModalConfermaGenerica), così NESSUNA azione distruttiva dell'app usa più il
+  // window.confirm() nativo del browser (alert di sistema, fuori tema e poco accessibile).
+  // Solo DOPO la conferma esplicita dell'utente eseguiamo la cancellazione vera e propria.
+  //
+  // rimuoviUtente cancella IN CASCATA dal web storage: l'utente da "users", il suo ricettario
+  // ("cookbook:<id>") e tutte le sue recensioni ("reviews:<idRicetta>"); subito dopo gestisciLogout
+  // azzera "session" (currentUserId → null) e riporta l'utente alla home pubblica.
+  // DEVTOOLS: dopo la conferma, in Local Storage spariscono l'utente da "users", la sua chiave
+  // "cookbook:<id>" e le sue voci nelle chiavi "reviews:*"; "session".currentUserId torna null.
   bottoneElimina?.addEventListener("click", () => {
-    const confermaEliminazione = confirm("Sei sicuro di voler eliminare il profilo?");
-    if (!confermaEliminazione) return;
-    rimuoviUtente(utente.id);
-    gestisciLogout();
+    mostraModalConfermaGenerica(
+      "Elimina profilo",
+      "Sei sicuro di voler eliminare il tuo profilo? Verranno rimossi anche il ricettario e tutte le tue recensioni. L'operazione non è reversibile.",
+      () => {
+        rimuoviUtente(utente.id);
+        gestisciLogout();
+      }
+    );
   });
 
   function setCampiAbilitati(attivo) {

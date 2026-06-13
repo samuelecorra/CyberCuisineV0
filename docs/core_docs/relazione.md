@@ -10,8 +10,8 @@ Prima di entrare nel merito del codice vero e proprio, è utile orientarsi nella
 
 **`docs/`** raccoglie la documentazione del progetto. Al suo interno si trovano:
 
-- `core_docs/` — i documenti più importanti: questa relazione tecnica, il report di audit finale (`AUDIT_REPORT.md`) e il PDF della specifica originale del docente (`PWM_ProgettoAnnoAccademico20242025.pdf`);
-- altri file di supporto alla stesura del progetto (es. `SCREENSHOT_SCRIPT.txt`).
+- `core_docs/` — i documenti più importanti: questa relazione tecnica (`relazione.md`) e il PDF della specifica originale del docente (`PWM_ProgettoAnnoAccademico20242025.pdf`). Qui può inoltre risiedere `possibili_domande.md`, materiale **personale** di preparazione alla discussione orale, escluso dal versionamento tramite `.gitignore`;
+- altri file di supporto alla stesura del progetto (es. `SCREENSHOT_SCRIPT.txt`, script delle schermate dimostrative).
 
 ### File di configurazione a livello di root
 
@@ -51,7 +51,7 @@ Il primo macro-scenario richiede registrazione, modifica dei dati personali e ri
 
 ### 2.2 Ricerca di ricette culinarie
 
-Il secondo macro-scenario richiede la ricerca per nome del piatto, ingredienti principali e lettera iniziale, oltre alla "ricerca sequenziale" (sfogliare l'intero catalogo). Poiché all'avvio il catalogo completo (~666 ricette) viene scaricato e salvato in localStorage, **tutte le ricerche avvengono in locale**, senza ulteriori chiamate di rete: il risultato è istantaneo e funziona anche offline (dopo il primo caricamento). La ricerca per nome usa un match `includes` case-insensitive; quella per ingrediente scorre la lista dei 20 ingredienti normalizzati di ogni ricetta; quella per lettera confronta il primo carattere del nome. La modalità "Sfoglia tutto" presenta l'intero catalogo raggruppato per lettera con un indice alfabetico sticky che si aggiorna durante lo scroll grazie a un `IntersectionObserver`.
+Il secondo macro-scenario richiede la ricerca per nome del piatto, ingredienti principali e lettera iniziale, oltre alla "ricerca sequenziale" (sfogliare l'intero catalogo). Poiché all'avvio il catalogo completo (alcune centinaia di ricette, ~300 alla data di sviluppo) viene scaricato e salvato in localStorage, **tutte le ricerche avvengono in locale**, senza ulteriori chiamate di rete: il risultato è istantaneo e funziona anche offline (dopo il primo caricamento). La ricerca per nome usa un match `includes` case-insensitive; quella per ingrediente scorre la lista dei 20 ingredienti normalizzati di ogni ricetta; quella per lettera confronta il primo carattere del nome. La modalità "Sfoglia tutto" presenta l'intero catalogo raggruppato per lettera con un indice alfabetico sticky che si aggiorna durante lo scroll grazie a un `IntersectionObserver`.
 
 ### 2.3 Gestione del ricettario personale
 
@@ -144,6 +144,7 @@ Il web storage è organizzato secondo uno **schema versionato** (attualmente `SC
 | `areas:cache` | oggetto | `{ updatedAt, items, derivedFromCatalog }` — cucine disponibili |
 | `cookbook:<idUtente>` | oggetto | `{ recipeIds, notesByRecipeId }` — ricettario personale |
 | `reviews:<idRicetta>` | array | Recensioni per quella ricetta |
+| `cc_remembered_accounts` | array | Account del "Ricordami": `{ username, displayName, encryptedPassword, iv, lastUsed }` con password **cifrata AES-GCM** (vedi §7.2) |
 
 Ogni utente nel array `users` ha la forma:
 
@@ -181,10 +182,11 @@ Ogni recensione nell'array `reviews:<idRicetta>` ha la forma:
 
 ### 4.3 Chiavi del sessionStorage
 
-Il sessionStorage è usato per due sole chiavi temporanee, entrambe legate al flusso di autenticazione:
+Il sessionStorage ospita **una sola** chiave realmente in uso, legata al passaggio di consegne tra registrazione e login:
 
-- **`cc_accesso_ricorda`**: contiene solo l'identificatore (username o email) dell'utente che ha spuntato "Ricordami". Non contiene mai la password. Questo permette di precompilare il campo username al prossimo accesso, senza esporre credenziali. Muore alla chiusura della scheda del browser, il che è semanticamente corretto per un "ricordami" che non è una persistenza a lungo termine.
 - **`cc_post_signup`**: messaggio one-shot che la registrazione scrive prima di redirigere al login. La pagina di accesso lo legge, lo mostra all'utente ("Account creato, accedi per continuare") e lo cancella immediatamente. Questo evita di dover passare dati tra viste tramite parametri URL o stato globale.
+
+Esiste inoltre una chiave **legacy**, **`cc_accesso_ricorda`**, usata da una versione precedente per memorizzare il solo identificatore del "Ricordami". Nella versione attuale **non viene più scritta**: il "Ricordami" è stato spostato in `localStorage["cc_remembered_accounts"]` con password cifrata AES-GCM (vedi §7.2). La pagina di login si limita a **rimuoverla** all'avvio (`pulisciPrefillLegacy`) per ripulire eventuali residui di vecchie sessioni. La cito qui solo per completezza: durante la demo, in Session Storage si vede tipicamente comparire e sparire la sola `cc_post_signup`.
 
 ### 4.4 Separazione sessione e dati utente
 
@@ -196,7 +198,7 @@ Una scelta implementativa deliberata è la separazione netta tra la chiave `user
 
 ### 5.1 Il problema dello startup
 
-La specifica richiede che all'avvio tutti i dati necessari vengano scaricati dalle API di TheMealDB, memorizzati nel web storage e visualizzati. Questo crea una tensione: scaricare l'intero catalogo (~666 ricette tramite 26 chiamate, una per lettera) può richiedere diversi secondi su connessioni lente. La soluzione adottata bilancia conformità al requisito e praticità d'uso.
+La specifica richiede che all'avvio tutti i dati necessari vengano scaricati dalle API di TheMealDB, memorizzati nel web storage e visualizzati. Questo crea una tensione: scaricare l'intero catalogo (alcune centinaia di ricette, ~300 alla data di sviluppo, tramite 26 chiamate, una per lettera) può richiedere diversi secondi su connessioni lente. La soluzione adottata bilancia conformità al requisito e praticità d'uso.
 
 ### 5.2 Flusso di primo avvio
 
@@ -502,7 +504,92 @@ La specifica consente esplicitamente di implementare funzionalità extra. Le seg
 
 ---
 
-## 15. Conclusioni
+## 15. Appendice A — Mappa file-per-file della repository
+
+Questa appendice descrive **ogni file e cartella** del progetto e il suo ruolo nell'ecosistema, in modo che la coesione dell'insieme sia evidente. La struttura è volutamente piatta e leggibile: nessun file è superfluo, e ogni modulo ha una sola responsabilità ben definita.
+
+### A.1 Albero del progetto
+
+```text
+CyberCuisineV0/
+├── .editorconfig            # convenzioni di formattazione cross-editor
+├── .prettierrc / .prettierignore  # regole e ignore del formatter
+├── .gitignore               # cosa non versionare (node_modules, note personali, possibili_domande.md)
+├── LICENSE                  # licenza MIT
+├── README.md                # guida rapida + mappa web storage + reset dati
+├── docs/
+│   ├── SCREENSHOT_SCRIPT.txt # scaletta delle schermate dimostrative (prova di funzionamento)
+│   └── core_docs/
+│       ├── relazione.md      # questo documento
+│       ├── possibili_domande.md  # preparazione orale (NON versionato)
+│       └── PWM_ProgettoAnnoAccademico20242025.pdf  # specifica del docente
+└── src/
+    ├── html/                # frammenti SPA (struttura, HTML5)
+    ├── css/                 # presentazione (CSS3), separata dalla struttura
+    ├── js/                  # logica applicativa (ES6 modules)
+    └── assets/              # font ed immagini statiche
+```
+
+### A.2 `src/html/` — struttura delle pagine (HTML5)
+
+Tutti i file sono **frammenti** iniettati dal router nel contenitore `<main id="app">`, tranne `index.html` che è la pagina-guscio.
+
+- **`index.html`** — la pagina-guscio della SPA: include `<head>` (font, Bootstrap CDN, i 7 CSS), la navbar con menu utente e link auth, l'**overlay di avvio**, il `<main id="app">`, le **modali globali** (conferma azioni `#modalAzioniRicetta`, conferma logout `#modalLogout`), il footer e il caricamento di `main.js` come modulo. È l'unico file HTML realmente aperto dal browser.
+- **`home.html`** — home **pubblica** (utente sloggato): hero + griglia "Ricette in evidenza".
+- **`home.logged.html`** — home **autenticata**: sezioni "Dal tuo paese di origine/residenza" popolate filtrando il catalogo per area dell'utente.
+- **`login.html`** — form di accesso, casella "Ricordami", modale del picker account ricordati, spinner.
+- **`register.html`** — form di registrazione con select paesi, piatti preferiti, modali legali (Termini/Privacy) e checkbox bloccati.
+- **`profile.html`** — gestione profilo: dati personali (campi inizialmente `disabled`), modale di ri-autenticazione password, pulsanti modifica/salva/elimina.
+- **`esplora.html`** — ricerca (select tipo + campo termine), pulsante "Sfoglia l'intero catalogo", barra indice alfabetico, contenitore risultati.
+- **`ricettario.html`** — elenco ricette salvate (rotta protetta).
+- **`reviews.html`** — "Le tue recensioni" (rotta protetta): contenitore `#elencoRecensioni`.
+- **`recipe-detail.html`** — scheda della singola ricetta: contenitore `#dettaglioRicetta` e sezione recensioni.
+
+### A.3 `src/css/` — presentazione (CSS3)
+
+Caricati tutti da `index.html`, nell'ordine: `theme → base → layout → components → forms → utilities → modal`. La separazione tematica rende manutenibile lo stile e materializza il requisito di **separazione struttura/presentazione**.
+
+- **`theme.css`** — variabili CSS globali (design token): palette cyberpunk (viola `#b312ff`, ciano `#00f0ff`, sfondo `#0c0b1a`). Cambiando qui i token cambia tutta l'app.
+- **`base.css`** — reset minimo, `@font-face` Twemoji Country Flags (limitato via `unicode-range` alle bandiere), font-family del body, stili base di titoli e link.
+- **`layout.css`** — header sticky, navbar, footer, hero, impaginazione della vista Esplora.
+- **`components.css`** — card con effetto glow, pulsanti tematici, indice alfabetico, elementi del ricettario, highlight delle recensioni.
+- **`forms.css`** — input, select, placeholder, testi d'aiuto, modali legali, spinner, fix autofill del browser, glow sui campi invalidi.
+- **`modal.css`** — stile delle modali Bootstrap personalizzate e pulsante di chiusura unificato.
+- **`utilities.css`** — classi helper varie (spaziature, colori accento, ecc.).
+
+### A.4 `src/js/` — logica (ES6 modules)
+
+Per le responsabilità dettagliate dei moduli si veda §9.2. In sintesi, file per file:
+
+- **`main.js`** — punto di ingresso: orchestrazione dello startup (init storage → navbar → event delegation → download catalogo → router).
+- **`costanti.js`** — chiavi del web storage, chiavi legacy, `SCHEMA_VERSION`, `BASE_API`.
+- **`stato.js`** — stato volatile in-memory (cache frammenti, risultati ricerca, hash attivo, highlight recensione).
+- **`storage.js`** — tutta la persistenza: helper localStorage, init+migrazione schema, CRUD utenti/sessione/ricettario/recensioni, generazione id.
+- **`auth.js`** — crittografia: salt, hashing SHA-256, verifica password (Web Crypto). Nessuna dipendenza da DOM o storage.
+- **`ui.js`** — utility UI riutilizzabili: `mostraAvviso` (alert con autoscroll), `generaId`, `evidenziaFieldInvalidi`.
+- **`navbar.js`** — aspetto della navbar in base alla sessione, logout con modale, evidenziazione link attivo.
+- **`rotte.js`** — mappa dichiarativa hash → { frammento, handler, protetta }.
+- **`router.js`** — `gestisciCambioRoute`: normalizza hash, controlla protezione, carica frammento (con cache), invoca l'handler di vista.
+- **`gestione-api/api.js`** — comunicazione TheMealDB, normalizzazione ricette, cache catalogo (TTL 72h), aree con emoji/traduzioni.
+- **`componenti/carte.js`** — generatori di markup per le card (ricetta, ricettario, recensione). Restituiscono solo stringhe HTML.
+- **`componenti/azioni-card.js`** — event delegation globale dei pulsanti card + modale di conferma riutilizzabile (`mostraModalConfermaGenerica`).
+- **`componenti/modale-recensione.js`** — modale inserimento/modifica recensione, con upsert e precompilazione.
+- **`viste/vista-*.js`** — un controller per ogni rotta: `vista-home`, `vista-home-loggata`, `vista-accesso`, `vista-registrazione`, `vista-profilo`, `vista-esplora`, `vista-ricettario`, `vista-recensioni`, `vista-dettaglio-ricetta`.
+
+### A.5 `src/assets/` — risorse statiche
+
+- **`fonts/TwemojiCountryFlags.woff2`** — webfont self-hosted per rendere le bandiere emoji su tutti i sistemi (incluso Windows).
+- **`img/cc-logo.png`** — logo del marchio nella navbar.
+- **`img/piadina-spinner.png`** — immagine dello spinner tematico (overlay di avvio e attese).
+- **`img/.gitkeep` / `json/.gitkeep`** — file segnaposto per versionare cartelle altrimenti vuote (la `json/` è predisposta per eventuali dati statici futuri).
+
+### A.6 Coesione dell'insieme
+
+Il flusso end-to-end mostra come i pezzi si incastrano: `main.js` avvia lo storage (`storage.js`) e scarica il catalogo (`api.js`), poi attiva il router (`router.js` + `rotte.js`); ogni navigazione carica un frammento da `src/html/` e invoca la `vista-*.js` corrispondente, che legge/scrive il dominio tramite `storage.js`, genera markup con `componenti/carte.js` e reagisce ai click via `componenti/azioni-card.js`; la presentazione è interamente delegata a `src/css/`, e le credenziali passano sempre da `auth.js`. Nessun modulo conosce più del necessario: è questa separazione netta delle responsabilità a rendere il progetto manutenibile ed estendibile (aggiungere una vista = un frammento HTML + un `vista-*.js` + una riga in `rotte.js`).
+
+---
+
+## 16. Conclusioni
 
 CyberCuisine è una dimostrazione pratica di come sia possibile realizzare un'applicazione web completa e funzionale usando esclusivamente le tecnologie native della piattaforma web, senza framework, senza build step e senza backend. L'architettura SPA con hash routing, la persistenza strutturata nel web storage, l'integrazione con un'API REST esterna e la gestione sicura delle credenziali mostrano una comprensione concreta e applicata dei principi fondamentali dello sviluppo web moderno.
 
