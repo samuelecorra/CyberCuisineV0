@@ -117,8 +117,10 @@ export function aggiornaNavigazioneAttiva(hashDestinazione) {
     const attivo = hashDestinazione.startsWith(hashLink);
     if (attivo) {
       link.classList.add("active");
+      link.setAttribute("aria-current", "page"); // equivalente accessibile di .active per gli screen reader
     } else {
       link.classList.remove("active");
+      link.removeAttribute("aria-current");
     }
   });
 }

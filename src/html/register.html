@@ -18,19 +18,43 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label for="nomeRegistrazione" class="form-label">Nome</label>
-              <input type="text" class="form-control" id="nomeRegistrazione" required />
+              <input
+                type="text"
+                class="form-control"
+                id="nomeRegistrazione"
+                autocomplete="given-name"
+                required
+              />
             </div>
             <div class="col-md-6">
               <label for="cognomeRegistrazione" class="form-label">Cognome</label>
-              <input type="text" class="form-control" id="cognomeRegistrazione" required />
+              <input
+                type="text"
+                class="form-control"
+                id="cognomeRegistrazione"
+                autocomplete="family-name"
+                required
+              />
             </div>
             <div class="col-md-6">
               <label for="usernameRegistrazione" class="form-label">Username</label>
-              <input type="text" class="form-control" id="usernameRegistrazione" required />
+              <input
+                type="text"
+                class="form-control"
+                id="usernameRegistrazione"
+                autocomplete="username"
+                required
+              />
             </div>
             <div class="col-md-6">
               <label for="emailRegistrazione" class="form-label">Email</label>
-              <input type="email" class="form-control" id="emailRegistrazione" required />
+              <input
+                type="email"
+                class="form-control"
+                id="emailRegistrazione"
+                autocomplete="email"
+                required
+              />
             </div>
             <div class="col-md-6">
               <label for="paeseOrigineRegistrazione" class="form-label">Paese di origine</label>
@@ -59,6 +83,7 @@
                 class="form-control"
                 id="passwordRegistrazione"
                 minlength="6"
+                autocomplete="new-password"
                 required
               />
             </div>
@@ -71,6 +96,7 @@
                 class="form-control"
                 id="confermaPasswordRegistrazione"
                 minlength="6"
+                autocomplete="new-password"
                 required
               />
             </div>

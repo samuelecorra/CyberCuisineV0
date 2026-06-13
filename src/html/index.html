@@ -7,6 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CyberCuisine - Piattaforma Ricette</title>
 
+    <!-- Descrizione per i motori di ricerca / anteprime di condivisione -->
+    <meta
+      name="description"
+      content="CyberCuisine: cerca ricette da TheMealDB, costruisci il tuo ricettario personale con note private e recensisci i piatti per difficoltà e gusto."
+    />
+    <!-- Colore della chrome del browser su mobile, allineato allo sfondo scuro del tema -->
+    <meta name="theme-color" content="#0c0b1a" />
+    <!-- Favicon: usa il logo dell'app (evita anche la richiesta 404 di favicon.ico) -->
+    <link rel="icon" href="../assets/img/cc-logo.png" />
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -33,6 +43,15 @@
     <link rel="stylesheet" href="../css/modal.css" />
   </head>
   <body>
+    <!-- Fallback per browser con JavaScript disabilitato: essendo una SPA, senza JS la pagina
+         resterebbe vuota. Mostriamo un avviso (stile Bootstrap, caricato via CSS indipendente da JS). -->
+    <noscript>
+      <div class="alert alert-danger text-center rounded-0 m-0" role="alert">
+        CyberCuisine richiede JavaScript per funzionare. Abilita JavaScript nel browser e ricarica la
+        pagina.
+      </div>
+    </noscript>
+
     <!-- Header e navbar -->
     <header class="cc-intestazione shadow-sm">
       <nav class="navbar navbar-expand-lg navbar-dark container px-3">

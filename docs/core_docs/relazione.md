@@ -345,6 +345,18 @@ L'applicazione fornisce feedback visivo in tutti i momenti di attesa:
 - **Testi placeholder**: "Caricamento ricette..." nei contenitori prima che i dati arrivino.
 - **Badge contatori**: aggiornati dinamicamente per mostrare quante ricette sono state trovate/caricate.
 
+### 8.6 Accessibilità e standard web
+
+Oltre all'estetica, l'applicazione adotta una serie di accorgimenti conformi alle linee guida di accessibilità (WCAG) e alle best practice del web standard:
+
+- **`prefers-reduced-motion`**: una media query globale (`base.css`) azzera animazioni e transizioni per gli utenti che hanno attivato la riduzione del movimento nelle impostazioni di sistema (utile per chi soffre di disturbi vestibolari o emicrania). L'app resta pienamente funzionale, semplicemente "ferma".
+- **`aria-current="page"`**: il link di navigazione attivo, oltre alla classe `.active` (puramente visiva), espone l'attributo ARIA che gli screen reader annunciano come "pagina corrente".
+- **`aria-live="polite"`**: i badge che mostrano il conteggio delle ricette vengono annunciati dagli screen reader quando il loro valore cambia dinamicamente, senza interrompere la lettura.
+- **`autocomplete`**: i campi di login e registrazione dichiarano i token standard (`username`, `current-password`, `new-password`, `email`, `given-name`, `family-name`), abilitando il corretto funzionamento dei gestori di password e migliorando l'esperienza di compilazione.
+- **`<noscript>`**: essendo una SPA dipendente da JavaScript, un fallback avvisa esplicitamente l'utente qualora JavaScript fosse disabilitato, invece di mostrare una pagina vuota.
+- **`<head>` completo**: `meta description` (anteprime/SEO), `theme-color` (chrome del browser mobile allineata al tema scuro) e `favicon` (icona del tab, oltre a evitare la richiesta 404 di `favicon.ico`).
+- **HTML semantico** (`<header>`, `<nav>`, `<main>`, `<section>`, `<footer>`), label associate a ogni campo, `alt` su tutte le immagini e `lang="it"` sul documento completano l'impianto accessibile.
+
 ---
 
 ## 9. Struttura dei moduli JavaScript e dipendenze

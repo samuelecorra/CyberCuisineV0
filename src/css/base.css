@@ -58,3 +58,19 @@ h3,
 a {
   color: var(--cc-accent);
 }
+
+/* --- Accessibilità: rispetto della preferenza di sistema "riduci movimento" ---
+   Gli utenti che attivano `prefers-reduced-motion` (spesso per disturbi vestibolari, emicrania o
+   sensibilità al movimento) ricevono un'interfaccia senza animazioni/transizioni evidenti. Annulliamo
+   durata di animazioni e transizioni (es. glow delle recensioni, spinner piadina, pulse dei campi
+   invalidi, hover delle card) mantenendo l'app perfettamente funzionante, solo "ferma". */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

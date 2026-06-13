@@ -19,12 +19,24 @@
         <form id="formLogin" novalidate>
           <div class="mb-3">
             <label for="identificatoreLogin" class="form-label">Username o email</label>
-            <input type="text" class="form-control" id="identificatoreLogin" required />
+            <input
+              type="text"
+              class="form-control"
+              id="identificatoreLogin"
+              autocomplete="username"
+              required
+            />
           </div>
 
           <div class="mb-3">
             <label for="passwordLogin" class="form-label">Password</label>
-            <input type="password" class="form-control" id="passwordLogin" required />
+            <input
+              type="password"
+              class="form-control"
+              id="passwordLogin"
+              autocomplete="current-password"
+              required
+            />
           </div>
 
           <div class="form-check mb-3">
