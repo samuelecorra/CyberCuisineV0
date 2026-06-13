@@ -9,10 +9,8 @@
 //      con la password CIFRATA AES-GCM (mai in chiaro); vedi salvaAccountRicordato più sotto;
 //   4) impostaUtenteCorrente() scrive in Local Storage la chiave "session" → { currentUserId, loginAt }.
 // Da quel momento l'utente risulta loggato in tutta l'app.
-//
-// NOTA STORICA: una versione precedente salvava il solo identificatore in Session Storage sotto la
-// chiave "cc_accesso_ricorda". Quella chiave NON viene più scritta: oggi viene solo RIMOSSA come
-// pulizia legacy (vedi pulisciPrefillLegacy). Il "Ricordami" attuale vive in "cc_remembered_accounts".
+// NB: il "Ricordami" NON usa il Session Storage: vive in Local Storage ("cc_remembered_accounts")
+// con password cifrata AES-GCM. L'unica chiave di Session Storage dell'app è "cc_post_signup".
 
 import { ottieniUtenteCorrente, ottieniUtenti, impostaUtenteCorrente } from "../storage.js";
 import { mostraAvviso } from "../ui.js";
@@ -53,9 +51,10 @@ export function inizializzaVistaLogin() {
     compilazioneInCorso: false
   };
 
-  // Messaggio post-registrazione
+  // Messaggio post-registrazione: se arriviamo dalla registrazione mostra l'alert di successo e
+  // precompila l'identificatore (ritorna true). In tal caso NON azzeriamo i campi qui sotto.
   const compilatoDaPostRegistrazione = mostraMessaggioPostRegistrazione();
-  pulisciPrefillLegacy({
+  resettaCampiLoginIniziali({
     inputIdentificatore,
     inputPassword,
     checkRicorda,
@@ -119,21 +118,17 @@ export function inizializzaVistaLogin() {
   });
 }
 
-// Pulisce eventuali residui di prefill di una versione precedente dell'app. In particolare rimuove
-// la chiave legacy "cc_accesso_ricorda" dal Session Storage (oggi non più usata: il "Ricordami"
-// vive in "cc_remembered_accounts" su Local Storage). Salvo il caso post-registrazione, svuota
-// anche i campi del form per non lasciare credenziali precompilate da sessioni precedenti.
-function pulisciPrefillLegacy({
+// Reset difensivo dei campi all'apertura della pagina di login: parte da un form pulito (nessun
+// identificatore/password precompilati, "Ricordami" non spuntato). Eccezione: se arriviamo dalla
+// registrazione (conservaCompilazione=true) NON tocchiamo i campi, così l'email appena registrata
+// resta precompilata. La compilazione automatica dal picker "account ricordati" avviene DOPO, su
+// azione esplicita dell'utente, quindi non è in conflitto con questo reset iniziale.
+function resettaCampiLoginIniziali({
   inputIdentificatore,
   inputPassword,
   checkRicorda,
   conservaCompilazione = false
 }) {
-  try {
-    sessionStorage.removeItem("cc_accesso_ricorda"); // chiave legacy: solo rimozione, mai scrittura
-  } catch (e) {
-    // silenzioso
-  }
   if (conservaCompilazione) return;
   if (inputIdentificatore) inputIdentificatore.value = "";
   if (inputPassword) inputPassword.value = "";

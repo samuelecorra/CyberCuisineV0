@@ -52,9 +52,8 @@ L'app salva tutto nel **web storage del browser** (formato JSON). Ispezionalo co
 - **Local Storage** (persistente): `app:meta`, `users`, `session`, `recipes:cache`, `areas:cache`,
   `cookbook:<idUtente>`, `reviews:<idRicetta>`, `cc_remembered_accounts` (account del "Ricordami",
   password **cifrata AES-GCM** — mai in chiaro).
-- **Session Storage** (dura finché la scheda resta aperta): `cc_post_signup` (messaggio temporaneo
-  registrazione→login). La vecchia chiave `cc_accesso_ricorda` è **legacy**: non viene più scritta,
-  viene solo rimossa all'avvio della pagina di login come pulizia.
+- **Session Storage** (dura finché la scheda resta aperta): **una sola** chiave, `cc_post_signup`
+  (messaggio temporaneo registrazione→login, letto e cancellato subito al login).
 
 Le password **non** sono salvate in chiaro: in `users` trovi solo `passwordHash` + `salt` (SHA-256).
 

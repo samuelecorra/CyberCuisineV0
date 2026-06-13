@@ -182,11 +182,11 @@ Ogni recensione nell'array `reviews:<idRicetta>` ha la forma:
 
 ### 4.3 Chiavi del sessionStorage
 
-Il sessionStorage ospita **una sola** chiave realmente in uso, legata al passaggio di consegne tra registrazione e login:
+Il sessionStorage ospita **una sola** chiave, legata al passaggio di consegne tra registrazione e login:
 
 - **`cc_post_signup`**: messaggio one-shot che la registrazione scrive prima di redirigere al login. La pagina di accesso lo legge, lo mostra all'utente ("Account creato, accedi per continuare") e lo cancella immediatamente. Questo evita di dover passare dati tra viste tramite parametri URL o stato globale.
 
-Esiste inoltre una chiave **legacy**, **`cc_accesso_ricorda`**, usata da una versione precedente per memorizzare il solo identificatore del "Ricordami". Nella versione attuale **non viene più scritta**: il "Ricordami" è stato spostato in `localStorage["cc_remembered_accounts"]` con password cifrata AES-GCM (vedi §7.2). La pagina di login si limita a **rimuoverla** all'avvio (`pulisciPrefillLegacy`) per ripulire eventuali residui di vecchie sessioni. La cito qui solo per completezza: durante la demo, in Session Storage si vede tipicamente comparire e sparire la sola `cc_post_signup`.
+Il "Ricordami" **non** usa il sessionStorage: è stato implementato in `localStorage["cc_remembered_accounts"]` con password cifrata AES-GCM (vedi §7.2), così gli account ricordati sopravvivono anche alla chiusura del browser. Una precedente versione dell'app usava a questo scopo una chiave `cc_accesso_ricorda` in sessionStorage, oggi completamente rimossa dal codice.
 
 ### 4.4 Separazione sessione e dati utente
 
