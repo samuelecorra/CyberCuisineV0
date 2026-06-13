@@ -296,7 +296,7 @@ const EMOJI_AREE = {
   ukrainian: "🇺🇦",
   uruguayan: "🇺🇾",
   australian: "🇦🇺",
-  venezulan: "🇻🇪",
+  venezuelan: "🇻🇪",
   // TheMealDB è incoerente: per alcune cucine usa il nome del PAESE invece dell'aggettivo.
   // Aggiungiamo queste forme così tutte le ~37 aree reali del catalogo hanno bandiera e traduzione.
   argentina: "🇦🇷",
@@ -346,7 +346,7 @@ const TRADUZIONI_AREE = {
   ukrainian: "Ucraina",
   uruguayan: "Uruguay",
   australian: "Australia",
-  venezulan: "Venezuela",
+  venezuelan: "Venezuela",
   // Forme "nome del paese" usate da TheMealDB per alcune cucine (vedi nota in EMOJI_AREE).
   argentina: "Argentina",
   france: "Francia",

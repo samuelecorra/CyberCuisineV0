@@ -20,7 +20,6 @@ export function inizializzaVistaProfilo() {
   const form = document.getElementById("formProfilo");
   const avvisoSuccessoProfilo = document.getElementById("avvisoProfiloSuccesso");
   const avvisoErroreProfilo = document.getElementById("avvisoProfiloErrore");
-  const bottoneLogout = document.getElementById("bottoneLogout");
   const bottoneElimina = document.getElementById("bottoneEliminaProfilo");
   const bottoneModifica = document.getElementById("bottoneModificaProfilo");
   const bottoneSalva = document.getElementById("bottoneSalvaProfilo");
