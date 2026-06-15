@@ -403,7 +403,7 @@ costanti.js ← tutti i moduli (chiavi storage, BASE_API)
 
 ---
 
-## 10. Checklist di test manuali
+## 10. Checklist di test manuali - tutti passati!
 
 Prima della presentazione, verificare il corretto funzionamento dei seguenti scenari:
 
