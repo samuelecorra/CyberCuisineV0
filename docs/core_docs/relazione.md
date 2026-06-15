@@ -11,7 +11,7 @@ Prima di entrare nel merito del codice vero e proprio, è utile orientarsi nella
 **`docs/`** raccoglie la documentazione del progetto. Al suo interno si trovano:
 
 - `core_docs/` — i documenti più importanti: questa relazione tecnica (`relazione.md`) e il PDF della specifica originale del docente (`PWM_ProgettoAnnoAccademico20242025.pdf`). Qui può inoltre risiedere `possibili_domande.md`, materiale **personale** di preparazione alla discussione orale, escluso dal versionamento tramite `.gitignore`;
-- altri file di supporto alla stesura del progetto (es. `SCREENSHOT_SCRIPT.txt`, script delle schermate dimostrative).
+- `screenshots/` — le schermate dimostrative che costituiscono le "prove di funzionamento" richieste dalla specifica.
 
 ### File di configurazione a livello di root
 
@@ -532,7 +532,7 @@ CyberCuisineV0/
 ├── LICENSE                  # licenza MIT
 ├── README.md                # guida rapida + mappa web storage + reset dati
 ├── docs/
-│   ├── SCREENSHOT_SCRIPT.txt # scaletta delle schermate dimostrative (prova di funzionamento)
+│   ├── screenshots/          # schermate dimostrative (prove di funzionamento richieste dalla specifica)
 │   └── core_docs/
 │       ├── relazione.md      # questo documento
 │       ├── possibili_domande.md  # preparazione orale (NON versionato)
