@@ -1,10 +1,23 @@
-// Nello script delle varie rotte andiamo semplicemente a mappare i vari percorsi (hash) alle loro configurazioni,
-// specificando per ognuno di essi il frammento HTML da caricare e la funzione di inizializzazione da eseguire al
-// caricamento.
-// In questo modo manteniamo il router generico e indipendente dalle singole viste, facilitando la manutenzione
-// e l'estensibilità dell'app.
+// ============================================================================
+//  ROTTE — tabella di routing della SPA (Single Page Application)
+// ============================================================================
+// CyberCuisine è una SPA: NON ci sono ricaricamenti di pagina tra una vista e l'altra.
+// Il meccanismo è l'hash dell'URL (la parte dopo "#"): cambiare hash NON causa una richiesta HTTP
+// al server, ma genera un evento "hashchange" che il router (main.js) cattura per decidere quale
+// frammento HTML caricare e quale funzione di inizializzazione eseguire.
+//
+// STRUTTURA DI OGNI ROTTA:
+//   frammento            → percorso del file HTML parziale da iniettare nel <main>
+//   alCaricamento        → funzione chiamata dopo l'iniezione dell'HTML (aggancia listener, fetch, ecc.)
+//   protetta: true       → la rotta richiede login; il router reindirizza a #/accesso se non c'è sessione
+//   frammentoProtetto    → HTML alternativo mostrato all'utente loggato (usato solo da #/home)
+//   alCaricamentoProtetto→ funzione alternativa per l'HTML protetto (usato solo da #/home)
+//
+// >>> COME ESTENDERE <<<
+// Per aggiungere una vista: crea il file HTML, scrivi la funzione inizializza*, importala qui e aggiungi
+// una chiave a PERCORSI. Il router non va toccato.
 
-// Innanzitutto serve importare le funzioni di inizializzazione delle varie viste, necessarie per la mappatura:
+// Funzioni di inizializzazione delle singole viste — il router le chiama dopo aver caricato l'HTML:
 import { inizializzaVistaHome } from "./viste/vista-home.js";
 import { inizializzaVistaHomeLoggata } from "./viste/vista-home-loggata.js";
 import { inizializzaVistaLogin } from "./viste/vista-accesso.js";
@@ -15,12 +28,11 @@ import { inizializzaVistaRecensioni } from "./viste/vista-recensioni.js";
 import { inizializzaVistaDettaglioRicetta } from "./viste/vista-dettaglio-ricetta.js";
 import { inizializzaVistaEsplora } from "./viste/vista-esplora.js";
 
-// I vari percorsi dell'applicazione sono un oggetto con chiavi e valori ben definiti, che non devono
-// mai essere modificati a runtime. Per questo motivo usiamo "export const".
+// Tabella rotte: le chiavi sono gli hash URL che il router confronta con window.location.hash.
+// "export const" perché è letta da main.js ma non deve mai essere mutata a runtime.
 export const PERCORSI = {
-  // Poniamo particolare attenzione alla rotta di default:
-  // L'utente loggato e non loggato devono vedere due versioni differenti della home, quindi
-  // definiamo sia un frammento che una funzione di inizializzazione differente per i due casi.
+  // #/home è l'unica rotta con due versioni: loggato e non loggato vedono HTML diversi.
+  // Il router legge "session".currentUserId per scegliere quale coppia frammento/funzione usare.
   "#/home": {
     frammento: "./home.html",
     frammentoProtetto: "./home.logged.html",

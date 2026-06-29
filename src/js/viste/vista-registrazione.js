@@ -3,22 +3,26 @@ import { mostraAvviso, generaId, evidenziaFieldInvalidi } from "../ui.js";
 import { ottieniAreeCucina } from "../gestione-api/api.js";
 import { creaCredenzialiPassword } from "../auth.js";
 
-// 1. La funzione principale per inizializzare la vista di registrazione
-// è progettata per gestire il flusso di registrazione dell'utente,
-// inclusa la validazione del modulo, la creazione dell'utente e la navigazione post-registrazione.
+// ============================================================================
+//  VISTA REGISTRAZIONE — frammento register.html
+// ============================================================================
+// Flusso web storage durante la registrazione:
+//   1) validazione lato client (unicità username/email contro "users", lunghezza password, ecc.)
+//   2) creaCredenzialiPassword → genera salt + SHA-256(salt:password) — la password NON viene salvata
+//   3) salvaUtenti → scrive il nuovo utente in Local Storage, chiave "users"
+//   4) sessionStorage.setItem("cc_post_signup") → passaggio di consegne usa-e-getta verso il login
+//   5) redirect a #/accesso: la registrazione NON fa login automatico (flussi separati e dimostrabili)
+// DEVTOOLS: F12 → Application → Local Storage → "users": compare il nuovo oggetto (passwordHash+salt,
+// nessun campo "password"). Session Storage → "cc_post_signup" appare e sparisce nel giro di secondi.
 export function inizializzaVistaRegistrazione() {
+  // Guardia: la navbar non mostra mai il link registrazione a utenti loggati, ma per sicurezza.
   if (ottieniUtenteCorrente()) {
-    /* Se l'utente è già loggato, non ha senso registrarsi di nuovo:
-    ATTENZIONE: a dire il vero non dovremmo mai nemmeno entrare qui, perché quando l'utente è
-    loggato, al posto del navlink "Registrati/Accedi" c'è il dropdown "Ciao [NOME]" con annessi
-    link a Profilo e Logout. Comunque, giusto per sicurezza, ridirigiamo alla home. */
     window.location.hash = "#/home";
     return;
   }
 
-  // Dopo questo estremo controllo "futile", possiamo procedere con l'inizializzazione del form
-  const form = document.getElementById("formRegistrazione"); // Innanzitutto prendiamo il form
-  popolaSelectAree(); // Popoliamo le select di aree di cucina - vedere riga 87
+  const form = document.getElementById("formRegistrazione");
+  popolaSelectAree();
   const boxAvviso = document.getElementById("avvisoRegistrazione");
   impostaGestioneDocumentiLegali();
   form?.addEventListener("submit", async event => {
@@ -115,15 +119,13 @@ export function inizializzaVistaRegistrazione() {
   });
 }
 
-// Serve una funzione per poter riempire i vari valori quando l'utente apre la select
-// per inserire il paese di origine o residenza. Il vantaggio di farlo in questo modo è che
-// evitiamo di appesantire il caricamento iniziale della pagina con un lungo elenco di opzioni.
-// In questo modo, le opzioni vengono caricate solo quando effettivamente necessarie.
+// Popola entrambe le select paese con le aree di cucina lette dalla cache/API.
+// Le opzioni vengono caricate in modo lazy (solo quando serve questa vista) per non bloccare lo startup.
 async function popolaSelectAree() {
-  const selectOrigine = document.getElementById("paeseOrigineRegistrazione"); // Prima prendiamo il select 1
-  const selectResidenza = document.getElementById("paeseResidenzaRegistrazione"); // Poi il select 2
-  if (!selectOrigine || !selectResidenza) return; // Se uno dei due non c'è, usciamo (non dovrebbe mai accadere)
-  const elenco = await ottieniAreeCucina(); // Ora prendiamo l'elenco delle aree di cucina, funzione importata da api.js
+  const selectOrigine = document.getElementById("paeseOrigineRegistrazione");
+  const selectResidenza = document.getElementById("paeseResidenzaRegistrazione");
+  if (!selectOrigine || !selectResidenza) return;
+  const elenco = await ottieniAreeCucina();
   const opzioni = ['<option value="">Seleziona un paese</option>']
     .concat(
       elenco.map(area => `<option value="${area.nomeEn}">${area.emoji} ${area.nomeIt} </option>`)

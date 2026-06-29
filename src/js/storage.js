@@ -504,6 +504,33 @@ export function aggiornaNotaRicettario(idRicetta, nota) {
   });
 }
 
+// Legge la nota privata di una ricetta per l'utente loggato (o stringa vuota se non loggato/assente).
+// Legge da "cookbook:<id>.notesByRecipeId" senza il guard recipeIds.includes: funziona per qualsiasi
+// ricetta visitata, non solo quelle nel ricettario — requisito della specifica ("per ciascuna ricetta").
+// DEVTOOLS: il valore è in Local Storage → "cookbook:<id>" → notesByRecipeId → { idRicetta: "testo" }.
+export function ottieniNotaPrivataRicetta(idRicetta) {
+  const utente = ottieniUtenteCorrente();
+  if (!utente) return "";
+  const ricettario = ottieniRicettarioUtente(utente.id);
+  return ricettario.notesByRecipeId?.[idRicetta] ?? "";
+}
+
+// Salva la nota privata di una ricetta, anche se non è nel ricettario (a differenza di aggiornaNotaRicettario
+// che rifiuta silenziosamente se la ricetta non è in recipeIds). La nota resta in "cookbook:<id>" perché:
+//   1) riusa la struttura già esistente senza aggiungere nuove chiavi localStorage
+//   2) la rimozione della ricetta dal ricettario pulisce già notesByRecipeId in cascata (vedi aggiornaRicettario)
+export function salvaNotaPrivataRicetta(idRicetta, nota) {
+  const utente = ottieniUtenteCorrente();
+  if (!utente) return;
+  const ricettario = ottieniRicettarioUtente(utente.id);
+  const notesByRecipeId = { ...(ricettario.notesByRecipeId ?? {}) };
+  notesByRecipeId[idRicetta] = nota;
+  salvaRicettarioUtente(utente.id, {
+    recipeIds: [...(ricettario.recipeIds ?? [])],
+    notesByRecipeId
+  });
+}
+
 // --------------------------
 // Recensioni (macro-scenario "recensioni delle ricette")
 // --------------------------

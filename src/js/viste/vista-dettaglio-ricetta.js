@@ -10,7 +10,9 @@ import {
   ottieniRecensioniRicetta,
   ottieniUtenti,
   aggiornaRicettario,
-  rimuoviRecensione
+  rimuoviRecensione,
+  ottieniNotaPrivataRicetta,
+  salvaNotaPrivataRicetta
 } from "../storage.js";
 import { recuperaRicettaPerId } from "../gestione-api/api.js";
 import { creaCardRecensione } from "../componenti/carte.js";
@@ -117,6 +119,23 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
         </div>
       </div>
     </div>
+    ${utente ? `
+    <div class="col-12">
+      <div class="card card-bagliore">
+        <div class="card-body">
+          <h2 class="h5 mb-2">La tua nota privata</h2>
+          <p class="small text-muted mb-3">Visibile solo a te.</p>
+          <textarea id="notaPrivataDettaglio" class="form-control" rows="3"
+            placeholder="Annotazioni, varianti, abbinamenti..."></textarea>
+          <div class="d-flex align-items-center gap-2 mt-2">
+            <button id="btnSalvaNotaDettaglio" class="btn btn-sm btn-contorno-accento" type="button">
+              Salva nota
+            </button>
+            <span id="feedbackNotaDettaglio" class="small testo-accento d-none">Salvata ✓</span>
+          </div>
+        </div>
+      </div>
+    </div>` : ""}
     <div class="col-12">
       <div class="card card-bagliore">
         <div class="card-body">
@@ -148,6 +167,21 @@ export async function inizializzaVistaDettaglioRicetta(idRicetta) {
     // senza aspettare un reload manuale da parte dell'utente.
     apriModaleRecensione(ricetta, () => inizializzaVistaDettaglioRicetta(ricetta.id));
   });
+
+  // Nota privata: visibile solo all'utente loggato, salvata in "cookbook:<id>.notesByRecipeId".
+  // Riusa la stessa struttura storage del ricettario (nessuna chiave aggiuntiva) ma senza il guard
+  // "recipeIds.includes": la nota funziona su QUALSIASI ricetta, anche quelle non ancora salvate.
+  // DEVTOOLS: Salva nota → Application → Local Storage → "cookbook:<id>" → notesByRecipeId.
+  if (utente) {
+    document.getElementById("notaPrivataDettaglio").value = ottieniNotaPrivataRicetta(ricetta.id);
+    document.getElementById("btnSalvaNotaDettaglio").addEventListener("click", () => {
+      const testo = document.getElementById("notaPrivataDettaglio").value.trim();
+      salvaNotaPrivataRicetta(ricetta.id, testo);
+      const feedback = document.getElementById("feedbackNotaDettaglio");
+      feedback.classList.remove("d-none");
+      setTimeout(() => feedback.classList.add("d-none"), 2000);
+    });
+  }
 
   mostraElencoRecensioni(ricetta.id, ricetta, utente);
   impostaRimozioneRecensioni(ricetta.id, ricetta, utente);
