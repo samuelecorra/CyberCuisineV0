@@ -1,5 +1,5 @@
 # CyberCuisineV0
-Piattaforma Web per la Gestione di Ricette di Cucina (PGRC) - Progetto di Programmazione Web e Mobile @ UNIMI.
+Historical university project: a small recipe-management web application built for the University of Milan's Web and Mobile Programming course, using HTML, CSS, JavaScript and Bootstrap 5.
 
 ## Struttura del Progetto
 
